@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@moltlaw/shared', '@moltlaw/database'],
+  transpilePackages: ['@botesq/shared', '@botesq/database'],
 }
 
 module.exports = nextConfig
