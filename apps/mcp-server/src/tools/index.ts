@@ -3,6 +3,7 @@ import { getSessionInfoTool, handleGetSessionInfo, getSessionInfoSchema } from '
 import { listServicesTool, handleListServices } from './list-services.js'
 import { getDisclaimersTool, handleGetDisclaimers } from './get-disclaimers.js'
 import { checkCreditsTool, handleCheckCredits, checkCreditsSchema } from './check-credits.js'
+import { askLegalQuestionTool, handleAskLegalQuestion, askLegalQuestionSchema } from './ask-legal-question.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
 
@@ -13,6 +14,7 @@ export const tools = [
   listServicesTool,
   getDisclaimersTool,
   checkCreditsTool,
+  askLegalQuestionTool,
 ]
 
 // Tool handler map
@@ -34,6 +36,10 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
   check_credits: async (input) => {
     const validated = checkCreditsSchema.parse(input)
     return handleCheckCredits(validated)
+  },
+  ask_legal_question: async (input) => {
+    const validated = askLegalQuestionSchema.parse(input)
+    return handleAskLegalQuestion(validated)
   },
 }
 
@@ -63,4 +69,5 @@ export {
   listServicesTool,
   getDisclaimersTool,
   checkCreditsTool,
+  askLegalQuestionTool,
 }

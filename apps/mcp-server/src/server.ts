@@ -3,8 +3,11 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
 import { tools, executeTool } from './tools/index.js'
+import { prompts, buildPrompt } from './prompts/index.js'
 import { ApiError, AuthError, RateLimitError } from './types.js'
 import pino from 'pino'
 
@@ -21,6 +24,7 @@ export function createServer() {
     {
       capabilities: {
         tools: {},
+        prompts: {},
       },
     }
   )
@@ -33,6 +37,40 @@ export function createServer() {
         description: tool.description,
         inputSchema: tool.inputSchema,
       })),
+    }
+  })
+
+  // List available prompts
+  server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    return {
+      prompts: prompts.map((prompt) => ({
+        name: prompt.name,
+        description: prompt.description,
+        arguments: prompt.arguments,
+      })),
+    }
+  })
+
+  // Get a specific prompt
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params
+
+    const promptContent = buildPrompt(name, args ?? {})
+
+    if (!promptContent) {
+      throw new ApiError('UNKNOWN_PROMPT', `Unknown prompt: ${name}`, 400)
+    }
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: promptContent,
+          },
+        },
+      ],
     }
   })
 

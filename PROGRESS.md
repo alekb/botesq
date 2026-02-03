@@ -2,15 +2,19 @@
 
 ## Current
 
-**Phase:** 1 - MCP Server Core
-**Step:** 1.4 Basic Info Tools
-**Status:** complete
+**Phase:** 3 - Matter Management
+**Step:** 3.1 Matter CRUD
+**Status:** pending
 
 ---
 
 ## Active Tasks
 
-_Phase 1 complete — ready for Phase 2 (Legal Engine)_
+- [ ] Review Phase 3 requirements in IMPLEMENTATION_PLAN.md
+- [ ] Implement create_matter tool
+- [ ] Implement get_matter_status tool
+- [ ] Implement list_matters tool
+- [ ] Add matter service with CRUD operations
 
 ---
 
@@ -21,6 +25,16 @@ _None_
 ---
 
 ## Completed
+
+### Phase 2: Legal Engine (2026-02-03)
+- [x] Create llm.service.ts with OpenAI client wrapper
+- [x] Create legal-ai.service.ts with legal response generation
+- [x] Implement ask_legal_question tool with pricing/credits
+- [x] Add queue.service.ts for human attorney fallback
+- [x] Create MCP prompts (contract_review, entity_formation, compliance_check, ip_question, general_legal)
+- [x] Add confidence parsing, citation extraction, complexity determination
+- [x] Register prompts in server.ts capabilities
+- [x] Build and lint passes
 
 ### Phase 1: MCP Server Core (2026-02-03)
 - [x] Create MCP server scaffold with @modelcontextprotocol/sdk
@@ -78,19 +92,20 @@ _None_
 
 ## What's Next
 
-**Phase 2: Legal Engine**
-- Integrate OpenAI for legal AI responses
-- Implement ask_legal_question tool
-- Add LLM fallback handling (queue for human review)
-- Create MCP prompts for legal domains
+**Phase 3: Matter Management**
+- Implement create_matter, get_matter_status, list_matters tools
+- Add matter service with CRUD operations
+- Handle matter lifecycle (open, active, closed)
+- Associate consultations with matters
 
-See `docs/IMPLEMENTATION_PLAN.md` Phase 2 for full details.
+See `docs/IMPLEMENTATION_PLAN.md` Phase 3 for full details.
 
 ---
 
 ## Session Log
 
 ### 2026-02-03
+- Phase 2 complete: Legal Engine with ask_legal_question tool, LLM integration, 5 MCP prompts
 - Phase 1 complete: MCP Server with 5 tools (session, credits, services, disclaimers)
 - Phase 0.2 complete: PostgreSQL + Prisma schema with 24 models
 - Phase 0.1 complete: monorepo initialized, all packages created, dependencies installed
