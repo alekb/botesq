@@ -2,18 +2,18 @@
 
 ## Current
 
-**Phase:** 6 - Consultation System
-**Step:** 6.1 Consultation Tools
+**Phase:** 7 - Web Application Foundation
+**Step:** 7.1 Next.js Setup
 **Status:** pending
 
 ---
 
 ## Active Tasks
 
-- [ ] Review Phase 6 requirements in IMPLEMENTATION_PLAN.md
-- [ ] Implement request_consultation tool
-- [ ] Implement get_consultation_result tool
-- [ ] Create consultation.service.ts
+- [ ] Review Phase 7 requirements in IMPLEMENTATION_PLAN.md
+- [ ] Set up Next.js with full design system tokens
+- [ ] Create UI component primitives
+- [ ] Build marketing page foundation
 
 ---
 
@@ -24,6 +24,14 @@ _None_
 ---
 
 ## Completed
+
+### Phase 6: Consultation System (2026-02-03)
+- [x] Create consultation.service.ts with create/get/list functions
+- [x] Implement request_consultation tool (5000 standard / 10000 urgent credits)
+- [x] Implement get_consultation_result tool for status checking
+- [x] Add RequestConsultation/GetConsultationResult types to types.ts
+- [x] Register tools in tools/index.ts
+- [x] Build and lint passes
 
 ### Phase 5: Payments & Credits (2026-02-03)
 - [x] Add stripe SDK dependency
@@ -122,19 +130,19 @@ _None_
 
 ## What's Next
 
-**Phase 6: Consultation System**
-- Implement request_consultation tool
-- Implement get_consultation_result tool
-- Create consultation.service.ts
-- Build consultation queue and worker
+**Phase 7: Web Application Foundation**
+- Set up Next.js with full design system tokens
+- Create UI component primitives (button, input, card, etc.)
+- Build marketing page foundation
 
-See `docs/IMPLEMENTATION_PLAN.md` Phase 6 for full details.
+See `docs/IMPLEMENTATION_PLAN.md` Phase 7 for full details.
 
 ---
 
 ## Session Log
 
 ### 2026-02-03
+- Phase 6 complete: Consultation System with request_consultation and get_consultation_result tools
 - Phase 5 complete: Payments & Credits with Stripe integration, add_credits tool, credit.service.ts
 - Phase 4 complete: Document Handling with S3 storage, AI analysis, 2 tools (submit/get_analysis)
 - Phase 3 complete: Matter Management with 5 tools (create/get/list matter, get/accept retainer)
@@ -143,6 +151,7 @@ See `docs/IMPLEMENTATION_PLAN.md` Phase 6 for full details.
 - Phase 0.2 complete: PostgreSQL + Prisma schema with 24 models
 - Phase 0.1 complete: monorepo initialized, all packages created, dependencies installed
 - Project relocated to ~/projects/bot-law (WSL compatibility)
+- Project renamed from MoltLaw to BotEsq
 - Provider Integration Framework added (FEAT-016, FEAT-017)
 - Documentation suite created (11 files)
 - Consolidated tracking system (progress.txt + todo.md → PROGRESS.md)
