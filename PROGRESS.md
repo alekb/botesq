@@ -2,19 +2,19 @@
 
 ## Current
 
-**Phase:** 4 - Document Handling
-**Step:** 4.1 S3 Integration
+**Phase:** 5 - Payments & Credits
+**Step:** 5.1 Stripe Integration
 **Status:** pending
 
 ---
 
 ## Active Tasks
 
-- [ ] Review Phase 4 requirements in IMPLEMENTATION_PLAN.md
-- [ ] Set up S3 integration for document storage
-- [ ] Implement submit_document tool
-- [ ] Implement get_document_analysis tool
-- [ ] Add document service
+- [ ] Review Phase 5 requirements in IMPLEMENTATION_PLAN.md
+- [ ] Add Stripe SDK dependency
+- [ ] Implement stripe.service.ts
+- [ ] Implement add_credits tool
+- [ ] Create Stripe webhook handler
 
 ---
 
@@ -25,6 +25,16 @@ _None_
 ---
 
 ## Completed
+
+### Phase 4: Document Handling (2026-02-03)
+- [x] Add @aws-sdk/client-s3 and @aws-sdk/s3-request-presigner dependencies
+- [x] Create storage.service.ts with S3 upload/download/presigned URLs
+- [x] Add AWS configuration to config.ts
+- [x] Create document.service.ts with CRUD and analysis tracking
+- [x] Create document-analysis.service.ts with AI-powered analysis
+- [x] Implement submit_document tool with pricing (base 2500 + 100/page)
+- [x] Implement get_document_analysis tool
+- [x] Build and lint passes
 
 ### Phase 3: Matter Management (2026-02-03)
 - [x] Create matter.service.ts with CRUD operations
@@ -102,19 +112,20 @@ _None_
 
 ## What's Next
 
-**Phase 4: Document Handling**
-- Set up S3 integration for document uploads
-- Implement submit_document and get_document_analysis tools
-- Add document processing service
-- Integrate with legal AI for document analysis
+**Phase 5: Payments & Credits**
+- Integrate Stripe for payment processing
+- Implement add_credits tool
+- Create webhook handler for payment events
+- Build credit purchase flow
 
-See `docs/IMPLEMENTATION_PLAN.md` Phase 4 for full details.
+See `docs/IMPLEMENTATION_PLAN.md` Phase 5 for full details.
 
 ---
 
 ## Session Log
 
 ### 2026-02-03
+- Phase 4 complete: Document Handling with S3 storage, AI analysis, 2 tools (submit/get_analysis)
 - Phase 3 complete: Matter Management with 5 tools (create/get/list matter, get/accept retainer)
 - Phase 2 complete: Legal Engine with ask_legal_question tool, LLM integration, 5 MCP prompts
 - Phase 1 complete: MCP Server with 5 tools (session, credits, services, disclaimers)

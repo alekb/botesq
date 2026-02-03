@@ -9,6 +9,8 @@ import { getMatterStatusTool, handleGetMatterStatus, getMatterStatusSchema } fro
 import { listMattersTool, handleListMatters, listMattersSchema } from './list-matters.js'
 import { getRetainerTermsTool, handleGetRetainerTerms, getRetainerTermsSchema } from './get-retainer-terms.js'
 import { acceptRetainerTool, handleAcceptRetainer, acceptRetainerSchema } from './accept-retainer.js'
+import { submitDocumentTool, handleSubmitDocument, submitDocumentSchema } from './submit-document.js'
+import { getDocumentAnalysisTool, handleGetDocumentAnalysis, getDocumentAnalysisSchema } from './get-document-analysis.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
 
@@ -25,6 +27,8 @@ export const tools = [
   listMattersTool,
   getRetainerTermsTool,
   acceptRetainerTool,
+  submitDocumentTool,
+  getDocumentAnalysisTool,
 ]
 
 // Tool handler map
@@ -71,6 +75,14 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
     const validated = acceptRetainerSchema.parse(input)
     return handleAcceptRetainer(validated)
   },
+  submit_document: async (input) => {
+    const validated = submitDocumentSchema.parse(input)
+    return handleSubmitDocument(validated)
+  },
+  get_document_analysis: async (input) => {
+    const validated = getDocumentAnalysisSchema.parse(input)
+    return handleGetDocumentAnalysis(validated)
+  },
 }
 
 /**
@@ -105,4 +117,6 @@ export {
   listMattersTool,
   getRetainerTermsTool,
   acceptRetainerTool,
+  submitDocumentTool,
+  getDocumentAnalysisTool,
 }

@@ -14,6 +14,12 @@ const envSchema = z.object({
 
   // OpenAI (optional for now)
   OPENAI_API_KEY: z.string().optional(),
+
+  // AWS S3 (optional for now)
+  AWS_REGION: z.string().default('us-east-1'),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_S3_BUCKET: z.string().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -39,6 +45,13 @@ export const config = {
 
   openai: {
     apiKey: parsed.data.OPENAI_API_KEY,
+  },
+
+  aws: {
+    region: parsed.data.AWS_REGION,
+    accessKeyId: parsed.data.AWS_ACCESS_KEY_ID,
+    secretAccessKey: parsed.data.AWS_SECRET_ACCESS_KEY,
+    s3Bucket: parsed.data.AWS_S3_BUCKET,
   },
 } as const
 
