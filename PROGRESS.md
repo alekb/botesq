@@ -26,6 +26,7 @@ _None_
 ## Completed
 
 ### Phase 6: Consultation System (2026-02-03)
+
 - [x] Create consultation.service.ts with create/get/list functions
 - [x] Implement request_consultation tool (5000 standard / 10000 urgent credits)
 - [x] Implement get_consultation_result tool for status checking
@@ -34,6 +35,7 @@ _None_
 - [x] Build and lint passes
 
 ### Phase 5: Payments & Credits (2026-02-03)
+
 - [x] Add stripe SDK dependency
 - [x] Add Stripe configuration to config.ts (secretKey, webhookSecret, successUrl, cancelUrl)
 - [x] Create credit.service.ts with add/deduct/refund credits functions
@@ -45,6 +47,7 @@ _None_
 - [x] Build and lint passes
 
 ### Phase 4: Document Handling (2026-02-03)
+
 - [x] Add @aws-sdk/client-s3 and @aws-sdk/s3-request-presigner dependencies
 - [x] Create storage.service.ts with S3 upload/download/presigned URLs
 - [x] Add AWS configuration to config.ts
@@ -55,6 +58,7 @@ _None_
 - [x] Build and lint passes
 
 ### Phase 3: Matter Management (2026-02-03)
+
 - [x] Create matter.service.ts with CRUD operations
 - [x] Implement create_matter tool (10,000 credits)
 - [x] Implement get_matter_status tool
@@ -65,6 +69,7 @@ _None_
 - [x] Build and lint passes
 
 ### Phase 2: Legal Engine (2026-02-03)
+
 - [x] Create llm.service.ts with OpenAI client wrapper
 - [x] Create legal-ai.service.ts with legal response generation
 - [x] Implement ask_legal_question tool with pricing/credits
@@ -75,6 +80,7 @@ _None_
 - [x] Build and lint passes
 
 ### Phase 1: MCP Server Core (2026-02-03)
+
 - [x] Create MCP server scaffold with @modelcontextprotocol/sdk
 - [x] Add config.ts with environment validation (zod)
 - [x] Add types.ts with tool input/output types and error classes
@@ -89,6 +95,7 @@ _None_
 - [x] Build and lint passes
 
 ### Phase 0.2: Database Setup (2026-02-03)
+
 - [x] Create Prisma schema with 24 models from BACKEND_STRUCTURE.md
 - [x] Install PostgreSQL 16.11 locally
 - [x] Create botesq_dev database
@@ -96,7 +103,18 @@ _None_
 - [x] Configure Prisma client export
 - [x] Verify build passes
 
+### Infrastructure: Testing & Git Hooks (2026-02-03)
+
+- [x] Set up Vitest for mcp-server (vitest.config.ts, sample credit.service tests)
+- [x] Set up Vitest for web app (@testing-library/react, jsdom, sample tests)
+- [x] Set up Playwright for E2E tests (playwright.config.ts, e2e/home.spec.ts)
+- [x] Set up Husky + lint-staged (pre-commit hook runs eslint --fix + prettier)
+- [x] All 18 unit tests pass (15 mcp-server + 3 web)
+- [x] E2E tests pass (3 home page tests)
+- [x] Lint-staged verified working
+
 ### Phase 0.1: Repository Initialization (2026-02-03)
+
 - [x] Initialize git repository
 - [x] Create monorepo folder structure (apps/web, apps/mcp-server, packages/database, packages/shared)
 - [x] Create root package.json with pnpm workspace
@@ -116,6 +134,7 @@ _None_
 **Note:** Project moved from Dropbox path to `~/projects/bot-law` for WSL compatibility.
 
 ### Documentation (2026-02-03)
+
 - [x] docs/PRD.md — 17 features defined (FEAT-001 through FEAT-017)
 - [x] docs/APP_FLOW.md — Agent, Operator, Attorney journeys
 - [x] docs/TECH_STACK.md — Versions locked, infrastructure defined
@@ -131,6 +150,7 @@ _None_
 ## What's Next
 
 **Phase 7: Web Application Foundation**
+
 - Set up Next.js with full design system tokens
 - Create UI component primitives (button, input, card, etc.)
 - Build marketing page foundation
@@ -142,6 +162,8 @@ See `docs/IMPLEMENTATION_PLAN.md` Phase 7 for full details.
 ## Session Log
 
 ### 2026-02-03
+
+- Infrastructure: Testing + Git Hooks setup (Vitest, Playwright, Husky, lint-staged)
 - Phase 6 complete: Consultation System with request_consultation and get_consultation_result tools
 - Phase 5 complete: Payments & Credits with Stripe integration, add_credits tool, credit.service.ts
 - Phase 4 complete: Document Handling with S3 storage, AI analysis, 2 tools (submit/get_analysis)
