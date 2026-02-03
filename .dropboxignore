@@ -1,0 +1,70 @@
+# Dropbox Ignore File
+# Prevents syncing of large, regenerable, or sensitive files
+
+# Dependencies (reinstallable via pnpm install)
+node_modules/
+.pnpm-store/
+
+# Build outputs (regenerable)
+.next/
+dist/
+build/
+out/
+.turbo/
+
+# Package manager caches
+.npm/
+.yarn/
+.pnpm-debug.log
+
+# IDE and editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test coverage (regenerable)
+coverage/
+.nyc_output/
+
+# Prisma
+packages/database/prisma/*.db
+packages/database/prisma/*.db-journal
+
+# Environment files with secrets (keep .env.example)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# TypeScript build info (regenerable)
+*.tsbuildinfo
+
+# Playwright
+playwright-report/
+playwright/.cache/
+test-results/
+
+# Storybook (if used)
+storybook-static/

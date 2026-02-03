@@ -1,0 +1,759 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// OPERATORS & AUTHENTICATION
+// ============================================
+
+model Operator {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  companyName     String    @map("company_name")
+  companyType     String?   @map("company_type")
+  jurisdiction    String?
+  phone           String?
+  billingAddress  Json?     @map("billing_address")
+
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+
+  tosAcceptedAt   DateTime? @map("tos_accepted_at")
+  tosVersion      String?   @map("tos_version")
+
+  creditBalance   Int       @default(0) @map("credit_balance")
+
+  preAuthToken    String?   @unique @map("pre_auth_token")
+  preAuthScope    Json?     @map("pre_auth_scope")
+  preAuthMaxCredits Int?    @map("pre_auth_max_credits")
+
+  stripeCustomerId String?  @unique @map("stripe_customer_id")
+
+  status          OperatorStatus @default(ACTIVE)
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  apiKeys         ApiKey[]
+  agents          Agent[]
+  matters         Matter[]
+  retainers       Retainer[]
+  credits         CreditTransaction[]
+  payments        Payment[]
+  documents       Document[]
+
+  @@map("operators")
+}
+
+enum OperatorStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  keyHash     String    @unique @map("key_hash")
+  keyPrefix   String    @map("key_prefix")
+  name        String?
+
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at")
+
+  status      ApiKeyStatus @default(ACTIVE)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  revokedAt   DateTime? @map("revoked_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+  sessions    Session[]
+
+  @@map("api_keys")
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+// ============================================
+// AGENTS & SESSIONS
+// ============================================
+
+model Agent {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  identifier  String?
+  metadata    Json?
+
+  firstSeenAt DateTime  @default(now()) @map("first_seen_at")
+  lastSeenAt  DateTime  @default(now()) @map("last_seen_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+  sessions    Session[]
+  matters     Matter[]
+
+  @@unique([operatorId, identifier])
+  @@map("agents")
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  apiKeyId    String    @map("api_key_id")
+  agentId     String?   @map("agent_id")
+
+  token       String    @unique
+
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+
+  requestCount Int      @default(0) @map("request_count")
+  creditsUsed  Int      @default(0) @map("credits_used")
+
+  expiresAt   DateTime  @map("expires_at")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  endedAt     DateTime? @map("ended_at")
+
+  apiKey      ApiKey    @relation(fields: [apiKeyId], references: [id])
+  agent       Agent?    @relation(fields: [agentId], references: [id])
+
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ============================================
+// MATTERS & LEGAL WORK
+// ============================================
+
+model Matter {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+  agentId     String?   @map("agent_id")
+  retainerId  String?   @unique @map("retainer_id")
+
+  externalId  String    @unique @map("external_id")
+
+  type        MatterType
+  title       String
+  description String?
+  urgency     MatterUrgency @default(STANDARD)
+
+  status      MatterStatus @default(PENDING_RETAINER)
+
+  metadata    Json?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  closedAt    DateTime? @map("closed_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+  agent       Agent?    @relation(fields: [agentId], references: [id])
+  retainer    Retainer? @relation(fields: [retainerId], references: [id])
+
+  documents   Document[]
+  messages    MatterMessage[]
+  consultations Consultation[]
+  assignments MatterAssignment[]
+
+  @@index([operatorId, status])
+  @@index([externalId])
+  @@map("matters")
+}
+
+enum MatterType {
+  CONTRACT_REVIEW
+  ENTITY_FORMATION
+  COMPLIANCE
+  IP_TRADEMARK
+  IP_COPYRIGHT
+  GENERAL_CONSULTATION
+  LITIGATION_CONSULTATION
+}
+
+enum MatterStatus {
+  PENDING_RETAINER
+  ACTIVE
+  ON_HOLD
+  RESOLVED
+  CLOSED
+}
+
+enum MatterUrgency {
+  LOW
+  STANDARD
+  HIGH
+  URGENT
+}
+
+model MatterMessage {
+  id          String    @id @default(cuid())
+  matterId    String    @map("matter_id")
+
+  role        MessageRole
+  content     String
+
+  metadata    Json?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  matter      Matter    @relation(fields: [matterId], references: [id])
+
+  @@index([matterId, createdAt])
+  @@map("matter_messages")
+}
+
+enum MessageRole {
+  AGENT
+  OPERATOR
+  SYSTEM
+  AI
+  ATTORNEY
+}
+
+model MatterAssignment {
+  id          String    @id @default(cuid())
+  matterId    String    @map("matter_id")
+  attorneyId  String    @map("attorney_id")
+
+  assignedAt  DateTime  @default(now()) @map("assigned_at")
+  completedAt DateTime? @map("completed_at")
+
+  timeSpentMinutes Int? @map("time_spent_minutes")
+
+  matter      Matter    @relation(fields: [matterId], references: [id])
+  attorney    Attorney  @relation(fields: [attorneyId], references: [id])
+
+  @@map("matter_assignments")
+}
+
+// ============================================
+// RETAINERS
+// ============================================
+
+model Retainer {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  externalId  String    @unique @map("external_id")
+
+  scope       String
+  feeArrangement FeeArrangement @map("fee_arrangement")
+  estimatedFee   Int?    @map("estimated_fee")
+
+  conflictCheck  String? @map("conflict_check")
+  engagementTerms String @map("engagement_terms")
+
+  status      RetainerStatus @default(PENDING)
+
+  acceptedAt  DateTime? @map("accepted_at")
+  acceptedBy  String?   @map("accepted_by")
+  signatureMethod String? @map("signature_method")
+  signatureIp String?   @map("signature_ip")
+
+  expiresAt   DateTime  @map("expires_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+  matter      Matter?
+
+  @@index([operatorId])
+  @@map("retainers")
+}
+
+enum RetainerStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum FeeArrangement {
+  FLAT_FEE
+  HOURLY
+  CONTINGENT
+  HYBRID
+}
+
+// ============================================
+// DOCUMENTS
+// ============================================
+
+model Document {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+  matterId    String?   @map("matter_id")
+
+  externalId  String    @unique @map("external_id")
+
+  filename    String
+  mimeType    String    @map("mime_type")
+  fileSize    Int       @map("file_size")
+  pageCount   Int?      @map("page_count")
+
+  s3Key       String    @map("s3_key")
+  s3Bucket    String    @map("s3_bucket")
+
+  documentType String?  @map("document_type")
+  notes       String?
+
+  analysis    Json?
+  analysisStatus DocumentAnalysisStatus @default(PENDING) @map("analysis_status")
+  analyzedAt  DateTime? @map("analyzed_at")
+
+  confidenceScore Float? @map("confidence_score")
+  attorneyReviewRecommended Boolean @default(false) @map("attorney_review_recommended")
+
+  status      DocumentStatus @default(ACTIVE)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+  matter      Matter?   @relation(fields: [matterId], references: [id])
+
+  @@index([operatorId])
+  @@index([matterId])
+  @@map("documents")
+}
+
+enum DocumentStatus {
+  ACTIVE
+  DELETED
+}
+
+enum DocumentAnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ============================================
+// CONSULTATIONS (ASYNC Q&A)
+// ============================================
+
+model Consultation {
+  id          String    @id @default(cuid())
+  matterId    String?   @map("matter_id")
+  operatorId  String    @map("operator_id")
+
+  externalId  String    @unique @map("external_id")
+
+  question    String
+  context     String?
+  jurisdiction String?
+
+  complexity  ConsultationComplexity @default(STANDARD)
+
+  status      ConsultationStatus @default(QUEUED)
+
+  aiDraft     String?   @map("ai_draft")
+  aiConfidence Float?   @map("ai_confidence")
+  aiMetadata  Json?     @map("ai_metadata")
+
+  finalResponse String? @map("final_response")
+  responseMetadata Json? @map("response_metadata")
+
+  attorneyId  String?   @map("attorney_id")
+
+  creditsCharged Int    @default(0) @map("credits_charged")
+
+  slaDeadline DateTime? @map("sla_deadline")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  matter      Matter?   @relation(fields: [matterId], references: [id])
+  attorney    Attorney? @relation(fields: [attorneyId], references: [id])
+
+  @@index([status, createdAt])
+  @@map("consultations")
+}
+
+enum ConsultationStatus {
+  QUEUED
+  AI_PROCESSING
+  PENDING_REVIEW
+  IN_REVIEW
+  NEEDS_INFO
+  COMPLETED
+  FAILED
+}
+
+enum ConsultationComplexity {
+  SIMPLE
+  STANDARD
+  COMPLEX
+  URGENT
+}
+
+// ============================================
+// ATTORNEYS
+// ============================================
+
+model Attorney {
+  id          String    @id @default(cuid())
+
+  email       String    @unique
+  passwordHash String   @map("password_hash")
+
+  firstName   String    @map("first_name")
+  lastName    String    @map("last_name")
+  barNumber   String?   @map("bar_number")
+  barState    String?   @map("bar_state")
+
+  role        AttorneyRole @default(ASSOCIATE)
+
+  totpSecret  String?   @map("totp_secret")
+  totpEnabled Boolean   @default(false) @map("totp_enabled")
+
+  status      AttorneyStatus @default(ACTIVE)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  lastLoginAt DateTime? @map("last_login_at")
+
+  assignments MatterAssignment[]
+  consultations Consultation[]
+
+  @@map("attorneys")
+}
+
+enum AttorneyRole {
+  ASSOCIATE
+  SENIOR
+  PARTNER
+  ADMIN
+}
+
+enum AttorneyStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// ============================================
+// CREDITS & PAYMENTS
+// ============================================
+
+model CreditTransaction {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  type        CreditTransactionType
+  amount      Int
+
+  balanceBefore Int     @map("balance_before")
+  balanceAfter  Int     @map("balance_after")
+
+  description String?
+
+  referenceType String? @map("reference_type")
+  referenceId   String? @map("reference_id")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+
+  @@index([operatorId, createdAt])
+  @@map("credit_transactions")
+}
+
+enum CreditTransactionType {
+  PURCHASE
+  DEDUCTION
+  REFUND
+  ADJUSTMENT
+  PROMO
+}
+
+model Payment {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  stripePaymentIntentId String? @unique @map("stripe_payment_intent_id")
+  stripeCheckoutSessionId String? @unique @map("stripe_checkout_session_id")
+
+  amountUsd   Int       @map("amount_usd")
+  credits     Int
+
+  status      PaymentStatus @default(PENDING)
+
+  metadata    Json?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+
+  @@index([operatorId])
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ============================================
+// AUDIT LOGS
+// ============================================
+
+model AuditLog {
+  id          String    @id @default(cuid())
+
+  actorType   AuditActorType @map("actor_type")
+  actorId     String?   @map("actor_id")
+
+  action      String
+  resourceType String   @map("resource_type")
+  resourceId  String?   @map("resource_id")
+
+  details     Json?
+
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([actorType, actorId])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum AuditActorType {
+  OPERATOR
+  AGENT
+  ATTORNEY
+  ADMIN
+  SYSTEM
+  PROVIDER
+}
+
+// ============================================
+// PROVIDERS (Third-Party Integration)
+// ============================================
+
+model Provider {
+  id              String    @id @default(cuid())
+
+  externalId      String    @unique @map("external_id")
+
+  name            String
+  legalName       String    @map("legal_name")
+  description     String?
+
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  webhookUrl      String?   @map("webhook_url")
+  webhookSecret   String?   @map("webhook_secret")
+
+  jurisdictions   String[]
+  specialties     MatterType[]
+  serviceTypes    ProviderServiceType[]  @map("service_types")
+
+  maxConcurrent   Int       @default(10) @map("max_concurrent")
+  avgResponseMins Int?      @map("avg_response_mins")
+  qualityScore    Float     @default(0) @map("quality_score")
+
+  revenueSharePct Int       @default(70) @map("revenue_share_pct")
+  stripeConnectId String?   @unique @map("stripe_connect_id")
+
+  status          ProviderStatus @default(PENDING_APPROVAL)
+  verifiedAt      DateTime? @map("verified_at")
+
+  totpSecret      String?   @map("totp_secret")
+  totpEnabled     Boolean   @default(false) @map("totp_enabled")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  services        ProviderService[]
+  requests        ProviderRequest[]
+  reviews         ProviderReview[]
+  settlements     ProviderSettlement[]
+  operatorPrefs   OperatorProviderPreference[]
+
+  @@map("providers")
+}
+
+enum ProviderStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum ProviderServiceType {
+  LEGAL_QA
+  DOCUMENT_REVIEW
+  CONSULTATION
+  CONTRACT_DRAFTING
+  ENTITY_FORMATION
+  TRADEMARK
+  LITIGATION
+}
+
+model ProviderService {
+  id          String    @id @default(cuid())
+  providerId  String    @map("provider_id")
+
+  serviceType ProviderServiceType @map("service_type")
+  enabled     Boolean   @default(true)
+
+  basePrice   Int       @map("base_price")
+  priceModel  PriceModel @default(FLAT) @map("price_model")
+  pricePerUnit Int?     @map("price_per_unit")
+
+  maxConcurrent Int     @default(5) @map("max_concurrent")
+  currentLoad   Int     @default(0) @map("current_load")
+
+  targetResponseMins Int @map("target_response_mins")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  provider    Provider  @relation(fields: [providerId], references: [id])
+
+  @@unique([providerId, serviceType])
+  @@map("provider_services")
+}
+
+enum PriceModel {
+  FLAT
+  PER_PAGE
+  PER_HOUR
+  COMPLEXITY_BASED
+}
+
+model ProviderRequest {
+  id          String    @id @default(cuid())
+  providerId  String    @map("provider_id")
+  matterId    String?   @map("matter_id")
+  consultationId String? @map("consultation_id")
+
+  externalId  String    @unique @map("external_id")
+
+  serviceType ProviderServiceType @map("service_type")
+  status      ProviderRequestStatus @default(PENDING)
+
+  requestPayload Json   @map("request_payload")
+
+  responsePayload Json? @map("response_payload")
+  responseAt    DateTime? @map("response_at")
+
+  routingReason String?  @map("routing_reason")
+
+  creditsCharged Int     @default(0) @map("credits_charged")
+  providerEarnings Int   @default(0) @map("provider_earnings")
+
+  slaDeadline   DateTime? @map("sla_deadline")
+  slaMet        Boolean?  @map("sla_met")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  provider      Provider  @relation(fields: [providerId], references: [id])
+
+  @@index([providerId, status])
+  @@index([status, createdAt])
+  @@map("provider_requests")
+}
+
+enum ProviderRequestStatus {
+  PENDING
+  SENT_TO_PROVIDER
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model ProviderReview {
+  id          String    @id @default(cuid())
+  providerId  String    @map("provider_id")
+  operatorId  String    @map("operator_id")
+  requestId   String?   @map("request_id")
+
+  rating      Int
+  comment     String?
+  isPublic    Boolean   @default(true) @map("is_public")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  provider    Provider  @relation(fields: [providerId], references: [id])
+
+  @@index([providerId])
+  @@map("provider_reviews")
+}
+
+model ProviderSettlement {
+  id          String    @id @default(cuid())
+  providerId  String    @map("provider_id")
+
+  periodStart DateTime  @map("period_start")
+  periodEnd   DateTime  @map("period_end")
+
+  totalRequests Int     @map("total_requests")
+  totalCredits  Int     @map("total_credits")
+  providerShare Int     @map("provider_share")
+  platformShare Int     @map("platform_share")
+
+  status      SettlementStatus @default(PENDING)
+
+  stripeTransferId String? @map("stripe_transfer_id")
+  paidAt      DateTime? @map("paid_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  provider    Provider  @relation(fields: [providerId], references: [id])
+
+  @@index([providerId, periodStart])
+  @@map("provider_settlements")
+}
+
+enum SettlementStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+}
+
+model OperatorProviderPreference {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+  providerId  String    @map("provider_id")
+
+  enabled     Boolean   @default(true)
+  priority    Int       @default(0)
+  serviceTypes ProviderServiceType[]  @map("service_types")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  provider    Provider  @relation(fields: [providerId], references: [id])
+
+  @@unique([operatorId, providerId])
+  @@map("operator_provider_preferences")
+}
