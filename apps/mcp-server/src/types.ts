@@ -134,6 +134,43 @@ export interface GetDisclaimersOutput {
   last_updated: string
 }
 
+// request_consultation
+export interface RequestConsultationInput extends ToolInput {
+  session_token: string
+  matter_id?: string
+  question: string
+  context?: string
+  jurisdiction?: string
+  urgency?: 'standard' | 'urgent'
+}
+
+export interface RequestConsultationOutput {
+  consultation_id: string
+  status: 'queued'
+  estimated_wait_minutes: number
+  sla_deadline: string
+  credits_used: number
+  credits_remaining: number
+}
+
+// get_consultation_result
+export interface GetConsultationResultInput extends ToolInput {
+  session_token: string
+  consultation_id: string
+}
+
+export interface GetConsultationResultOutput {
+  consultation_id: string
+  status: string
+  question: string
+  response?: string
+  citations?: Array<{ source: string; section?: string }>
+  attorney_reviewed: boolean
+  disclaimers?: string[]
+  completed_at?: string
+  estimated_wait_minutes?: number
+}
+
 // ============================================
 // Error Types
 // ============================================

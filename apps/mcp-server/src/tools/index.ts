@@ -12,6 +12,8 @@ import { acceptRetainerTool, handleAcceptRetainer, acceptRetainerSchema } from '
 import { submitDocumentTool, handleSubmitDocument, submitDocumentSchema } from './submit-document.js'
 import { getDocumentAnalysisTool, handleGetDocumentAnalysis, getDocumentAnalysisSchema } from './get-document-analysis.js'
 import { addCreditsTool, handleAddCredits, addCreditsSchema } from './add-credits.js'
+import { requestConsultationTool, handleRequestConsultation, requestConsultationSchema } from './request-consultation.js'
+import { getConsultationResultTool, handleGetConsultationResult, getConsultationResultSchema } from './get-consultation-result.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
 
@@ -31,6 +33,8 @@ export const tools = [
   acceptRetainerTool,
   submitDocumentTool,
   getDocumentAnalysisTool,
+  requestConsultationTool,
+  getConsultationResultTool,
 ]
 
 // Tool handler map
@@ -89,6 +93,14 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
     const validated = getDocumentAnalysisSchema.parse(input)
     return handleGetDocumentAnalysis(validated)
   },
+  request_consultation: async (input) => {
+    const validated = requestConsultationSchema.parse(input)
+    return handleRequestConsultation(validated)
+  },
+  get_consultation_result: async (input) => {
+    const validated = getConsultationResultSchema.parse(input)
+    return handleGetConsultationResult(validated)
+  },
 }
 
 /**
@@ -126,4 +138,6 @@ export {
   acceptRetainerTool,
   submitDocumentTool,
   getDocumentAnalysisTool,
+  requestConsultationTool,
+  getConsultationResultTool,
 }
