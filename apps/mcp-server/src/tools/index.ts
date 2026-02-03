@@ -4,6 +4,11 @@ import { listServicesTool, handleListServices } from './list-services.js'
 import { getDisclaimersTool, handleGetDisclaimers } from './get-disclaimers.js'
 import { checkCreditsTool, handleCheckCredits, checkCreditsSchema } from './check-credits.js'
 import { askLegalQuestionTool, handleAskLegalQuestion, askLegalQuestionSchema } from './ask-legal-question.js'
+import { createMatterTool, handleCreateMatter, createMatterSchema } from './create-matter.js'
+import { getMatterStatusTool, handleGetMatterStatus, getMatterStatusSchema } from './get-matter-status.js'
+import { listMattersTool, handleListMatters, listMattersSchema } from './list-matters.js'
+import { getRetainerTermsTool, handleGetRetainerTerms, getRetainerTermsSchema } from './get-retainer-terms.js'
+import { acceptRetainerTool, handleAcceptRetainer, acceptRetainerSchema } from './accept-retainer.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
 
@@ -15,6 +20,11 @@ export const tools = [
   getDisclaimersTool,
   checkCreditsTool,
   askLegalQuestionTool,
+  createMatterTool,
+  getMatterStatusTool,
+  listMattersTool,
+  getRetainerTermsTool,
+  acceptRetainerTool,
 ]
 
 // Tool handler map
@@ -40,6 +50,26 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
   ask_legal_question: async (input) => {
     const validated = askLegalQuestionSchema.parse(input)
     return handleAskLegalQuestion(validated)
+  },
+  create_matter: async (input) => {
+    const validated = createMatterSchema.parse(input)
+    return handleCreateMatter(validated)
+  },
+  get_matter_status: async (input) => {
+    const validated = getMatterStatusSchema.parse(input)
+    return handleGetMatterStatus(validated)
+  },
+  list_matters: async (input) => {
+    const validated = listMattersSchema.parse(input)
+    return handleListMatters(validated)
+  },
+  get_retainer_terms: async (input) => {
+    const validated = getRetainerTermsSchema.parse(input)
+    return handleGetRetainerTerms(validated)
+  },
+  accept_retainer: async (input) => {
+    const validated = acceptRetainerSchema.parse(input)
+    return handleAcceptRetainer(validated)
   },
 }
 
@@ -70,4 +100,9 @@ export {
   getDisclaimersTool,
   checkCreditsTool,
   askLegalQuestionTool,
+  createMatterTool,
+  getMatterStatusTool,
+  listMattersTool,
+  getRetainerTermsTool,
+  acceptRetainerTool,
 }
