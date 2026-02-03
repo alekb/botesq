@@ -20,6 +20,12 @@ const envSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   AWS_S3_BUCKET: z.string().optional(),
+
+  // Stripe (optional for now)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_SUCCESS_URL: z.string().default('https://moltlaw.io/portal/billing?success=true'),
+  STRIPE_CANCEL_URL: z.string().default('https://moltlaw.io/portal/billing?canceled=true'),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -52,6 +58,13 @@ export const config = {
     accessKeyId: parsed.data.AWS_ACCESS_KEY_ID,
     secretAccessKey: parsed.data.AWS_SECRET_ACCESS_KEY,
     s3Bucket: parsed.data.AWS_S3_BUCKET,
+  },
+
+  stripe: {
+    secretKey: parsed.data.STRIPE_SECRET_KEY,
+    webhookSecret: parsed.data.STRIPE_WEBHOOK_SECRET,
+    successUrl: parsed.data.STRIPE_SUCCESS_URL,
+    cancelUrl: parsed.data.STRIPE_CANCEL_URL,
   },
 } as const
 

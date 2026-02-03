@@ -96,6 +96,20 @@ export interface CheckCreditsOutput {
   top_services: Array<{ service: string; credits: number }>
 }
 
+// add_credits
+export interface AddCreditsInput extends ToolInput {
+  session_token: string
+  amount_usd: number
+}
+
+export interface AddCreditsOutput {
+  payment_url: string
+  amount_usd: number
+  credits_to_add: number
+  expires_at: string
+  message: string
+}
+
 // list_services
 export interface ListServicesInput {
   session_token?: string

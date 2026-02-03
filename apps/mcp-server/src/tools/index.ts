@@ -11,6 +11,7 @@ import { getRetainerTermsTool, handleGetRetainerTerms, getRetainerTermsSchema } 
 import { acceptRetainerTool, handleAcceptRetainer, acceptRetainerSchema } from './accept-retainer.js'
 import { submitDocumentTool, handleSubmitDocument, submitDocumentSchema } from './submit-document.js'
 import { getDocumentAnalysisTool, handleGetDocumentAnalysis, getDocumentAnalysisSchema } from './get-document-analysis.js'
+import { addCreditsTool, handleAddCredits, addCreditsSchema } from './add-credits.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
 
@@ -21,6 +22,7 @@ export const tools = [
   listServicesTool,
   getDisclaimersTool,
   checkCreditsTool,
+  addCreditsTool,
   askLegalQuestionTool,
   createMatterTool,
   getMatterStatusTool,
@@ -50,6 +52,10 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
   check_credits: async (input) => {
     const validated = checkCreditsSchema.parse(input)
     return handleCheckCredits(validated)
+  },
+  add_credits: async (input) => {
+    const validated = addCreditsSchema.parse(input)
+    return handleAddCredits(validated)
   },
   ask_legal_question: async (input) => {
     const validated = askLegalQuestionSchema.parse(input)
@@ -111,6 +117,7 @@ export {
   listServicesTool,
   getDisclaimersTool,
   checkCreditsTool,
+  addCreditsTool,
   askLegalQuestionTool,
   createMatterTool,
   getMatterStatusTool,
