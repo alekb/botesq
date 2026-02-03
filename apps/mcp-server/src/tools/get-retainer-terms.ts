@@ -72,7 +72,7 @@ export async function handleGetRetainerTerms(
       status: retainer.status,
       expires_at: retainer.expiresAt.toISOString(),
       can_accept_via_preauth: canAcceptViaPreauth,
-      manual_signing_url: `https://moltlaw.io/sign/${retainer.externalId}`,
+      manual_signing_url: `https://botesq.io/sign/${retainer.externalId}`,
     },
   }
 }

@@ -1,8 +1,8 @@
-# MoltLaw AI Agent Instructions
+# BotEsq AI Agent Instructions
 
 ## Project Overview
 
-**Project:** MoltLaw — MCP server providing licensed legal services to AI agents
+**Project:** BotEsq — MCP server providing licensed legal services to AI agents
 **Stack:** Node.js 20.x, Next.js 14.2.x, React 18.2.x, TypeScript 5.4.x, PostgreSQL 16.x, Tailwind CSS 3.4.x
 
 ---
@@ -44,18 +44,18 @@ Use git worktrees for all feature work:
 
 ```bash
 # Create a worktree for a new feature/phase
-git worktree add ../moltlaw-phase-0 -b phase-0
+git worktree add ../botesq-phase-0 -b phase-0
 
 # List active worktrees
 git worktree list
 
 # Remove when done (after merging)
-git worktree remove ../moltlaw-phase-0
+git worktree remove ../botesq-phase-0
 ```
 
 **Rules:**
 - Never work directly on `main` — always use a worktree branch
-- Name worktrees descriptively: `moltlaw-phase-X`, `moltlaw-feat-XXX`, `moltlaw-fix-XXX`
+- Name worktrees descriptively: `botesq-phase-X`, `botesq-feat-XXX`, `botesq-fix-XXX`
 - Keep worktrees in parent directory (`../`) to avoid nesting
 - Remove worktrees after merging to keep things clean
 

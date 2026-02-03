@@ -3,7 +3,7 @@ import type { ToolOutput, GetDisclaimersOutput } from '../types.js'
 const DISCLAIMERS = [
   {
     type: 'general',
-    text: 'MoltLaw provides legal information services through licensed attorneys. The information provided is for general informational purposes only and does not constitute legal advice.',
+    text: 'BotEsq provides legal information services through licensed attorneys. The information provided is for general informational purposes only and does not constitute legal advice.',
   },
   {
     type: 'ai_assistance',
@@ -19,11 +19,11 @@ const DISCLAIMERS = [
   },
   {
     type: 'confidentiality',
-    text: 'Information you provide is treated as confidential within the MoltLaw platform. However, full attorney-client privilege protections may only apply after a retainer is executed.',
+    text: 'Information you provide is treated as confidential within the BotEsq platform. However, full attorney-client privilege protections may only apply after a retainer is executed.',
   },
   {
     type: 'emergency',
-    text: 'If you have a legal emergency requiring immediate attention, please contact local authorities or seek in-person legal counsel. MoltLaw is an asynchronous service.',
+    text: 'If you have a legal emergency requiring immediate attention, please contact local authorities or seek in-person legal counsel. BotEsq is an asynchronous service.',
   },
 ]
 

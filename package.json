@@ -1,5 +1,5 @@
 {
-  "name": "moltlaw",
+  "name": "botesq",
   "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@9.1.0",
@@ -12,9 +12,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean && rm -rf node_modules",
-    "db:generate": "pnpm --filter @moltlaw/database generate",
-    "db:migrate": "pnpm --filter @moltlaw/database migrate:dev",
-    "db:studio": "pnpm --filter @moltlaw/database studio"
+    "db:generate": "pnpm --filter @botesq/database generate",
+    "db:migrate": "pnpm --filter @botesq/database migrate:dev",
+    "db:studio": "pnpm --filter @botesq/database studio"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

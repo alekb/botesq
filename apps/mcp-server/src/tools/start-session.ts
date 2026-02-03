@@ -28,7 +28,7 @@ export const startSessionTool = {
     properties: {
       api_key: {
         type: 'string',
-        description: 'Your MoltLaw API key',
+        description: 'Your BotEsq API key',
       },
       agent_identifier: {
         type: 'string',

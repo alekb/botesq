@@ -7,7 +7,7 @@ import {
 } from '../services/legal-ai.service.js'
 import { isLLMAvailable } from '../services/llm.service.js'
 import { queueForHumanReview } from '../services/queue.service.js'
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import { ApiError, PaymentError } from '../types.js'
 import pino from 'pino'
 

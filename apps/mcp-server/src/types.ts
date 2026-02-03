@@ -1,4 +1,4 @@
-import type { Session, Operator, Agent, ApiKey } from '@moltlaw/database'
+import type { Session, Operator, Agent, ApiKey } from '@botesq/database'
 
 // ============================================
 // MCP Tool Types

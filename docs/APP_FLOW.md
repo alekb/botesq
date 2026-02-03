@@ -1,8 +1,8 @@
-# MoltLaw Application Flow
+# BotEsq Application Flow
 
 ## Overview
 
-This document defines every user journey, screen, and interaction flow in MoltLaw. Three primary user types interact with the system: AI Agents (via MCP), Operators (via web portal), and Attorneys (via dashboard).
+This document defines every user journey, screen, and interaction flow in BotEsq. Three primary user types interact with the system: AI Agents (via MCP), Operators (via web portal), and Attorneys (via dashboard).
 
 ---
 
@@ -13,7 +13,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │  MCP Registry   │────▶│  Discover       │────▶│  Connect to     │
-│  Lookup         │     │  MoltLaw        │     │  MoltLaw MCP    │
+│  Lookup         │     │  BotEsq        │     │  BotEsq MCP    │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
                                                         │
                                                         ▼
@@ -25,9 +25,9 @@ This document defines every user journey, screen, and interaction flow in MoltLa
 
 **Flow:**
 1. Agent queries MCP registry for legal services
-2. Registry returns MoltLaw server entry with connection details
-3. Agent connects to MoltLaw MCP server
-4. MoltLaw returns available tools and prompts
+2. Registry returns BotEsq server entry with connection details
+3. Agent connects to BotEsq MCP server
+4. BotEsq returns available tools and prompts
 5. Agent is ready to call tools
 
 **Data Requirements:**
@@ -38,7 +38,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
 
 **Error States:**
 - Registry unavailable → Retry with exponential backoff
-- MoltLaw server unavailable → Return service unavailable error
+- BotEsq server unavailable → Return service unavailable error
 - Invalid MCP version → Return version mismatch error
 
 ---
@@ -317,7 +317,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
   "matter_id": "MATTER-789013",
   "terms": {
     "client_name": "{{operator.name}}",
-    "attorney_name": "MoltLaw PLLC",
+    "attorney_name": "BotEsq PLLC",
     "scope": "Review and analysis of SaaS vendor agreement",
     "fee_arrangement": "flat_fee",
     "estimated_fee": 25000,
@@ -327,7 +327,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
   },
   "acceptance_methods": {
     "pre_auth_available": true,
-    "manual_signing_url": "https://moltlaw.io/sign/RET-456790"
+    "manual_signing_url": "https://botesq.io/sign/RET-456790"
   },
   "expires_at": "2026-02-10T15:30:00Z"
 }
@@ -616,7 +616,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│  MoltLaw Operator Portal                           [Account ▼]    │
+│  BotEsq Operator Portal                           [Account ▼]    │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐│
@@ -1054,7 +1054,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│  MoltLaw Provider Portal                         [Account ▼]       │
+│  BotEsq Provider Portal                         [Account ▼]       │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐│
@@ -1228,7 +1228,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
 
 **Revenue Share Model:**
 - Provider receives 70% of credits charged
-- MoltLaw retains 30% as platform fee
+- BotEsq retains 30% as platform fee
 - Settlements processed monthly via Stripe Connect
 
 ---
@@ -1313,7 +1313,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│  MoltLaw Admin                                       [Admin ▼]     │
+│  BotEsq Admin                                       [Admin ▼]     │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │  System Health                                      Last 24 hours  │
@@ -1651,7 +1651,7 @@ This document defines every user journey, screen, and interaction flow in MoltLa
     "required": 10000,
     "available": 5000,
     "shortfall": 5000,
-    "purchase_url": "https://moltlaw.io/credits/purchase?amount=5000"
+    "purchase_url": "https://botesq.io/credits/purchase?amount=5000"
   }
 }
 ```

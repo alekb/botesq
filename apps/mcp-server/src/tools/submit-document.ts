@@ -4,7 +4,7 @@ import { checkRateLimit } from '../services/rate-limit.service.js'
 import { submitDocument } from '../services/document.service.js'
 import { queueDocumentAnalysis } from '../services/document-analysis.service.js'
 import { PaymentError } from '../types.js'
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })

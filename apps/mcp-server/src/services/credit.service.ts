@@ -1,4 +1,4 @@
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import { PaymentError } from '../types.js'
 
 // Credit to USD conversion rate (100 credits = $1)

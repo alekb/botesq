@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { MatterStatus } from '@moltlaw/database'
+import { MatterStatus } from '@botesq/database'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { listMatters } from '../services/matter.service.js'

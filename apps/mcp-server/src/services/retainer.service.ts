@@ -1,4 +1,4 @@
-import { prisma, RetainerStatus, FeeArrangement, MatterStatus } from '@moltlaw/database'
+import { prisma, RetainerStatus, FeeArrangement, MatterStatus } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import pino from 'pino'
 
@@ -16,7 +16,7 @@ function generateRetainerId(): string {
  */
 const ENGAGEMENT_TERMS_TEMPLATE = `LEGAL SERVICES ENGAGEMENT AGREEMENT
 
-This Engagement Agreement ("Agreement") is entered into between MoltLaw, Inc. ("Firm") and the Client identified below.
+This Engagement Agreement ("Agreement") is entered into between BotEsq, Inc. ("Firm") and the Client identified below.
 
 1. SCOPE OF REPRESENTATION
 The Firm agrees to provide legal services related to the matter described in the associated Matter record. The scope of representation is limited to the specific matter type and does not extend to other legal matters unless separately agreed.
@@ -364,5 +364,5 @@ export async function acceptRetainer(params: {
  */
 export function generateSigningUrl(retainerId: string): string {
   // In production, this would be a real signing URL
-  return `https://moltlaw.io/sign/${retainerId}`
+  return `https://botesq.io/sign/${retainerId}`
 }

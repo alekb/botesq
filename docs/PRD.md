@@ -1,12 +1,12 @@
-# MoltLaw Product Requirements Document
+# BotEsq Product Requirements Document
 
 ## Product Overview
 
-**Product Name:** MoltLaw
+**Product Name:** BotEsq
 **Version:** 1.0.0
 **Last Updated:** 2026-02-03
 
-MoltLaw is an MCP (Model Context Protocol) server that provides licensed legal services to AI agents. It enables AI agents to access real legal counsel on behalf of their human operators, with proper licensing, retainer agreements, and attorney oversight.
+BotEsq is an MCP (Model Context Protocol) server that provides licensed legal services to AI agents. It enables AI agents to access real legal counsel on behalf of their human operators, with proper licensing, retainer agreements, and attorney oversight.
 
 ---
 
@@ -18,7 +18,7 @@ AI agents increasingly need to handle legal tasks for their human operators—re
 2. Refuse to help (unhelpful)
 3. Provide generic disclaimers (useless)
 
-MoltLaw solves this by giving AI agents access to licensed attorneys through a structured, API-first interface.
+BotEsq solves this by giving AI agents access to licensed attorneys through a structured, API-first interface.
 
 ---
 
@@ -51,9 +51,9 @@ MoltLaw solves this by giving AI agents access to licensed attorneys through a s
 Core MCP server implementation exposing legal services as tools to AI agents.
 
 **User Stories:**
-- As an AI agent, I can discover MoltLaw through the MCP registry
-- As an AI agent, I can connect to MoltLaw using standard MCP protocols
-- As an AI agent, I can call MoltLaw tools and receive structured responses
+- As an AI agent, I can discover BotEsq through the MCP registry
+- As an AI agent, I can connect to BotEsq using standard MCP protocols
+- As an AI agent, I can call BotEsq tools and receive structured responses
 
 **Acceptance Criteria:**
 - [ ] Server implements MCP SDK specification
@@ -100,7 +100,7 @@ general_legal           # General legal question template
 **Status:** Not Started
 
 **Description:**
-Secure authentication system for AI agents connecting to MoltLaw.
+Secure authentication system for AI agents connecting to BotEsq.
 
 **User Stories:**
 - As an AI agent, I can authenticate using an API key
@@ -129,7 +129,7 @@ Secure authentication system for AI agents connecting to MoltLaw.
 **Status:** Not Started
 
 **Description:**
-Credit-based payment system for all MoltLaw services.
+Credit-based payment system for all BotEsq services.
 
 **User Stories:**
 - As an operator, I can purchase credits via Stripe
@@ -384,7 +384,7 @@ Web dashboard for attorneys to review, respond to, and manage legal matters.
 **Status:** Not Started
 
 **Description:**
-Self-service portal for operators to manage their MoltLaw integration.
+Self-service portal for operators to manage their BotEsq integration.
 
 **User Stories:**
 - As an operator, I can register and create my account
@@ -411,7 +411,7 @@ Self-service portal for operators to manage their MoltLaw integration.
 **Status:** Not Started
 
 **Description:**
-Administrative dashboard for MoltLaw operations team.
+Administrative dashboard for BotEsq operations team.
 
 **User Stories:**
 - As an admin, I can view all operators, agents, and matters
@@ -459,10 +459,10 @@ Automated billing system for operator accounts.
 **Status:** Not Started
 
 **Description:**
-Public-facing marketing website for MoltLaw.
+Public-facing marketing website for BotEsq.
 
 **User Stories:**
-- As a potential operator, I can learn about MoltLaw services
+- As a potential operator, I can learn about BotEsq services
 - As a potential operator, I can view pricing information
 - As a potential operator, I can sign up for an account
 
@@ -483,10 +483,10 @@ Public-facing marketing website for MoltLaw.
 **Status:** Not Started
 
 **Description:**
-Comprehensive documentation for MoltLaw MCP tools and REST API.
+Comprehensive documentation for BotEsq MCP tools and REST API.
 
 **User Stories:**
-- As a developer, I can understand how to integrate MoltLaw
+- As a developer, I can understand how to integrate BotEsq
 - As a developer, I can find examples for every tool
 - As a developer, I can troubleshoot issues using docs
 
@@ -553,10 +553,10 @@ Comprehensive documentation for MoltLaw MCP tools and REST API.
 **Status:** Not Started
 
 **Description:**
-Extensible architecture allowing third-party legal service providers to integrate with MoltLaw and offer services through the platform.
+Extensible architecture allowing third-party legal service providers to integrate with BotEsq and offer services through the platform.
 
 **User Stories:**
-- As a third-party legal provider, I can register my services on MoltLaw
+- As a third-party legal provider, I can register my services on BotEsq
 - As a third-party legal provider, I can receive and respond to legal requests
 - As an operator, I can choose which providers handle my matters
 - As an operator, I can see a marketplace of available legal providers
@@ -675,7 +675,7 @@ Marketplace where operators can discover, compare, and enable third-party legal 
 
 | Term | Definition |
 |------|------------|
-| Agent | AI system connecting to MoltLaw via MCP |
+| Agent | AI system connecting to BotEsq via MCP |
 | Operator | Human or company deploying an AI agent |
 | Matter | Legal engagement with defined scope |
 | Retainer | Agreement establishing attorney-client relationship |

@@ -1,8 +1,8 @@
-# MoltLaw Implementation Plan
+# BotEsq Implementation Plan
 
 ## Overview
 
-This document is the master blueprint for building MoltLaw. It contains numbered phases and steps covering the entire build from start to finish. Each step lists exact files to create, features to implement (referencing PRD feature IDs), and tests to write.
+This document is the master blueprint for building BotEsq. It contains numbered phases and steps covering the entire build from start to finish. Each step lists exact files to create, features to implement (referencing PRD feature IDs), and tests to write.
 
 **This file is written once and does not get modified during execution.**
 
@@ -14,7 +14,7 @@ This document is the master blueprint for building MoltLaw. It contains numbered
 
 **Files to create:**
 ```
-moltlaw/
+botesq/
 ├── .gitignore
 ├── .nvmrc                          # Node version: 20.11.1
 ├── package.json                    # Root workspace config
@@ -71,7 +71,7 @@ pnpm add prisma @prisma/client
 **Commands:**
 ```bash
 # Start local PostgreSQL (Docker)
-docker run --name moltlaw-db -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:16
+docker run --name botesq-db -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:16
 
 # Run migrations
 pnpm prisma migrate dev --name init
@@ -115,16 +115,16 @@ pnpm prisma migrate dev --name init
 3. Install and configure certbot:
    ```bash
    sudo yum install -y certbot python3-certbot-nginx
-   sudo certbot --nginx -d moltlaw.io -d www.moltlaw.io
+   sudo certbot --nginx -d botesq.io -d www.botesq.io
    ```
 
 **Files to create on server:**
 ```
-/etc/nginx/conf.d/moltlaw.conf
+/etc/nginx/conf.d/botesq.conf
 ```
 
 **Verification:**
-- [ ] HTTPS working at https://moltlaw.io
+- [ ] HTTPS working at https://botesq.io
 - [ ] HTTP redirects to HTTPS
 - [ ] SSL certificate valid
 
@@ -135,7 +135,7 @@ pnpm prisma migrate dev --name init
 **Actions:**
 1. Create RDS PostgreSQL 16 instance (db.t3.small)
 2. Configure security group for EC2 access only
-3. Create database: `moltlaw_prod`
+3. Create database: `botesq_prod`
 4. Update environment variables with connection string
 
 **Verification:**
@@ -1030,7 +1030,7 @@ apps/mcp-server/src/
 ├── providers/
 │   ├── index.ts                    # Provider registry
 │   ├── types.ts                    # LegalServiceProvider interface
-│   ├── internal-provider.ts        # MoltLaw internal implementation
+│   ├── internal-provider.ts        # BotEsq internal implementation
 │   ├── external-adapter.ts         # Adapter for external providers
 │   └── routing-service.ts          # Request routing logic
 ```
@@ -1140,7 +1140,7 @@ packages/provider-sdk/
 ├── package.json
 ├── src/
 │   ├── index.ts
-│   ├── client.ts                   # HTTP client for MoltLaw API
+│   ├── client.ts                   # HTTP client for BotEsq API
 │   ├── types.ts                    # Shared types
 │   ├── webhook-handler.ts          # Express/Fastify middleware
 │   └── signature.ts                # HMAC verification

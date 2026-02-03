@@ -18,7 +18,7 @@ const logger = pino({
 export function createServer() {
   const server = new Server(
     {
-      name: 'moltlaw-mcp-server',
+      name: 'botesq-mcp-server',
       version: '0.1.0',
     },
     {
@@ -177,9 +177,9 @@ export async function runServer() {
   const server = createServer()
   const transport = new StdioServerTransport()
 
-  logger.info('Starting MoltLaw MCP Server')
+  logger.info('Starting BotEsq MCP Server')
 
   await server.connect(transport)
 
-  logger.info('MoltLaw MCP Server running on stdio')
+  logger.info('BotEsq MCP Server running on stdio')
 }

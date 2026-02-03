@@ -1,5 +1,5 @@
 {
-  "name": "@moltlaw/mcp-server",
+  "name": "@botesq/mcp-server",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -16,8 +16,8 @@
     "@aws-sdk/client-s3": "^3.982.0",
     "@aws-sdk/s3-request-presigner": "^3.982.0",
     "@modelcontextprotocol/sdk": "1.0.4",
-    "@moltlaw/database": "workspace:*",
-    "@moltlaw/shared": "workspace:*",
+    "@botesq/database": "workspace:*",
+    "@botesq/shared": "workspace:*",
     "fastify": "4.27.0",
     "nanoid": "^5.1.6",
     "openai": "^6.17.0",

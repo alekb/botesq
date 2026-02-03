@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import type { ToolOutput, CheckCreditsOutput } from '../types.js'

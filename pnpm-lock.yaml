@@ -32,15 +32,15 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.982.0
         version: 3.982.0
+      '@botesq/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@botesq/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@modelcontextprotocol/sdk':
         specifier: 1.0.4
         version: 1.0.4
-      '@moltlaw/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-      '@moltlaw/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       fastify:
         specifier: 4.27.0
         version: 4.27.0
@@ -84,10 +84,10 @@ importers:
 
   apps/web:
     dependencies:
-      '@moltlaw/database':
+      '@botesq/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@moltlaw/shared':
+      '@botesq/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       next:

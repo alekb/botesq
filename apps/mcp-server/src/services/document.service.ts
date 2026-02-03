@@ -1,4 +1,4 @@
-import { prisma, DocumentStatus, DocumentAnalysisStatus } from '@moltlaw/database'
+import { prisma, DocumentStatus, DocumentAnalysisStatus } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import {
   uploadFile,

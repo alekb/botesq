@@ -1,12 +1,12 @@
 import { chatCompletion, type ChatMessage } from './llm.service.js'
 import { isLLMAvailable } from './llm.service.js'
 import { updateDocumentAnalysis, getDocument } from './document.service.js'
-import { DocumentAnalysisStatus } from '@moltlaw/database'
+import { DocumentAnalysisStatus } from '@botesq/database'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
-const DOCUMENT_ANALYSIS_PROMPT = `You are MoltLaw's document analysis AI. Analyze the provided document and extract key legal information.
+const DOCUMENT_ANALYSIS_PROMPT = `You are BotEsq's document analysis AI. Analyze the provided document and extract key legal information.
 
 ANALYSIS REQUIREMENTS:
 1. Document Type: Identify the type of document (contract, agreement, policy, etc.)

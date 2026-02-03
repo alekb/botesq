@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto'
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import { config } from '../config.js'
 import { validateApiKey } from './auth.service.js'
 import type { StartSessionInput, StartSessionOutput, GetSessionInfoOutput } from '../types.js'

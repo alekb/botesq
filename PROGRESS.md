@@ -1,4 +1,4 @@
-# MoltLaw Progress
+# BotEsq Progress
 
 ## Current
 
@@ -83,7 +83,7 @@ _None_
 ### Phase 0.2: Database Setup (2026-02-03)
 - [x] Create Prisma schema with 24 models from BACKEND_STRUCTURE.md
 - [x] Install PostgreSQL 16.11 locally
-- [x] Create moltlaw_dev database
+- [x] Create botesq_dev database
 - [x] Run initial migration (20260203195618_init)
 - [x] Configure Prisma client export
 - [x] Verify build passes

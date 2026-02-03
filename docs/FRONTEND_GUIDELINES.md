@@ -1,8 +1,8 @@
-# MoltLaw Frontend Guidelines
+# BotEsq Frontend Guidelines
 
 ## Overview
 
-This document defines the engineering rules, patterns, and conventions for building the MoltLaw frontend. It covers component architecture, file organization, state management, and development practices.
+This document defines the engineering rules, patterns, and conventions for building the BotEsq frontend. It covers component architecture, file organization, state management, and development practices.
 
 **Stack:** Next.js 14.2.3 + React 18.2.0 + TypeScript 5.4.5 + Tailwind CSS 3.4.3
 
@@ -791,7 +791,7 @@ import Image from 'next/image'
 // Always use next/image
 <Image
   src="/images/hero.png"
-  alt="MoltLaw hero"
+  alt="BotEsq hero"
   width={800}
   height={400}
   priority  // For above-the-fold images
@@ -800,7 +800,7 @@ import Image from 'next/image'
 // For responsive images
 <Image
   src="/images/hero.png"
-  alt="MoltLaw hero"
+  alt="BotEsq hero"
   fill
   sizes="(max-width: 768px) 100vw, 50vw"
   className="object-cover"

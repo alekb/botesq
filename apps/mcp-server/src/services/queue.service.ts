@@ -1,4 +1,4 @@
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import pino from 'pino'
 

@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import { config } from '../config.js'
 import { PaymentError } from '../types.js'
 import { addCredits, usdToCredits, CREDITS_PER_DOLLAR, MIN_PURCHASE_USD, MAX_PURCHASE_USD } from './credit.service.js'
@@ -91,7 +91,7 @@ export async function createCheckoutSession(
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'MoltLaw Credits',
+            name: 'BotEsq Credits',
             description: `${credits.toLocaleString()} credits (${CREDITS_PER_DOLLAR} credits per $1)`,
           },
           unit_amount: amountCents,

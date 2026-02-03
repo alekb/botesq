@@ -24,8 +24,8 @@ const envSchema = z.object({
   // Stripe (optional for now)
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  STRIPE_SUCCESS_URL: z.string().default('https://moltlaw.io/portal/billing?success=true'),
-  STRIPE_CANCEL_URL: z.string().default('https://moltlaw.io/portal/billing?canceled=true'),
+  STRIPE_SUCCESS_URL: z.string().default('https://botesq.io/portal/billing?success=true'),
+  STRIPE_CANCEL_URL: z.string().default('https://botesq.io/portal/billing?canceled=true'),
 })
 
 const parsed = envSchema.safeParse(process.env)

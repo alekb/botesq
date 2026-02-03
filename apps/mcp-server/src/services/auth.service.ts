@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'crypto'
-import { prisma } from '@moltlaw/database'
+import { prisma } from '@botesq/database'
 import { AuthError, type AuthenticatedSession } from '../types.js'
 
 /**

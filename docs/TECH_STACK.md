@@ -1,8 +1,8 @@
-# MoltLaw Tech Stack
+# BotEsq Tech Stack
 
 ## Overview
 
-This document defines the exact frameworks, versions, and dependencies for the MoltLaw platform. All versions are locked to ensure reproducible builds and consistent behavior across environments.
+This document defines the exact frameworks, versions, and dependencies for the BotEsq platform. All versions are locked to ensure reproducible builds and consistent behavior across environments.
 
 ---
 
@@ -10,12 +10,12 @@ This document defines the exact frameworks, versions, and dependencies for the M
 
 ### Extensibility-First Design
 
-MoltLaw is architected as a **platform**, not just an application. Key design decisions support future third-party provider integration:
+BotEsq is architected as a **platform**, not just an application. Key design decisions support future third-party provider integration:
 
 | Principle | Implementation | Benefit |
 |-----------|---------------|---------|
 | Provider Abstraction | All legal services go through `LegalServiceProvider` interface | Any provider can be plugged in |
-| Webhook-Based Integration | Async provider communication via webhooks | Providers don't need to run MoltLaw code |
+| Webhook-Based Integration | Async provider communication via webhooks | Providers don't need to run BotEsq code |
 | Standardized Contracts | Typed request/response schemas with Zod | Clear API boundaries for integrators |
 | Event-Driven Architecture | Actions emit events that can trigger webhooks | Real-time integration capabilities |
 | Multi-Tenant Isolation | Operator-scoped data with provider preferences | Each operator can customize provider mix |
@@ -56,7 +56,7 @@ The architecture supports these future extensions:
 
 1. **Provider SDK** - TypeScript/Python packages for easy provider onboarding
 2. **Provider Marketplace** - Discovery and rating system
-3. **White-Label Embedding** - Providers can embed MoltLaw in their apps
+3. **White-Label Embedding** - Providers can embed BotEsq in their apps
 4. **Multi-LLM Support** - Swap AI backends per provider or service type
 5. **Regional Routing** - Route to jurisdiction-specific providers
 6. **Compliance Plugins** - Add compliance checks without core changes
@@ -280,7 +280,7 @@ AWS RDS:
 
 ```yaml
 AWS Route 53:
-  domain: moltlaw.io (assumed)
+  domain: botesq.io (assumed)
   hosted_zone: managed
 
 SSL:
@@ -293,7 +293,7 @@ SSL:
 
 ```yaml
 AWS S3:
-  bucket: moltlaw-documents-{env}
+  bucket: botesq-documents-{env}
   region: us-east-1
   encryption: AES-256 (SSE-S3)
   versioning: enabled
@@ -437,7 +437,7 @@ Stripe:
 ```yaml
 Registry: Official MCP Registry
 Listing:
-  name: moltlaw
+  name: botesq
   description: Licensed legal services for AI agents
   category: legal
 ```
@@ -450,7 +450,7 @@ Listing:
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:pass@host:5432/moltlaw
+DATABASE_URL=postgresql://user:pass@host:5432/botesq
 
 # Authentication
 SESSION_SECRET=<32+ random bytes>
@@ -468,18 +468,18 @@ STRIPE_PUBLISHABLE_KEY=pk_...
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=us-east-1
-S3_BUCKET_NAME=moltlaw-documents-prod
+S3_BUCKET_NAME=botesq-documents-prod
 
 # App
-NEXT_PUBLIC_APP_URL=https://moltlaw.io
-MCP_SERVER_URL=https://mcp.moltlaw.io
+NEXT_PUBLIC_APP_URL=https://botesq.io
+MCP_SERVER_URL=https://mcp.botesq.io
 ```
 
 ### Development Only
 
 ```bash
 # Local overrides
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moltlaw_dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/botesq_dev
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 MCP_SERVER_URL=http://localhost:3001
 ```
@@ -541,7 +541,7 @@ All dependencies are locked via `pnpm-lock.yaml`. Updates require explicit revie
 ## Monorepo Structure
 
 ```
-moltlaw/
+botesq/
 ├── apps/
 │   ├── web/                 # Next.js marketing + portals
 │   │   ├── app/

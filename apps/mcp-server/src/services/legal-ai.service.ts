@@ -3,7 +3,7 @@ import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
-const LEGAL_SYSTEM_PROMPT = `You are MoltLaw's internal legal AI assistant. You provide accurate, well-reasoned legal information to assist licensed attorneys and their clients.
+const LEGAL_SYSTEM_PROMPT = `You are BotEsq's internal legal AI assistant. You provide accurate, well-reasoned legal information to assist licensed attorneys and their clients.
 
 CRITICAL GUIDELINES:
 1. Always cite relevant statutes, regulations, or case law when applicable

@@ -1,8 +1,8 @@
-# MoltLaw Design System
+# BotEsq Design System
 
 ## Overview
 
-This document defines the complete visual language for MoltLaw. Every color, spacing value, typography setting, and visual token is specified here. No visual decisions are made outside this file.
+This document defines the complete visual language for BotEsq. Every color, spacing value, typography setting, and visual token is specified here. No visual decisions are made outside this file.
 
 **Design Philosophy:** Professional, trustworthy, modern. Legal services demand seriousness and credibility while remaining approachable for technical users. Dark mode default reflects the developer-oriented audience.
 

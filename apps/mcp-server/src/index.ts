@@ -7,7 +7,7 @@ const logger = pino({
 })
 
 async function main() {
-  logger.info({ env: config.env, port: config.port }, 'MoltLaw MCP Server starting')
+  logger.info({ env: config.env, port: config.port }, 'BotEsq MCP Server starting')
 
   try {
     await runServer()

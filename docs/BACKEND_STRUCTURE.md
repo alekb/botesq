@@ -1,8 +1,8 @@
-# MoltLaw Backend Structure
+# BotEsq Backend Structure
 
 ## Overview
 
-This document defines the complete backend architecture for MoltLaw, including database schema, API endpoints, authentication logic, and system integrations.
+This document defines the complete backend architecture for BotEsq, including database schema, API endpoints, authentication logic, and system integrations.
 
 **Stack:** Node.js 20.x + Fastify 4.x + Prisma 5.x + PostgreSQL 16.x
 
@@ -1584,7 +1584,7 @@ import OpenAI from 'openai'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-const LEGAL_SYSTEM_PROMPT = `You are MoltLaw's internal legal AI assistant. You provide accurate, well-reasoned legal information to assist licensed attorneys.
+const LEGAL_SYSTEM_PROMPT = `You are BotEsq's internal legal AI assistant. You provide accurate, well-reasoned legal information to assist licensed attorneys.
 
 Guidelines:
 1. Always cite relevant statutes, regulations, or case law when applicable
@@ -1670,7 +1670,7 @@ const response = await handleLLMRequest(
 
 ### Architecture Overview
 
-The provider routing system enables MoltLaw to act as a platform, routing requests to either internal resources or third-party legal service providers based on configurable rules.
+The provider routing system enables BotEsq to act as a platform, routing requests to either internal resources or third-party legal service providers based on configurable rules.
 
 ```
 ┌─────────────────┐
@@ -1691,14 +1691,14 @@ The provider routing system enables MoltLaw to act as a platform, routing reques
     ▼         ▼
 ┌────────┐ ┌────────┐
 │Internal│ │External│
-│MoltLaw │ │Provider│
+│BotEsq │ │Provider│
 │Service │ │  API   │
 └────────┘ └────────┘
 ```
 
 ### Provider Interface Contract
 
-All providers (including MoltLaw internal) implement this interface:
+All providers (including BotEsq internal) implement this interface:
 
 ```typescript
 interface LegalServiceProvider {
@@ -1756,9 +1756,9 @@ interface ServiceResponse {
 class ProviderRoutingService {
   private providers: Map<string, LegalServiceProvider> = new Map()
 
-  // Register internal MoltLaw provider
+  // Register internal BotEsq provider
   constructor() {
-    this.providers.set('moltlaw-internal', new MoltLawInternalProvider())
+    this.providers.set('botesq-internal', new BotEsqInternalProvider())
   }
 
   // Dynamic provider registration
@@ -1860,9 +1860,9 @@ class ProviderRoutingService {
       data: { status: 'FAILED' }
     })
 
-    // Try fallback to MoltLaw internal
-    if (originalRequest.providerId !== 'moltlaw-internal') {
-      const internalProvider = this.providers.get('moltlaw-internal')
+    // Try fallback to BotEsq internal
+    if (originalRequest.providerId !== 'botesq-internal') {
+      const internalProvider = this.providers.get('botesq-internal')
       if (internalProvider && await internalProvider.canHandle(request)) {
         return this.routeToProvider(internalProvider, request, 'fallback')
       }
@@ -1891,8 +1891,8 @@ class ExternalProviderAdapter implements LegalServiceProvider {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-MoltLaw-Signature': signature,
-        'X-MoltLaw-Request-Id': request.id
+        'X-BotEsq-Signature': signature,
+        'X-BotEsq-Request-Id': request.id
       },
       body: JSON.stringify(payload)
     })

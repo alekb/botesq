@@ -1,4 +1,4 @@
-import { prisma, MatterType, MatterStatus, MatterUrgency } from '@moltlaw/database'
+import { prisma, MatterType, MatterStatus, MatterUrgency } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import pino from 'pino'
 
