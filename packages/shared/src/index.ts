@@ -1,4 +1,11 @@
 // Shared utilities and types
-// Will be populated as features are built
 
-export {}
+export {
+  validateEnv,
+  getEnv,
+  env,
+  isDevelopment,
+  isProduction,
+  isTest,
+  type Env,
+} from './env'

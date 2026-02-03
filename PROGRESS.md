@@ -10,10 +10,21 @@
 
 ## Active Tasks
 
+### Phase 7: Web Application Foundation
 - [ ] Review Phase 7 requirements in IMPLEMENTATION_PLAN.md
 - [ ] Set up Next.js with full design system tokens
 - [ ] Create UI component primitives
 - [ ] Build marketing page foundation
+
+### Security Implementation (Cross-Phase)
+- [ ] Implement Argon2id password hashing
+- [ ] Implement API key generation with SHA-256
+- [ ] Add row-level security checks to all queries
+- [ ] Implement Stripe webhook signature validation
+- [ ] Add file upload validation (magic bytes, size limits)
+- [ ] Configure S3 bucket security (private, encrypted)
+- [ ] Add virus scanning for uploads (ClamAV)
+- [ ] Implement provider webhook signature validation
 
 ---
 
@@ -163,6 +174,12 @@ See `docs/IMPLEMENTATION_PLAN.md` Phase 7 for full details.
 
 ### 2026-02-03
 
+- Security review completed and improvements implemented:
+  - Enhanced .env.example with full documentation
+  - Added environment validation utility (packages/shared/src/env.ts)
+  - Created docs/SECURITY.md with implementation patterns
+  - Added CI security scanning (audit, secrets detection, dependency review)
+  - Updated LESSONS.md with security patterns
 - Infrastructure: Testing + Git Hooks setup (Vitest, Playwright, Husky, lint-staged)
 - Phase 6 complete: Consultation System with request_consultation and get_consultation_result tools
 - Phase 5 complete: Payments & Credits with Stripe integration, add_credits tool, credit.service.ts
