@@ -2,19 +2,18 @@
 
 ## Current
 
-**Phase:** 5 - Payments & Credits
-**Step:** 5.1 Stripe Integration
+**Phase:** 6 - Consultation System
+**Step:** 6.1 Consultation Tools
 **Status:** pending
 
 ---
 
 ## Active Tasks
 
-- [ ] Review Phase 5 requirements in IMPLEMENTATION_PLAN.md
-- [ ] Add Stripe SDK dependency
-- [ ] Implement stripe.service.ts
-- [ ] Implement add_credits tool
-- [ ] Create Stripe webhook handler
+- [ ] Review Phase 6 requirements in IMPLEMENTATION_PLAN.md
+- [ ] Implement request_consultation tool
+- [ ] Implement get_consultation_result tool
+- [ ] Create consultation.service.ts
 
 ---
 
@@ -25,6 +24,17 @@ _None_
 ---
 
 ## Completed
+
+### Phase 5: Payments & Credits (2026-02-03)
+- [x] Add stripe SDK dependency
+- [x] Add Stripe configuration to config.ts (secretKey, webhookSecret, successUrl, cancelUrl)
+- [x] Create credit.service.ts with add/deduct/refund credits functions
+- [x] Create stripe.service.ts with checkout session creation and webhook handling
+- [x] Implement add_credits tool (creates Stripe checkout session)
+- [x] Add AddCreditsInput/Output types to types.ts
+- [x] Register add_credits tool in tools/index.ts
+- [x] Existing tools already have credit deduction logic (ask_legal_question, create_matter, submit_document)
+- [x] Build and lint passes
 
 ### Phase 4: Document Handling (2026-02-03)
 - [x] Add @aws-sdk/client-s3 and @aws-sdk/s3-request-presigner dependencies
@@ -112,19 +122,20 @@ _None_
 
 ## What's Next
 
-**Phase 5: Payments & Credits**
-- Integrate Stripe for payment processing
-- Implement add_credits tool
-- Create webhook handler for payment events
-- Build credit purchase flow
+**Phase 6: Consultation System**
+- Implement request_consultation tool
+- Implement get_consultation_result tool
+- Create consultation.service.ts
+- Build consultation queue and worker
 
-See `docs/IMPLEMENTATION_PLAN.md` Phase 5 for full details.
+See `docs/IMPLEMENTATION_PLAN.md` Phase 6 for full details.
 
 ---
 
 ## Session Log
 
 ### 2026-02-03
+- Phase 5 complete: Payments & Credits with Stripe integration, add_credits tool, credit.service.ts
 - Phase 4 complete: Document Handling with S3 storage, AI analysis, 2 tools (submit/get_analysis)
 - Phase 3 complete: Matter Management with 5 tools (create/get/list matter, get/accept retainer)
 - Phase 2 complete: Legal Engine with ask_legal_question tool, LLM integration, 5 MCP prompts
