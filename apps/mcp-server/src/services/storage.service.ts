@@ -79,6 +79,7 @@ export async function uploadFile(params: {
     Body: body,
     ContentType: contentType,
     Metadata: metadata,
+    ServerSideEncryption: 'AES256',
   })
 
   const response = await client.send(command)
@@ -118,7 +119,7 @@ export async function getUploadUrl(params: {
   key: string
   contentType: string
   expiresIn?: number
-}): Promise<string> {
+}): Promise<{ url: string; requiredHeaders: Record<string, string> }> {
   const { key, contentType, expiresIn = 3600 } = params
   const bucket = getBucket()
   const client = getS3Client()
@@ -127,13 +128,20 @@ export async function getUploadUrl(params: {
     Bucket: bucket,
     Key: key,
     ContentType: contentType,
+    ServerSideEncryption: 'AES256',
   })
 
   const url = await getSignedUrl(client, command, { expiresIn })
 
   logger.debug({ bucket, key, contentType, expiresIn }, 'Generated presigned upload URL')
 
-  return url
+  return {
+    url,
+    requiredHeaders: {
+      'Content-Type': contentType,
+      'x-amz-server-side-encryption': 'AES256',
+    },
+  }
 }
 
 /**
