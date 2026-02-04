@@ -5,6 +5,9 @@ const envSchema = z.object({
   PORT: z.string().default('3001'),
   DATABASE_URL: z.string(),
 
+  // Logging
+  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
+
   // Session
   SESSION_TTL_HOURS: z.string().default('24'),
 
@@ -39,6 +42,10 @@ export const config = {
   env: parsed.data.NODE_ENV,
   port: parseInt(parsed.data.PORT, 10),
   databaseUrl: parsed.data.DATABASE_URL,
+
+  logging: {
+    level: parsed.data.LOG_LEVEL,
+  },
 
   session: {
     ttlHours: parseInt(parsed.data.SESSION_TTL_HOURS, 10),

@@ -6,14 +6,13 @@ import {
   ListPromptsRequestSchema,
   GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
+import Fastify from 'fastify'
 import { tools, executeTool } from './tools/index.js'
 import { prompts, buildPrompt } from './prompts/index.js'
 import { ApiError, AuthError, RateLimitError } from './types.js'
-import pino from 'pino'
-
-const logger = pino({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-})
+import { logger, generateCorrelationId, logToolExecution } from './lib/logger.js'
+import { registerHealthRoutes } from './routes/health.js'
+import { config } from './config.js'
 
 export function createServer() {
   const server = new Server(
@@ -77,11 +76,16 @@ export function createServer() {
   // Execute a tool
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params
+    const correlationId = generateCorrelationId()
+    const startTime = Date.now()
 
-    logger.debug({ tool: name, args }, 'Executing tool')
+    logger.debug({ tool: name, correlationId }, 'Executing tool')
 
     try {
       const result = await executeTool(name, args)
+      const duration = Date.now() - startTime
+
+      logToolExecution(correlationId, name, duration, true)
 
       return {
         content: [
@@ -92,7 +96,11 @@ export function createServer() {
         ],
       }
     } catch (error) {
-      logger.error({ tool: name, error }, 'Tool execution failed')
+      const duration = Date.now() - startTime
+      const errorCode = error instanceof ApiError ? error.code : 'INTERNAL_ERROR'
+
+      logToolExecution(correlationId, name, duration, false, errorCode)
+      logger.error({ tool: name, error, correlationId }, 'Tool execution failed')
 
       if (error instanceof AuthError) {
         return {
@@ -173,13 +181,46 @@ export function createServer() {
   return server
 }
 
+/**
+ * Create and start the HTTP health check server
+ */
+export async function createHealthServer() {
+  const app = Fastify({
+    logger: false, // We use our own logger
+  })
+
+  // Register health check routes
+  registerHealthRoutes(app)
+
+  // Start the HTTP server
+  const port = config.port
+  await app.listen({ port, host: '0.0.0.0' })
+
+  logger.info({ port }, `Health check server listening on port ${port}`)
+
+  return app
+}
+
 export async function runServer() {
   const server = createServer()
   const transport = new StdioServerTransport()
 
   logger.info('Starting BotEsq MCP Server')
 
+  // Start health check HTTP server in parallel
+  const healthServer = await createHealthServer()
+
   await server.connect(transport)
 
   logger.info('BotEsq MCP Server running on stdio')
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info('Shutting down...')
+    await healthServer.close()
+    process.exit(0)
+  }
+
+  process.on('SIGTERM', shutdown)
+  process.on('SIGINT', shutdown)
 }

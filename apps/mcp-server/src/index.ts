@@ -1,10 +1,6 @@
 import { config } from './config.js'
 import { runServer } from './server.js'
-import pino from 'pino'
-
-const logger = pino({
-  level: config.env === 'production' ? 'info' : 'debug',
-})
+import { logger } from './lib/logger.js'
 
 async function main() {
   logger.info({ env: config.env, port: config.port }, 'BotEsq MCP Server starting')
