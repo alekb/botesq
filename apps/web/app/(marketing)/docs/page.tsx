@@ -232,6 +232,14 @@ export default function DocsPage() {
           in the operator portal under Settings → Webhooks.
         </p>
 
+        <div className="rounded-lg border border-primary-500/30 bg-primary-500/10 p-4">
+          <h4 className="font-medium text-text-primary">Security Requirement</h4>
+          <p className="mt-1 text-sm text-text-secondary">
+            Webhook URLs must use <strong>HTTPS</strong> to protect sensitive legal data in transit.
+            HTTP is only permitted for local development (localhost, 127.0.0.1).
+          </p>
+        </div>
+
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-text-primary">Webhook Events</h3>
           <div className="overflow-x-auto">

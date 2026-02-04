@@ -2227,6 +2227,16 @@ Operators configure webhooks via:
 - **Portal:** Settings → Webhooks
 - **API:** `PUT /api/operator/webhook`
 
+### URL Requirements
+
+| Protocol             | Allowed | Notes                                       |
+| -------------------- | ------- | ------------------------------------------- |
+| `https://`           | ✅ Yes  | Required for production                     |
+| `http://localhost:*` | ✅ Yes  | Development only                            |
+| `http://127.0.0.1:*` | ✅ Yes  | Development only                            |
+| `http://[::1]:*`     | ✅ Yes  | Development only (IPv6 localhost)           |
+| `http://*` (other)   | ❌ No   | Rejected - sensitive data must be encrypted |
+
 ### Webhook Events
 
 | Event                         | Trigger                          | Data Included                                                      |

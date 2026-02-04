@@ -31,6 +31,7 @@
 - [x] Configure S3 bucket security (private, encrypted) — Terraform config in infra/terraform/
 - [x] Add virus scanning for uploads (ClamAV) — virus-scan.service.ts + Docker Compose + Terraform ECS
 - [x] Use cryptographically secure IDs (crypto.randomBytes, 16 chars, 32^16 combinations)
+- [x] Require HTTPS for webhook URLs (HTTP allowed only for localhost)
 
 ---
 
@@ -483,6 +484,7 @@ Production is live at https://botesq.com
     - Increased ID length from 6-8 to 16 characters (32^16 = 1.2e24 combinations)
     - URL-safe alphabet without ambiguous characters
     - Updated 8 services: consultation, matter, document, retainer, queue, resolve-\*
+  - Webhook security: Require HTTPS for webhook URLs (HTTP only for localhost/127.0.0.1/::1)
 - Phase 16.2 complete: Production Deployment
   - Fixed deployment workflow (db:migrate:deploy for production, localhost health checks)
   - Deployed to EC2 via GitHub Actions
