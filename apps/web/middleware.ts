@@ -1,29 +1,54 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Operator session
 const SESSION_COOKIE_NAME = 'operator_session'
-
-// Routes that require authentication
 const PROTECTED_ROUTES = ['/portal']
-
-// Routes that should redirect to portal if authenticated
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password']
+
+// Provider session
+const PROVIDER_SESSION_COOKIE_NAME = 'provider_session'
+const PROVIDER_PROTECTED_ROUTES = ['/provider']
+const PROVIDER_AUTH_ROUTES = [
+  '/provider-login',
+  '/provider-register',
+  '/provider-forgot-password',
+  '/provider-pending',
+]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)
+  const operatorSession = request.cookies.get(SESSION_COOKIE_NAME)
+  const providerSession = request.cookies.get(PROVIDER_SESSION_COOKIE_NAME)
 
-  // Check if trying to access protected route without session
+  // Provider route protection
+  const isProviderProtectedRoute = PROVIDER_PROTECTED_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  )
+  if (isProviderProtectedRoute && !providerSession) {
+    const loginUrl = new URL('/provider-login', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // Provider auth route redirect (if already logged in)
+  const isProviderAuthRoute = PROVIDER_AUTH_ROUTES.some((route) => pathname.startsWith(route))
+  // Allow access to provider-pending even when logged in
+  if (isProviderAuthRoute && pathname !== '/provider-pending' && providerSession) {
+    return NextResponse.redirect(new URL('/provider', request.url))
+  }
+
+  // Operator route protection
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
-  if (isProtectedRoute && !sessionCookie) {
+  if (isProtectedRoute && !operatorSession) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Check if trying to access auth route while logged in
+  // Operator auth route redirect (if already logged in)
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname === route)
-  if (isAuthRoute && sessionCookie) {
+  if (isAuthRoute && operatorSession) {
     return NextResponse.redirect(new URL('/portal', request.url))
   }
 

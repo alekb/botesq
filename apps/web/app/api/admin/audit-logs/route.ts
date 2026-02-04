@@ -39,13 +39,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (startDate || endDate) {
-      where.createdAt = {}
+      const createdAtFilter: Record<string, Date> = {}
       if (startDate) {
-        ;(where.createdAt as Record<string, Date>).gte = new Date(startDate)
+        createdAtFilter.gte = new Date(startDate)
       }
       if (endDate) {
-        ;(where.createdAt as Record<string, Date>).lte = new Date(endDate)
+        createdAtFilter.lte = new Date(endDate)
       }
+      where.createdAt = createdAtFilter
     }
 
     const [logs, total] = await Promise.all([
