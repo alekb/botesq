@@ -207,5 +207,14 @@ jobs:
       - name: Run database migrations
         run: pnpm db:migrate
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage
+        run: pnpm test -- --coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./apps/mcp-server/coverage/coverage-final.json,./apps/web/coverage/coverage-final.json
+          flags: unittests
+          fail_ci_if_error: false
+          verbose: true
