@@ -19,14 +19,15 @@
 
 ### Security Implementation (Cross-Phase)
 
-- [ ] Implement Argon2id password hashing
-- [ ] Implement API key generation with SHA-256
-- [ ] Add row-level security checks to all queries
-- [ ] Implement Stripe webhook signature validation
-- [ ] Add file upload validation (magic bytes, size limits)
-- [ ] Configure S3 bucket security (private, encrypted)
-- [ ] Add virus scanning for uploads (ClamAV)
-- [ ] Implement provider webhook signature validation
+- [x] Implement Argon2id password hashing
+- [x] Implement API key generation with SHA-256 (updated prefix to `be_`)
+- [x] Add row-level security checks to all queries
+- [x] Implement Stripe webhook signature validation (already in stripe.service.ts)
+- [x] Add file upload validation (magic bytes, size limits)
+- [x] Implement provider webhook signature validation
+- [x] Add filename sanitization for path traversal prevention
+- [ ] Configure S3 bucket security (private, encrypted) — infrastructure task
+- [ ] Add virus scanning for uploads (ClamAV) — requires external service
 
 ---
 
@@ -37,6 +38,24 @@ _None_
 ---
 
 ## Completed
+
+### Security Implementation (2026-02-03)
+
+- [x] Add @node-rs/argon2 dependency for password hashing
+- [x] Implement hashPassword() and verifyPassword() with Argon2id (64MB memory, 3 iterations)
+- [x] Update API key prefix from `ml_live_` to `be_` (BotEsq branding)
+- [x] Add file-type dependency for magic bytes detection
+- [x] Implement validateFileContent() for content-based file type validation
+- [x] Implement sanitizeFilename() to prevent path traversal attacks
+- [x] Create utils/webhook.ts with HMAC-SHA256 signature validation
+- [x] Implement verifyProviderWebhook() with 5-minute timestamp tolerance
+- [x] Implement generateWebhookSignature() for outbound webhooks
+- [x] Add operatorId parameter to activateMatter() for row-level security
+- [x] Add operatorId parameter to updateDocumentAnalysis() for row-level security
+- [x] Fix listConsultations() matter lookup to verify operator ownership
+- [x] Add vitest setup file for test environment configuration
+- [x] Add 40 new security tests (58 total tests passing)
+- [x] Build and lint passes
 
 ### Phase 6: Consultation System (2026-02-03)
 
@@ -176,6 +195,14 @@ See `docs/IMPLEMENTATION_PLAN.md` Phase 7 for full details.
 
 ### 2026-02-03
 
+- Security implementation complete (branch: security-implementation):
+  - Argon2id password hashing for operator/attorney/admin accounts
+  - API key generation with SHA-256 and `be_` prefix
+  - Magic bytes file validation (detects actual file type from content)
+  - Filename sanitization (path traversal prevention)
+  - Provider webhook signature validation (HMAC-SHA256 + timestamp)
+  - Row-level security audit and fixes for all data access functions
+  - 40 new tests added (58 total)
 - Security review completed and improvements implemented:
   - Enhanced .env.example with full documentation
   - Added environment validation utility (packages/shared/src/env.ts)
