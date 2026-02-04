@@ -177,9 +177,15 @@ jobs:
           script: |
             cd /opt/botesq
 
+            # Fix git permissions if needed
+            sudo chown -R $(whoami):$(whoami) /opt/botesq/.git 2>/dev/null || true
+
             # Pull latest changes
             git fetch origin main
             git reset --hard origin/main
+
+            # Clear turbo cache to force rebuild
+            rm -rf node_modules/.cache/turbo 2>/dev/null || true
 
             # Clean up any stray files that shouldn't be in the repo
             rm -f apps/web/create-admin.ts 2>/dev/null || true
