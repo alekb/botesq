@@ -1,0 +1,44 @@
+# =============================================================================
+# BotEsq Terraform Variables
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values
+# =============================================================================
+
+# Environment
+environment  = "prod"
+aws_region   = "us-east-1"
+project_name = "botesq"
+
+# Domain (for SSL certificate)
+domain_name = "botesq.io"
+
+# S3 CORS (add your domain when you have one)
+allowed_origins = [
+  "http://localhost:3000",
+  "https://botesq.io"
+]
+
+# -----------------------------------------------------------------------------
+# EC2 Configuration
+# -----------------------------------------------------------------------------
+enable_ec2 = true
+
+# Instance type (t4g.small is ~$12/month, ARM-based)
+ec2_instance_type = "t4g.small"
+
+# Use ARM (Graviton) instances - 20% cheaper than x86
+ec2_use_arm = true
+
+# SSH key pair name (create in AWS console first)
+ec2_key_name = "botesq-key"
+
+# Your IP address for SSH access (find at whatismyip.com)
+# Format: ["x.x.x.x/32"]
+ec2_allowed_ssh_cidrs = ["YOUR_IP/32"]
+
+# -----------------------------------------------------------------------------
+# Optional: Additional tags
+# -----------------------------------------------------------------------------
+tags = {
+  Owner = "your-name"
+}
