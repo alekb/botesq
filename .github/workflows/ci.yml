@@ -67,6 +67,7 @@ jobs:
     name: Dependency Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    continue-on-error: true  # Non-blocking until GitHub Advanced Security is enabled
     steps:
       - uses: actions/checkout@v4
       - uses: actions/dependency-review-action@v4
