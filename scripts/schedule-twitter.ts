@@ -159,9 +159,11 @@ The difference: agents need answers in milliseconds, not days.`,
 // ============================================================================
 
 interface SocialSet {
-  id: string
+  id: number
+  username: string
   name: string
-  platforms: { platform: string; username: string }[]
+  profile_image_url: string
+  team: string | null
 }
 
 interface Draft {
@@ -190,12 +192,18 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     throw new Error(`API error ${response.status}: ${error}`)
   }
 
-  return response.json()
+  const json = await response.json()
+  return json as T
+}
+
+interface SocialSetsResponse {
+  results: SocialSet[]
+  count: number
 }
 
 async function getSocialSets(): Promise<SocialSet[]> {
-  const data = await apiRequest<{ data: SocialSet[] }>('/social-sets')
-  return data.data
+  const data = await apiRequest<SocialSetsResponse>('/social-sets')
+  return data.results ?? []
 }
 
 async function createDraft(socialSetId: string, posts: string[], publishAt?: Date): Promise<Draft> {
@@ -348,32 +356,24 @@ async function main() {
   // Get social sets
   if (!dryRun) {
     console.log('Fetching social accounts...')
-    const socialSets = await getSocialSets()
+    let socialSets: SocialSet[]
+    try {
+      socialSets = await getSocialSets()
+    } catch (err) {
+      console.error('Failed to fetch social accounts:', err)
+      process.exit(1)
+    }
 
-    if (socialSets.length === 0) {
+    if (!socialSets || socialSets.length === 0) {
       console.error('No social accounts found. Connect Twitter in Typefully first.')
       process.exit(1)
     }
 
-    // Find Twitter account
-    const twitterSet = socialSets.find((s) =>
-      s.platforms.some((p) => p.platform === 'x' || p.platform === 'twitter')
-    )
+    // Use the first account (Typefully returns connected accounts)
+    const account = socialSets[0]!
+    console.log(`Using account: @${account.username}\n`)
 
-    if (!twitterSet) {
-      console.error('No Twitter/X account found. Available accounts:')
-      socialSets.forEach((s) =>
-        console.log(`  - ${s.name}: ${s.platforms.map((p) => p.platform).join(', ')}`)
-      )
-      process.exit(1)
-    }
-
-    const twitterPlatform = twitterSet.platforms.find(
-      (p) => p.platform === 'x' || p.platform === 'twitter'
-    )
-    console.log(`Using account: @${twitterPlatform?.username}\n`)
-
-    socialSetId = twitterSet.id
+    socialSetId = String(account.id)
   }
 
   // Schedule pre-launch tweets
