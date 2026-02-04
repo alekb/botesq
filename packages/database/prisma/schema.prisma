@@ -50,6 +50,9 @@ model Operator {
   payments        Payment[]
   documents       Document[]
   invoices        Invoice[]
+  sessions        OperatorSession[]
+  verificationTokens EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("operators")
 }
@@ -59,6 +62,60 @@ enum OperatorStatus {
   ACTIVE
   SUSPENDED
   CLOSED
+}
+
+model OperatorSession {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  token       String    @unique
+
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+
+  expiresAt   DateTime  @map("expires_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([expiresAt])
+  @@map("operator_sessions")
+}
+
+model EmailVerificationToken {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  token       String    @unique
+
+  expiresAt   DateTime  @map("expires_at")
+  usedAt      DateTime? @map("used_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  token       String    @unique
+
+  expiresAt   DateTime  @map("expires_at")
+  usedAt      DateTime? @map("used_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@map("password_reset_tokens")
 }
 
 model ApiKey {
@@ -434,8 +491,29 @@ model Attorney {
 
   assignments MatterAssignment[]
   consultations Consultation[]
+  sessions    AttorneySession[]
 
   @@map("attorneys")
+}
+
+model AttorneySession {
+  id          String    @id @default(cuid())
+  attorneyId  String    @map("attorney_id")
+
+  token       String    @unique
+
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+
+  expiresAt   DateTime  @map("expires_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  attorney    Attorney  @relation(fields: [attorneyId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([expiresAt])
+  @@map("attorney_sessions")
 }
 
 enum AttorneyRole {
