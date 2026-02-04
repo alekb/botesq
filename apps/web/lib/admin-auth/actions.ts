@@ -10,15 +10,17 @@ import { createAdminSession, getCurrentAdminSession, invalidateAdminSession } fr
 import { logAdminAction, AdminActions } from './audit'
 import { appendFileSync } from 'fs'
 
-function debugLog(msg: string) {
+function debugLog(...args: unknown[]) {
   const timestamp = new Date().toISOString()
+  const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
   const line = `[${timestamp}] ${msg}\n`
   try {
     appendFileSync('/tmp/admin-login-debug.log', line)
   } catch {
     // ignore
   }
-  console.log(msg)
+  // eslint-disable-next-line no-console
+  console.log(line)
 }
 
 // Validation schemas
@@ -77,7 +79,7 @@ export async function adminLogin(formData: FormData): Promise<AdminAuthResult> {
   }
 
   // Verify password
-  console.log(
+  debugLog(
     '[ADMIN LOGIN] Verifying password, hash starts with:',
     attorney.passwordHash.substring(0, 30)
   )
