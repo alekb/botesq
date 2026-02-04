@@ -26,7 +26,7 @@
 - [x] Add file upload validation (magic bytes, size limits)
 - [x] Implement provider webhook signature validation
 - [x] Add filename sanitization for path traversal prevention
-- [ ] Configure S3 bucket security (private, encrypted) — infrastructure task
+- [x] Configure S3 bucket security (private, encrypted) — Terraform config in infra/terraform/
 - [ ] Add virus scanning for uploads (ClamAV) — requires external service
 
 ---
