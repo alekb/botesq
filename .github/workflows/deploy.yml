@@ -21,6 +21,8 @@ concurrency:
 env:
   NODE_VERSION: '20.11.1'
   PNPM_VERSION: '9.1.0'
+  # Dummy DATABASE_URL for build (Prisma client generation only, no actual connection)
+  DATABASE_URL: 'postgresql://build:build@localhost:5432/build'
 
 jobs:
   # ===========================================
