@@ -8,6 +8,18 @@ import { verifyPassword } from '../auth/password'
 import { verifyTotp } from '../attorney-auth/totp'
 import { createAdminSession, getCurrentAdminSession, invalidateAdminSession } from './session'
 import { logAdminAction, AdminActions } from './audit'
+import { appendFileSync } from 'fs'
+
+function debugLog(msg: string) {
+  const timestamp = new Date().toISOString()
+  const line = `[${timestamp}] ${msg}\n`
+  try {
+    appendFileSync('/tmp/admin-login-debug.log', line)
+  } catch {
+    // ignore
+  }
+  console.log(msg)
+}
 
 // Validation schemas
 const loginSchema = z.object({
@@ -37,11 +49,11 @@ export async function adminLogin(formData: FormData): Promise<AdminAuthResult> {
     password: formData.get('password'),
   }
 
-  console.log('[ADMIN LOGIN] Attempting login for:', rawData.email)
+  debugLog('[ADMIN LOGIN] Attempting login for:', rawData.email)
 
   const result = loginSchema.safeParse(rawData)
   if (!result.success) {
-    console.log('[ADMIN LOGIN] Validation failed:', result.error.flatten().fieldErrors)
+    debugLog('[ADMIN LOGIN] Validation failed:', result.error.flatten().fieldErrors)
     return {
       success: false,
       fieldErrors: result.error.flatten().fieldErrors as Record<string, string[]>,
@@ -51,11 +63,11 @@ export async function adminLogin(formData: FormData): Promise<AdminAuthResult> {
   const { email, password } = result.data
 
   // Find attorney
-  console.log('[ADMIN LOGIN] Looking up attorney:', email.toLowerCase())
+  debugLog('[ADMIN LOGIN] Looking up attorney:', email.toLowerCase())
   const attorney = await prisma.attorney.findUnique({
     where: { email: email.toLowerCase() },
   })
-  console.log('[ADMIN LOGIN] Attorney found:', attorney ? 'yes' : 'no')
+  debugLog('[ADMIN LOGIN] Attorney found:', attorney ? 'yes' : 'no')
 
   if (!attorney) {
     return {
@@ -70,7 +82,7 @@ export async function adminLogin(formData: FormData): Promise<AdminAuthResult> {
     attorney.passwordHash.substring(0, 30)
   )
   const isValid = await verifyPassword(password, attorney.passwordHash)
-  console.log('[ADMIN LOGIN] Password valid:', isValid)
+  debugLog('[ADMIN LOGIN] Password valid:', isValid)
   if (!isValid) {
     return {
       success: false,
