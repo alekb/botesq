@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Zap, Shield, Scale, Code } from 'lucide-react'
+import { ArrowRight, Zap, Shield, Scale, Code, Webhook } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -84,6 +84,23 @@ export default function DocsPage() {
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
                 View examples <ArrowRight className="ml-1 h-4 w-4" />
+              </span>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="#webhooks" className="group">
+          <Card className="h-full transition-colors hover:border-primary-500/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Webhook className="h-5 w-5 text-primary-500" />
+                Webhooks
+              </CardTitle>
+              <CardDescription>Receive real-time notifications for async events</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
+                Integration guide <ArrowRight className="ml-1 h-4 w-4" />
               </span>
             </CardContent>
           </Card>
@@ -204,6 +221,144 @@ export default function DocsPage() {
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Webhooks */}
+      <div id="webhooks" className="space-y-4 scroll-mt-24">
+        <h2 className="text-2xl font-semibold text-text-primary">Webhooks</h2>
+        <p className="text-text-secondary">
+          Receive real-time notifications when async operations complete. Configure your webhook URL
+          in the operator portal under Settings → Webhooks.
+        </p>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Webhook Events</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border-default">
+                  <th className="py-3 text-left font-medium text-text-primary">Event</th>
+                  <th className="py-3 text-left font-medium text-text-primary">Description</th>
+                </tr>
+              </thead>
+              <tbody className="text-text-secondary">
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      consultation.completed
+                    </code>
+                  </td>
+                  <td className="py-3">Attorney has submitted a response to your consultation</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      document.analysis_completed
+                    </code>
+                  </td>
+                  <td className="py-3">Document analysis has finished</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Payload Format</h3>
+          <p className="text-text-secondary">
+            All webhooks are sent as HTTP POST requests with a JSON body:
+          </p>
+          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
+            {`{
+  "event": "consultation.completed",
+  "timestamp": "2026-02-04T12:34:56.789Z",
+  "data": {
+    "consultation_id": "CONS-ABC12345",
+    "matter_id": "MTR-XYZ98765",
+    "status": "completed",
+    "question": "What are the requirements for...",
+    "response": "Based on applicable law...",
+    "attorney_reviewed": true,
+    "completed_at": "2026-02-04T12:34:56.789Z"
+  }
+}`}
+          </pre>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Verifying Signatures</h3>
+          <p className="text-text-secondary">
+            All webhooks include a signature for verification. Check these headers:
+          </p>
+          <ul className="list-inside list-disc space-y-2 text-text-secondary">
+            <li>
+              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                X-BotEsq-Signature
+              </code>{' '}
+              - HMAC-SHA256 signature
+            </li>
+            <li>
+              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                X-BotEsq-Timestamp
+              </code>{' '}
+              - Unix timestamp when sent
+            </li>
+          </ul>
+          <p className="text-text-secondary">Verify the signature like this:</p>
+          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
+            {`// Node.js / TypeScript
+import crypto from 'crypto'
+
+function verifySignature(
+  payload: string,
+  signature: string,
+  timestamp: string,
+  secret: string
+): boolean {
+  // Reject old timestamps (> 5 minutes)
+  const age = Date.now() / 1000 - parseInt(timestamp)
+  if (age > 300) return false
+
+  // Verify signature
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(\`\${timestamp}.\${payload}\`)
+    .digest('hex')
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  )
+}`}
+          </pre>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Example Handler</h3>
+          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
+            {`// Express.js webhook handler
+app.post('/webhooks/botesq', express.json(), (req, res) => {
+  const signature = req.headers['x-botesq-signature']
+  const timestamp = req.headers['x-botesq-timestamp']
+  const payload = JSON.stringify(req.body)
+
+  if (!verifySignature(payload, signature, timestamp, WEBHOOK_SECRET)) {
+    return res.status(401).json({ error: 'Invalid signature' })
+  }
+
+  const { event, data } = req.body
+
+  switch (event) {
+    case 'consultation.completed':
+      // Notify your agent the response is ready
+      notifyAgent(data.consultation_id, data.response)
+      break
+  }
+
+  res.json({ received: true })
+})`}
+          </pre>
         </div>
       </div>
     </div>
