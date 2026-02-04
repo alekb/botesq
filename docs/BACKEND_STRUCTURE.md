@@ -2097,3 +2097,119 @@ CREATE INDEX idx_credits_operator_created ON credit_transactions(operator_id, cr
 | Sessions            | 30 days          | Operational       |
 | Credit transactions | 7 years          | Financial records |
 | API request logs    | 90 days          | Debugging         |
+
+---
+
+## Stripe Integration
+
+### Environment Variables
+
+```bash
+# Required for payments
+STRIPE_SECRET_KEY=sk_live_...       # or sk_test_... for development
+STRIPE_WEBHOOK_SECRET=whsec_...     # Webhook signing secret
+
+# Payment flow URLs
+STRIPE_SUCCESS_URL=https://botesq.com/portal/billing?success=true
+STRIPE_CANCEL_URL=https://botesq.com/portal/billing?canceled=true
+```
+
+### Webhook Endpoint
+
+**URL:** `https://botesq.com/api/webhooks/stripe`
+
+**File:** `apps/web/app/api/webhooks/stripe/route.ts`
+
+### Handled Events
+
+| Event                        | Description                        | Action                          |
+| ---------------------------- | ---------------------------------- | ------------------------------- |
+| `checkout.session.completed` | Customer completes credit purchase | Add credits to operator balance |
+| `checkout.session.expired`   | Checkout session times out         | Mark payment as failed          |
+| `transfer.created`           | Provider payout initiated          | Confirm settlement as PAID      |
+| `transfer.reversed`          | Payout reversed                    | Mark settlement as FAILED       |
+| `transfer.updated`           | Transfer status changed            | Update settlement if reversed   |
+
+### Stripe Dashboard Setup
+
+1. Go to https://dashboard.stripe.com/webhooks
+2. Click **+ Add endpoint**
+3. Configure:
+   - **Endpoint URL:** `https://botesq.com/api/webhooks/stripe`
+   - **Events to send:**
+     - `checkout.session.completed`
+     - `checkout.session.expired`
+     - `transfer.created`
+     - `transfer.reversed`
+     - `transfer.updated`
+4. Click **Add endpoint**
+5. Copy the **Signing secret** (`whsec_...`) to `STRIPE_WEBHOOK_SECRET`
+
+### Local Development with Stripe CLI
+
+```bash
+# Install Stripe CLI
+# macOS: brew install stripe/stripe-cli/stripe
+# Linux: see https://stripe.com/docs/stripe-cli
+
+# Login to Stripe
+stripe login
+
+# Forward webhooks to local server
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+
+# The CLI will output a signing secret like:
+# > Ready! Your webhook signing secret is whsec_xxxxx
+# Use this for local STRIPE_WEBHOOK_SECRET
+
+# In another terminal, trigger test events
+stripe trigger checkout.session.completed
+stripe trigger transfer.created
+```
+
+### Webhook Security
+
+The webhook handler:
+
+1. Reads raw request body (not JSON parsed)
+2. Verifies signature using `stripe.webhooks.constructEvent()`
+3. Rejects requests with invalid signatures (400 error)
+4. Processes events idempotently (safe to replay)
+
+```typescript
+// Signature verification (handled automatically)
+const event = stripe.webhooks.constructEvent(
+  body, // Raw request body
+  signature, // stripe-signature header
+  webhookSecret // STRIPE_WEBHOOK_SECRET
+)
+```
+
+### Credit Purchase Flow
+
+```
+1. Operator clicks "Buy Credits" → POST /api/portal/credits/purchase
+2. Server creates Stripe Checkout Session
+3. Server creates Payment record (status: PENDING)
+4. Operator redirected to Stripe Checkout
+5. Operator completes payment
+6. Stripe sends checkout.session.completed webhook
+7. Webhook handler adds credits to operator
+8. Payment record updated (status: COMPLETED)
+```
+
+### Settlement Payout Flow
+
+```
+1. Admin generates settlements → POST /api/admin/settlements
+2. Admin processes payout → POST /api/admin/settlements/:id/process
+3. Server creates Stripe Transfer to provider's Connect account
+4. Settlement updated (status: PROCESSING)
+5. Stripe sends transfer.created webhook
+6. Settlement confirmed (status: PAID)
+
+If transfer fails or is reversed:
+7. Stripe sends transfer.reversed webhook
+8. Settlement marked (status: FAILED)
+9. Admin can retry via dashboard
+```
