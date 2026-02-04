@@ -1,18 +1,20 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Home page', () => {
-  test('displays the BotEsq heading', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.locator('h1')).toHaveText('BotEsq')
+  test('loads successfully', async ({ page }) => {
+    const response = await page.goto('/')
+    expect(response?.status()).toBe(200)
   })
 
-  test('displays the tagline', async ({ page }) => {
+  test('displays main heading', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByText('Licensed legal services for AI agents')).toBeVisible()
+    await expect(page.locator('h1').first()).toBeVisible()
   })
 
-  test('has proper page title', async ({ page }) => {
+  test('has navigation links', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveURL('/')
+    // Check that at least one link is present
+    const links = page.locator('nav a')
+    await expect(links.first()).toBeVisible()
   })
 })

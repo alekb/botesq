@@ -373,7 +373,7 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
 ## Current Project State
 
-See `progress.txt` for:
+See `PROGRESS.md` for:
 
 - Current phase
 - What's built

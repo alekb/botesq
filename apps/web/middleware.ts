@@ -21,21 +21,20 @@ export function middleware(request: NextRequest) {
   const operatorSession = request.cookies.get(SESSION_COOKIE_NAME)
   const providerSession = request.cookies.get(PROVIDER_SESSION_COOKIE_NAME)
 
-  // Provider route protection
-  const isProviderProtectedRoute = PROVIDER_PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  )
-  if (isProviderProtectedRoute && !providerSession) {
-    const loginUrl = new URL('/provider-login', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  // Provider auth route redirect (if already logged in)
+  // Provider auth routes (check first to avoid matching /provider prefix)
   const isProviderAuthRoute = PROVIDER_AUTH_ROUTES.some((route) => pathname.startsWith(route))
   // Allow access to provider-pending even when logged in
   if (isProviderAuthRoute && pathname !== '/provider-pending' && providerSession) {
     return NextResponse.redirect(new URL('/provider', request.url))
+  }
+
+  // Provider route protection (only check if not an auth route)
+  const isProviderProtectedRoute =
+    !isProviderAuthRoute && PROVIDER_PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
+  if (isProviderProtectedRoute && !providerSession) {
+    const loginUrl = new URL('/provider-login', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   // Operator route protection
