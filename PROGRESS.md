@@ -2,7 +2,7 @@
 
 ## Current
 
-**Phase:** 8 - Operator Portal
+**Phase:** Provider Portal UI
 **Step:** Complete
 **Status:** complete
 
@@ -38,6 +38,67 @@ _None_
 ---
 
 ## Completed
+
+### Provider Portal UI (2026-02-04)
+
+- [x] Create TypeScript types for provider entities (types/provider.ts)
+- [x] Create API client functions:
+  - lib/api/provider.ts — Profile, auth, stats API functions
+  - lib/api/provider-requests.ts — Work queue API functions
+  - lib/api/provider-services.ts — Service management API functions
+  - lib/api/provider-earnings.ts — Earnings and settlements API functions
+- [x] Create provider auth infrastructure:
+  - lib/auth/provider-cookies.ts — HTTP-only session cookie management
+  - lib/auth/provider-session.ts — Session validation and token management (server actions)
+  - lib/auth/provider-actions.ts — Server actions (login, register, logout, password change)
+- [x] Update middleware.ts to protect provider routes with separate session cookie
+- [x] Create provider auth UI pages:
+  - (provider-auth)/layout.tsx — Centered card layout
+  - (provider-auth)/provider-login/page.tsx — Login form with 2FA support
+  - (provider-auth)/provider-register/page.tsx — Registration with jurisdictions/specialties selection
+  - (provider-auth)/provider-pending/page.tsx — Pending approval status page
+  - (provider-auth)/provider-forgot-password/page.tsx — Password reset request
+- [x] Create provider portal shell:
+  - provider/layout.tsx — Sidebar + header layout with session management
+  - components/provider/sidebar.tsx — Navigation sidebar
+  - components/provider/header.tsx — Header with earnings display and user menu
+  - components/provider/quick-stats.tsx — Dashboard stats grid
+  - components/provider/recent-requests.tsx — Activity feed
+- [x] Create provider dashboard:
+  - provider/page.tsx — Dashboard with stats, performance metrics, recent requests
+- [x] Create work queue UI:
+  - provider/requests/page.tsx — Request list with filters
+  - provider/requests/[id]/page.tsx — Request detail + response form
+  - components/provider/requests/sla-indicator.tsx — SLA deadline indicator (color-coded)
+  - components/provider/requests/request-filters.tsx — Status/service type filters
+  - components/provider/requests/request-card.tsx — Request list card
+  - components/provider/requests/request-list.tsx — List component
+  - components/provider/requests/request-detail.tsx — Detail display
+  - components/provider/requests/response-form.tsx — Response submission (service-type-specific fields)
+  - components/provider/requests/escalation-dialog.tsx — Escalation modal
+- [x] Create services management UI:
+  - provider/services/page.tsx — Service management page
+  - components/provider/services/service-toggle.tsx — Enable/disable toggle
+  - components/provider/services/service-card.tsx — Service card with pricing info
+  - components/provider/services/service-dialog.tsx — Create/edit dialog
+  - components/provider/services/service-list.tsx — List component
+- [x] Create earnings UI:
+  - provider/earnings/page.tsx — Earnings overview
+  - components/provider/earnings/period-selector.tsx — Day/week/month/year selector
+  - components/provider/earnings/earnings-summary.tsx — Summary cards
+  - components/provider/earnings/settlement-history.tsx — Settlement table
+- [x] Create settings pages:
+  - provider/settings/page.tsx — Settings overview
+  - provider/settings/profile/page.tsx — Profile editing
+  - provider/settings/security/page.tsx — Password change
+  - provider/settings/webhooks/page.tsx — Webhook config
+  - components/provider/settings/profile-form.tsx — Profile editor
+  - components/provider/settings/password-form.tsx — Password change form
+  - components/provider/settings/webhook-settings.tsx — Webhook URL and secret management
+- [x] Install @radix-ui/react-alert-dialog dependency
+- [x] Add AlertDialog components to dialog.tsx
+- [x] Build passes
+- [x] Lint passes
 
 ### Phase 8: Operator Portal (2026-02-03)
 
