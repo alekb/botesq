@@ -65,6 +65,17 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Require HTTPS except for localhost (development)
+    const isLocalhost =
+      url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === '::1'
+
+    if (url.protocol === 'http:' && !isLocalhost) {
+      return NextResponse.json(
+        { error: 'Webhook URL must use HTTPS for security. HTTP is only allowed for localhost.' },
+        { status: 400 }
+      )
+    }
   } catch {
     return NextResponse.json({ error: 'Invalid webhook URL' }, { status: 400 })
   }

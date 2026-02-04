@@ -239,10 +239,19 @@ export async function updateOperatorWebhook(
   }
 
   // Validate URL
+  let url: URL
   try {
-    new URL(webhookUrl)
+    url = new URL(webhookUrl)
   } catch {
     throw new Error('Invalid webhook URL')
+  }
+
+  // Require HTTPS except for localhost (development)
+  const isLocalhost =
+    url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === '::1'
+
+  if (url.protocol === 'http:' && !isLocalhost) {
+    throw new Error('Webhook URL must use HTTPS. HTTP is only allowed for localhost.')
   }
 
   // Check if operator already has a secret
