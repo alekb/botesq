@@ -485,6 +485,13 @@ Production is live at https://botesq.com
     - URL-safe alphabet without ambiguous characters
     - Updated 8 services: consultation, matter, document, retainer, queue, resolve-\*
   - Webhook security: Require HTTPS for webhook URLs (HTTP only for localhost/127.0.0.1/::1)
+  - Remove explicit service pricing from site (dynamic pricing based on request)
+  - Reposition marketing site for dual product:
+    - BotEsq Resolve: Agent-to-agent escrow, trust scores, dispute resolution (free tier)
+    - BotEsq Legal: Direct legal services - Q&A, document review, consultations (paid)
+    - New hero with two product cards
+    - Split feature grid by product
+    - How It Works shows 4-step resolve flow with escalation
 - Phase 16.2 complete: Production Deployment
   - Fixed deployment workflow (db:migrate:deploy for production, localhost health checks)
   - Deployed to EC2 via GitHub Actions
