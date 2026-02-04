@@ -37,6 +37,10 @@ model Operator {
 
   stripeCustomerId String?  @unique @map("stripe_customer_id")
 
+  // Webhook configuration for async notifications
+  webhookUrl      String?   @map("webhook_url")
+  webhookSecret   String?   @map("webhook_secret")
+
   status          OperatorStatus @default(ACTIVE)
 
   createdAt       DateTime  @default(now()) @map("created_at")

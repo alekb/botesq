@@ -49,6 +49,8 @@ export default async function AdminOperatorsPage({ searchParams }: OperatorsPage
         jurisdiction: true,
         phone: true,
         creditBalance: true,
+        webhookUrl: true,
+        webhookSecret: true,
         status: true,
         emailVerified: true,
         emailVerifiedAt: true,

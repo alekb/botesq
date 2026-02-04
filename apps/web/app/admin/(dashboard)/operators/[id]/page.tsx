@@ -22,6 +22,8 @@ export default async function AdminOperatorDetailPage({ params }: OperatorDetail
       phone: true,
       billingAddress: true,
       creditBalance: true,
+      webhookUrl: true,
+      webhookSecret: true,
       status: true,
       emailVerified: true,
       emailVerifiedAt: true,

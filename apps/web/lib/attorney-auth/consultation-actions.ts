@@ -1,9 +1,57 @@
 'use server'
 
+import crypto from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@botesq/database'
 import { getCurrentAttorneySession } from './session'
+
+/**
+ * Send webhook notification to operator
+ */
+async function sendOperatorWebhook(
+  operatorId: string,
+  event: string,
+  data: Record<string, unknown>
+): Promise<void> {
+  try {
+    const operator = await prisma.operator.findUnique({
+      where: { id: operatorId },
+      select: { webhookUrl: true, webhookSecret: true },
+    })
+
+    if (!operator?.webhookUrl || !operator?.webhookSecret) {
+      return // No webhook configured
+    }
+
+    const payload = JSON.stringify({
+      event,
+      timestamp: new Date().toISOString(),
+      data,
+    })
+
+    const timestamp = Math.floor(Date.now() / 1000).toString()
+    const signaturePayload = `${timestamp}.${payload}`
+    const signature = crypto
+      .createHmac('sha256', operator.webhookSecret)
+      .update(signaturePayload)
+      .digest('hex')
+
+    await fetch(operator.webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-BotEsq-Signature': signature,
+        'X-BotEsq-Timestamp': timestamp,
+      },
+      body: payload,
+      signal: AbortSignal.timeout(10000),
+    })
+  } catch (error) {
+    // Log but don't fail the main operation
+    console.error('Failed to send webhook:', error)
+  }
+}
 
 export type ConsultationActionResult = {
   success: boolean
@@ -139,16 +187,18 @@ export async function submitConsultationResponse(
       return { success: false, error: 'Consultation is not in review status' }
     }
 
+    const completedAt = new Date()
+
     await prisma.consultation.update({
       where: { id: consultationId },
       data: {
         finalResponse: response.trim(),
         status: 'COMPLETED',
-        completedAt: new Date(),
+        completedAt,
         responseMetadata: {
           attorneyId: attorney.id,
           attorneyName: `${attorney.firstName} ${attorney.lastName}`,
-          submittedAt: new Date().toISOString(),
+          submittedAt: completedAt.toISOString(),
         },
       },
     })
@@ -159,10 +209,21 @@ export async function submitConsultationResponse(
         data: {
           matterId: consultation.matterId,
           attorneyId: attorney.id,
-          completedAt: new Date(),
+          completedAt,
         },
       })
     }
+
+    // Send webhook notification to operator (async, don't await)
+    sendOperatorWebhook(consultation.operatorId, 'consultation.completed', {
+      consultation_id: consultation.externalId,
+      matter_id: consultation.matterId,
+      status: 'completed',
+      question: consultation.question,
+      response: response.trim(),
+      attorney_reviewed: true,
+      completed_at: completedAt.toISOString(),
+    })
 
     revalidatePath('/attorney/queue')
     revalidatePath(`/attorney/queue/${consultationId}`)

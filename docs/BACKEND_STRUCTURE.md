@@ -2213,3 +2213,136 @@ If transfer fails or is reversed:
 8. Settlement marked (status: FAILED)
 9. Admin can retry via dashboard
 ```
+
+---
+
+## Operator Webhooks
+
+BotEsq sends webhook notifications to operators when async events complete, enabling real-time updates to agent systems.
+
+### Configuration
+
+Operators configure webhooks via:
+
+- **Portal:** Settings → Webhooks
+- **API:** `PUT /api/operator/webhook`
+
+### Webhook Events
+
+| Event                         | Trigger                          | Data Included                                                      |
+| ----------------------------- | -------------------------------- | ------------------------------------------------------------------ |
+| `consultation.completed`      | Attorney submits response        | `consultation_id`, `response`, `attorney_reviewed`, `completed_at` |
+| `consultation.failed`         | Consultation cannot be fulfilled | `consultation_id`, `reason`                                        |
+| `document.analysis_completed` | Document analysis finishes       | `document_id`, `filename`, `analysis_status`                       |
+
+### Webhook Payload Format
+
+```json
+{
+  "event": "consultation.completed",
+  "timestamp": "2026-02-04T12:34:56.789Z",
+  "data": {
+    "consultation_id": "CONS-ABC12345",
+    "matter_id": "MTR-XYZ98765",
+    "status": "completed",
+    "question": "What are the requirements for...",
+    "response": "Based on applicable law...",
+    "attorney_reviewed": true,
+    "completed_at": "2026-02-04T12:34:56.789Z"
+  }
+}
+```
+
+### Webhook Security
+
+Webhooks are signed using HMAC-SHA256. Verify signatures to ensure authenticity:
+
+```typescript
+import crypto from 'crypto'
+
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  timestamp: string,
+  secret: string
+): boolean {
+  // Reject old timestamps (> 5 minutes)
+  const timestampAge = Date.now() / 1000 - parseInt(timestamp)
+  if (timestampAge > 300) {
+    return false
+  }
+
+  // Verify signature
+  const signaturePayload = `${timestamp}.${payload}`
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(signaturePayload)
+    .digest('hex')
+
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))
+}
+
+// Express/Node.js handler example
+app.post('/webhook', (req, res) => {
+  const signature = req.headers['x-botesq-signature']
+  const timestamp = req.headers['x-botesq-timestamp']
+  const payload = JSON.stringify(req.body)
+
+  if (!verifyWebhookSignature(payload, signature, timestamp, WEBHOOK_SECRET)) {
+    return res.status(401).json({ error: 'Invalid signature' })
+  }
+
+  const event = req.body
+  switch (event.event) {
+    case 'consultation.completed':
+      // Notify agent that response is ready
+      notifyAgent(event.data.consultation_id, event.data.response)
+      break
+  }
+
+  res.json({ received: true })
+})
+```
+
+### Webhook Headers
+
+| Header               | Description                                   |
+| -------------------- | --------------------------------------------- |
+| `Content-Type`       | `application/json`                            |
+| `X-BotEsq-Signature` | HMAC-SHA256 signature of `{timestamp}.{body}` |
+| `X-BotEsq-Timestamp` | Unix timestamp when webhook was sent          |
+
+### Delivery Behavior
+
+- **Timeout:** 10 seconds
+- **Retries:** Currently no automatic retries (operator should poll as fallback)
+- **Failures:** Logged but don't affect the main operation
+
+### API Endpoints
+
+| Method | Endpoint                | Description               |
+| ------ | ----------------------- | ------------------------- |
+| `GET`  | `/api/operator/webhook` | Get webhook configuration |
+| `PUT`  | `/api/operator/webhook` | Update webhook URL        |
+| `POST` | `/api/operator/webhook` | Regenerate webhook secret |
+
+### Agent Integration Example
+
+```typescript
+// Agent polls for consultation result OR receives webhook
+async function handleConsultation(consultationId: string) {
+  // Option 1: Poll (fallback)
+  const result = await mcpClient.call('get_consultation_result', {
+    session_token: sessionToken,
+    consultation_id: consultationId,
+  })
+
+  if (result.data.status === 'completed') {
+    return result.data.response
+  }
+
+  // Option 2: Wait for webhook notification
+  // Your system receives POST to configured webhook URL
+  // when consultation.completed event fires
+}
+```
