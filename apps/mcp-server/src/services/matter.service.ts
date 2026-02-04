@@ -288,14 +288,20 @@ export async function updateMatterStatus(
 
 /**
  * Activate matter (after retainer accepted)
+ * @param matterId - Matter ID (internal or external)
+ * @param operatorId - Operator ID for row-level security
+ * @param retainerId - Retainer ID to link
  */
 export async function activateMatter(
   matterId: string,
+  operatorId: string,
   retainerId: string
 ): Promise<MatterWithCounts | null> {
+  // Row-level security: only allow activating matters belonging to this operator
   const matter = await prisma.matter.findFirst({
     where: {
       OR: [{ id: matterId }, { externalId: matterId }],
+      operatorId, // Security: ensure operator ownership
     },
   })
 

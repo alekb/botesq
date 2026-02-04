@@ -213,17 +213,19 @@ export async function listConsultations(
   const { status, matterId, limit = 20, offset = 0 } = options
 
   // Get internal matter ID if external ID provided
+  // Row-level security: verify matter belongs to this operator
   let internalMatterId: string | undefined
   if (matterId) {
-    if (matterId.startsWith('MATTER-')) {
-      const matter = await prisma.matter.findUnique({
-        where: { externalId: matterId },
-        select: { id: true },
-      })
-      internalMatterId = matter?.id
-    } else {
-      internalMatterId = matterId
-    }
+    const matter = await prisma.matter.findFirst({
+      where: {
+        OR: [{ id: matterId }, { externalId: matterId }],
+        operatorId, // Security: ensure operator ownership
+      },
+      select: { id: true },
+    })
+    internalMatterId = matter?.id
+    // If matter not found or doesn't belong to operator, ignore the filter
+    // (will return empty results if filtering by non-existent matter)
   }
 
   const where = {
