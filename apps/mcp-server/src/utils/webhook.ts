@@ -112,3 +112,46 @@ export function generateWebhookSignature(
 export function generateWebhookSecret(): string {
   return `whsec_${randomBytes(32).toString('hex')}`
 }
+
+/**
+ * Verify a simple webhook signature (timestamp and signature provided separately)
+ *
+ * @param payload - Raw webhook payload
+ * @param secret - Webhook secret
+ * @param timestamp - Unix timestamp (seconds)
+ * @param signature - Full signature header (format: t=<ts>,v1=<sig>)
+ * @returns boolean indicating if signature is valid
+ */
+export function verifyWebhookSignature(
+  payload: string,
+  secret: string,
+  timestamp: number,
+  signature: string
+): boolean {
+  try {
+    // If signature includes format prefix, parse it
+    if (signature.includes(',')) {
+      const parts = signature.split(',')
+      const sigPart = parts.find((p) => p.startsWith('v1='))
+      if (sigPart) {
+        signature = sigPart.slice(3)
+      }
+    }
+
+    // Compute expected signature
+    const signedPayload = `${timestamp}.${payload}`
+    const expectedSignature = createHmac('sha256', secret).update(signedPayload).digest('hex')
+
+    // Use timing-safe comparison
+    const providedBuffer = Buffer.from(signature, 'hex')
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex')
+
+    if (providedBuffer.length !== expectedBuffer.length) {
+      return false
+    }
+
+    return timingSafeEqual(providedBuffer, expectedBuffer)
+  } catch {
+    return false
+  }
+}
