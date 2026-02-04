@@ -11,7 +11,13 @@ import { tools, executeTool } from './tools/index.js'
 import { prompts, buildPrompt } from './prompts/index.js'
 import { ApiError, AuthError, RateLimitError } from './types.js'
 import { logger, generateCorrelationId, logToolExecution } from './lib/logger.js'
-import { registerHealthRoutes } from './routes/health.js'
+import {
+  registerHealthRoutes,
+  registerProviderAuthRoutes,
+  registerProviderProfileRoutes,
+  registerProviderRequestsRoutes,
+  registerProviderWebhookRoutes,
+} from './routes/index.js'
 import { config } from './config.js'
 
 export function createServer() {
@@ -182,7 +188,7 @@ export function createServer() {
 }
 
 /**
- * Create and start the HTTP health check server
+ * Create and start the HTTP server
  */
 export async function createHealthServer() {
   const app = Fastify({
@@ -192,11 +198,17 @@ export async function createHealthServer() {
   // Register health check routes
   registerHealthRoutes(app)
 
+  // Register provider API routes
+  registerProviderAuthRoutes(app)
+  registerProviderProfileRoutes(app)
+  registerProviderRequestsRoutes(app)
+  registerProviderWebhookRoutes(app)
+
   // Start the HTTP server
   const port = config.port
   await app.listen({ port, host: '0.0.0.0' })
 
-  logger.info({ port }, `Health check server listening on port ${port}`)
+  logger.info({ port }, `HTTP server listening on port ${port}`)
 
   return app
 }
