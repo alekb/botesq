@@ -168,59 +168,37 @@ export default function DocsPage() {
         </ol>
       </div>
 
-      {/* Credit pricing */}
+      {/* Pricing */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-text-primary">Credit Pricing</h2>
+        <h2 className="text-2xl font-semibold text-text-primary">Pricing</h2>
         <p className="text-text-secondary">
-          BotEsq uses a credit-based system. 1 credit = $0.001 USD. Here are some example costs:
+          BotEsq uses a credit-based system. Service costs vary based on complexity, urgency, and
+          scope. When you submit a request, the system returns the exact credit cost before
+          processing.
         </p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-default">
-                <th className="py-3 text-left font-medium text-text-primary">Service</th>
-                <th className="py-3 text-right font-medium text-text-primary">Credits</th>
-                <th className="py-3 text-right font-medium text-text-primary">USD</th>
-              </tr>
-            </thead>
-            <tbody className="text-text-secondary">
-              <tr className="border-b border-border-default">
-                <td className="py-3">Simple Legal Question</td>
-                <td className="py-3 text-right font-mono">200</td>
-                <td className="py-3 text-right">$0.20</td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3">Moderate Legal Question</td>
-                <td className="py-3 text-right font-mono">500</td>
-                <td className="py-3 text-right">$0.50</td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3">Complex Legal Question</td>
-                <td className="py-3 text-right font-mono">1,000</td>
-                <td className="py-3 text-right">$1.00</td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3">Create Matter</td>
-                <td className="py-3 text-right font-mono">10,000</td>
-                <td className="py-3 text-right">$10.00</td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3">Document Review (base)</td>
-                <td className="py-3 text-right font-mono">2,500</td>
-                <td className="py-3 text-right">$2.50</td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3">Standard Consultation</td>
-                <td className="py-3 text-right font-mono">5,000</td>
-                <td className="py-3 text-right">$5.00</td>
-              </tr>
-              <tr>
-                <td className="py-3">Urgent Consultation</td>
-                <td className="py-3 text-right font-mono">10,000</td>
-                <td className="py-3 text-right">$10.00</td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium text-text-primary">How It Works</h3>
+          <ol className="list-inside list-decimal space-y-2 text-text-secondary">
+            <li>
+              <strong className="text-text-primary">Submit a request</strong> — Call the appropriate
+              MCP tool with your request details
+            </li>
+            <li>
+              <strong className="text-text-primary">Receive a quote</strong> — The response includes
+              the credit cost for that specific request
+            </li>
+            <li>
+              <strong className="text-text-primary">Confirm or cancel</strong> — Credits are only
+              deducted when you proceed with the service
+            </li>
+          </ol>
+        </div>
+        <div className="rounded-lg border border-border-default bg-background-secondary p-4">
+          <p className="text-sm text-text-secondary">
+            <strong className="text-text-primary">Free tools:</strong> Session management,
+            information retrieval, and status checks are always free. Paid services (legal Q&A,
+            consultations, document review) return pricing in the response.
+          </p>
         </div>
       </div>
 

@@ -12,7 +12,7 @@ const faqs = [
   {
     question: 'How do credits work?',
     answer:
-      'Credits are the universal currency for all BotEsq services. You purchase credit packages and use them across any service. Each service has a transparent credit cost listed in our documentation.',
+      'Credits are the universal currency for all BotEsq services. You purchase credit packages and use them across any service. When you submit a request, the system returns the exact credit cost based on complexity and scope before processing.',
   },
   {
     question: 'Do credits expire?',

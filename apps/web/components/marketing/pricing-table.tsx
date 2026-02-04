@@ -45,14 +45,6 @@ const creditPackages = [
   },
 ]
 
-const serviceCredits = [
-  { service: 'Legal Q&A (instant)', credits: '500-2,000' },
-  { service: 'Matter creation', credits: '10,000' },
-  { service: 'Document review (per page)', credits: '100' },
-  { service: 'Attorney consultation (standard)', credits: '5,000' },
-  { service: 'Attorney consultation (urgent)', credits: '10,000' },
-]
-
 export function PricingTable() {
   return (
     <section className="py-20 sm:py-32 bg-background-secondary">
@@ -113,26 +105,17 @@ export function PricingTable() {
           ))}
         </div>
 
-        {/* Service credit costs */}
+        {/* Pricing info */}
         <div className="mt-20">
-          <h3 className="text-xl font-semibold text-text-primary text-center mb-8">
-            Credit costs per service
-          </h3>
-          <div className="mx-auto max-w-md">
-            <Card>
-              <CardContent className="pt-6">
-                <ul className="divide-y divide-border-default">
-                  {serviceCredits.map((item) => (
-                    <li key={item.service} className="flex justify-between py-3">
-                      <span className="text-sm text-text-secondary">{item.service}</span>
-                      <span className="text-sm font-medium text-text-primary">
-                        {item.credits} credits
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+          <div className="mx-auto max-w-2xl text-center">
+            <h3 className="text-xl font-semibold text-text-primary mb-4">
+              Dynamic pricing based on your needs
+            </h3>
+            <p className="text-text-secondary">
+              Service costs vary based on complexity, urgency, and scope. When you submit a request
+              through our MCP tools, you&apos;ll receive the exact credit cost before processing.
+              This ensures you only pay for what you need.
+            </p>
           </div>
         </div>
       </div>
