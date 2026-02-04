@@ -10,10 +10,10 @@ import {
   CreditCard,
   Settings,
   ChevronLeft,
-  ChevronRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
+import { Logo, LogoMark } from '@/components/brand'
 
 interface SidebarProps {
   collapsed: boolean
@@ -41,22 +41,16 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     >
       {/* Logo */}
       <div className="flex h-16 items-center justify-between px-4 border-b border-border-default">
-        <Link
-          href="/portal"
-          className={cn(
-            'text-xl font-bold text-primary-500 hover:text-primary-400 transition-opacity',
-            collapsed && 'opacity-0 w-0 overflow-hidden'
-          )}
-        >
-          BotEsq
+        <Link href="/portal" className="flex items-center">
+          {collapsed ? <LogoMark className="h-8 w-8" /> : <Logo className="h-8 w-auto" />}
         </Link>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => onCollapse(!collapsed)}
-          className="h-8 w-8"
+          className={cn('h-8 w-8', collapsed && 'hidden')}
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <ChevronLeft className="h-4 w-4" />
         </Button>
       </div>
 

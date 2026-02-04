@@ -1,14 +1,15 @@
 import Link from 'next/link'
+import { Logo } from '@/components/brand'
 
 export default function ProviderAuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-background-primary">
       {/* Header */}
-      <header className="p-6">
-        <Link href="/" className="text-2xl font-bold text-primary-500 hover:text-primary-400">
-          BotEsq
+      <header className="p-6 flex items-center gap-3">
+        <Link href="/">
+          <Logo className="h-8 w-auto" />
         </Link>
-        <span className="ml-2 text-sm text-text-secondary">Provider Portal</span>
+        <span className="text-sm text-text-secondary">Provider Portal</span>
       </header>
 
       {/* Main content - centered card */}

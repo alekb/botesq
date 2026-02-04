@@ -2,17 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  LayoutDashboard,
-  Inbox,
-  Layers,
-  DollarSign,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
+import { LayoutDashboard, Inbox, Layers, DollarSign, Settings, ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
+import { Logo, LogoMark } from '@/components/brand'
 
 interface ProviderSidebarProps {
   collapsed: boolean
@@ -39,25 +32,25 @@ export function ProviderSidebar({ collapsed, onCollapse }: ProviderSidebarProps)
     >
       {/* Logo */}
       <div className="flex h-16 items-center justify-between px-4 border-b border-border-default">
-        <Link
-          href="/provider"
-          className={cn(
-            'flex items-center gap-2 text-xl font-bold text-primary-500 hover:text-primary-400 transition-opacity',
-            collapsed && 'opacity-0 w-0 overflow-hidden'
+        <Link href="/provider" className="flex items-center gap-2">
+          {collapsed ? (
+            <LogoMark className="h-8 w-8" />
+          ) : (
+            <>
+              <Logo className="h-8 w-auto" />
+              <span className="text-xs font-normal text-text-secondary bg-background-secondary px-2 py-0.5 rounded">
+                Provider
+              </span>
+            </>
           )}
-        >
-          BotEsq
-          <span className="text-xs font-normal text-text-secondary bg-background-secondary px-2 py-0.5 rounded">
-            Provider
-          </span>
         </Link>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => onCollapse(!collapsed)}
-          className="h-8 w-8"
+          className={cn('h-8 w-8', collapsed && 'hidden')}
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <ChevronLeft className="h-4 w-4" />
         </Button>
       </div>
 

@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Shield, Loader2, AlertCircle } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
+import { LogoMark } from '@/components/brand'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -78,8 +79,8 @@ export default function AttorneyLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background-primary px-4">
       <Card className="w-full max-w-md space-y-6 p-8">
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-500/10">
-            <Shield className="h-6 w-6 text-primary-500" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <LogoMark className="h-12 w-12" />
           </div>
           <h1 className="text-2xl font-bold text-text-primary">Attorney Portal</h1>
           <p className="mt-2 text-sm text-text-secondary">

@@ -1,12 +1,13 @@
 import Link from 'next/link'
+import { Logo } from '@/components/brand'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-background-primary">
       {/* Header */}
       <header className="p-6">
-        <Link href="/" className="text-2xl font-bold text-primary-500 hover:text-primary-400">
-          BotEsq
+        <Link href="/">
+          <Logo className="h-8 w-auto" />
         </Link>
       </header>
 

@@ -2,17 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  ScrollText,
-  ShieldCheck,
-  Banknote,
-  Briefcase,
-} from 'lucide-react'
+import { LayoutDashboard, Building2, Users, ScrollText, Banknote, Briefcase } from 'lucide-react'
 import type { Attorney } from '@botesq/database'
 import { cn } from '@/lib/utils/cn'
+import { Logo } from '@/components/brand'
 
 interface AdminSidebarProps {
   admin: Attorney
@@ -34,15 +27,13 @@ export function AdminSidebar({ admin }: AdminSidebarProps) {
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-background-secondary lg:block">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-          <ShieldCheck className="h-8 w-8 text-error-500" />
-          <div>
-            <span className="text-lg font-bold text-primary-500">Bot</span>
-            <span className="text-lg font-bold text-text-primary">Esq</span>
-            <span className="ml-2 rounded bg-error-500/10 px-1.5 py-0.5 text-xs font-medium text-error-500">
-              Admin
-            </span>
-          </div>
+        <div className="flex h-16 items-center gap-3 border-b border-border px-6">
+          <Link href="/admin" className="flex items-center">
+            <Logo className="h-8 w-auto" />
+          </Link>
+          <span className="rounded bg-error-500/10 px-1.5 py-0.5 text-xs font-medium text-error-500">
+            Admin
+          </span>
         </div>
 
         {/* Navigation */}
