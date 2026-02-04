@@ -2,7 +2,7 @@
 
 ## Current
 
-**Phase:** Provider Portal UI
+**Phase:** Phase 13.6 - Provider Settlement System
 **Step:** Complete
 **Status:** complete
 
@@ -38,6 +38,39 @@ _None_
 ---
 
 ## Completed
+
+### Phase 13.6: Provider Settlement System (2026-02-04)
+
+- [x] Create Stripe Connect service (stripe-connect.service.ts)
+  - creditsToUsdCents() conversion (1 credit = 1 cent)
+  - getConnectAccountStatus() - check provider's Stripe Connect account
+  - createTransfer() - create Stripe transfer for payouts
+  - getTransfer() - retrieve transfer details
+- [x] Create settlement service (settlement.service.ts)
+  - generateMonthlySettlements() - batch generate settlements for all providers
+  - processSettlement() - create Stripe transfer for a pending settlement
+  - retryFailedSettlement() - retry a failed settlement
+  - listSettlements() - list with filters (provider, status, period)
+  - getSettlementById() - get settlement details
+  - getSettlementStats() - aggregate stats for admin dashboard
+- [x] Create admin settlements API routes
+  - GET /api/admin/settlements - list settlements with filters and stats
+  - POST /api/admin/settlements - generate settlements for a month
+  - GET /api/admin/settlements/[id] - get settlement detail with Connect status
+  - POST /api/admin/settlements/[id]/process - process or retry payout
+- [x] Add settlement audit actions (SETTLEMENT_GENERATE, SETTLEMENT_PROCESS, SETTLEMENT_RETRY)
+- [x] Create admin settlements UI
+  - Add Settlements nav to admin sidebar
+  - Settlement list page with stats cards, filters, pagination
+  - Settlement detail page with provider info, earnings breakdown, actions
+  - Generate settlements dialog with month picker
+  - Process payout and retry failed buttons with confirmation dialogs
+- [x] Fix pre-existing issues
+  - Created missing provider-cookies.ts
+  - Created missing barrel exports for provider components
+  - Fixed unused imports and lint errors
+- [x] Build passes
+- [x] Lint passes
 
 ### Provider Portal UI (2026-02-04)
 
@@ -345,6 +378,20 @@ See `docs/IMPLEMENTATION_PLAN.md` Phase 9 for full details.
 ---
 
 ## Session Log
+
+### 2026-02-04
+
+- Phase 13.6 complete: Provider Settlement System
+  - Stripe Connect service: creditsToUsdCents, getConnectAccountStatus, createTransfer, getTransfer
+  - Settlement service: generateMonthlySettlements, processSettlement, retryFailedSettlement, listSettlements
+  - Admin API routes: GET/POST /api/admin/settlements, GET /api/admin/settlements/[id], POST process
+  - Settlement audit actions: SETTLEMENT_GENERATE, SETTLEMENT_PROCESS, SETTLEMENT_RETRY
+  - Admin UI: Settlement list page with stats, filters, pagination, generate dialog
+  - Admin UI: Settlement detail page with provider info, earnings breakdown, process/retry actions
+  - Fixed pre-existing build issues: missing provider-cookies.ts, missing barrel exports, unused imports
+  - Added @botesq/mcp-server dependency to web app
+  - Added stripe SDK to web app for Connect status checks
+  - Created lib/stripe/connect.ts for local Stripe Connect utilities
 
 ### 2026-02-03
 

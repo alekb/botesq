@@ -3,6 +3,16 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "exports": {
+    "./services/settlement.service": {
+      "types": "./dist/services/settlement.service.d.ts",
+      "import": "./dist/services/settlement.service.js"
+    },
+    "./services/stripe-connect.service": {
+      "types": "./dist/services/stripe-connect.service.d.ts",
+      "import": "./dist/services/stripe-connect.service.js"
+    }
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -34,6 +44,7 @@
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "@vitest/coverage-v8": "^1.6.1",
+    "clamscan": "^2.4.0",
     "tsx": "^4.10.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"

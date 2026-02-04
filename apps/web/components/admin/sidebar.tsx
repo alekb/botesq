@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Users, ScrollText, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, ScrollText, ShieldCheck, Banknote } from 'lucide-react'
 import type { Attorney } from '@botesq/database'
 import { cn } from '@/lib/utils/cn'
 
@@ -14,6 +14,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Operators', href: '/admin/operators', icon: Building2 },
   { name: 'Attorneys', href: '/admin/attorneys', icon: Users },
+  { name: 'Settlements', href: '/admin/settlements', icon: Banknote },
   { name: 'Audit Logs', href: '/admin/audit', icon: ScrollText },
 ]
 
