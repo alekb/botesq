@@ -2,20 +2,20 @@
 
 ## Current
 
-**Phase:** 7 - Web Application Foundation
-**Step:** 7.3 Marketing Pages
+**Phase:** 8 - Operator Portal
+**Step:** Complete
 **Status:** complete
 
 ---
 
 ## Active Tasks
 
-### Phase 8: Authentication System (Next)
+### Phase 9: Attorney Dashboard (Next)
 
-- [ ] Implement operator portal authentication
-- [ ] Implement attorney dashboard authentication
-- [ ] Create login/signup pages
-- [ ] Add session management
+- [ ] Implement attorney authentication
+- [ ] Create attorney dashboard layout
+- [ ] Build matter queue interface
+- [ ] Add consultation review workflow
 
 ### Security Implementation (Cross-Phase)
 
@@ -38,6 +38,74 @@ _None_
 ---
 
 ## Completed
+
+### Phase 8: Operator Portal (2026-02-03)
+
+- [x] Add database models: OperatorSession, EmailVerificationToken, PasswordResetToken
+- [x] Create auth infrastructure:
+  - lib/auth/password.ts — Argon2id hashing wrapper
+  - lib/auth/tokens.ts — Secure random token generation
+  - lib/auth/cookies.ts — HTTP-only session cookie management
+  - lib/auth/session.ts — Session create/validate/invalidate
+  - lib/auth/actions.ts — Server actions (signup, login, logout, verify, reset, change password)
+- [x] Create email infrastructure:
+  - lib/email/client.ts — Resend client setup
+  - lib/email/templates/verification.tsx — Email verification template
+  - lib/email/templates/password-reset.tsx — Password reset template
+  - lib/email/send.ts — Email sending functions
+- [x] Create middleware.ts for protected route authentication
+- [x] Create auth UI pages:
+  - (auth)/login — Login form with redirect support
+  - (auth)/signup — Registration with email verification
+  - (auth)/verify-email — Email verification handler
+  - (auth)/forgot-password — Password reset request
+  - (auth)/reset-password — Password reset form
+- [x] Create portal layout and dashboard:
+  - portal/layout.tsx — Sidebar + header layout
+  - portal/page.tsx — Dashboard with stats, activity, quick actions
+  - components/portal/sidebar.tsx — Navigation sidebar
+  - components/portal/header.tsx — Top bar with user menu
+  - components/portal/stats-card.tsx — Metric display component
+  - components/portal/recent-activity.tsx — Activity feed
+  - components/portal/quick-actions.tsx — Action shortcuts
+- [x] Create matter management UI:
+  - portal/matters/page.tsx — Matter list with filters
+  - portal/matters/[id]/page.tsx — Matter detail overview
+  - portal/matters/[id]/timeline/page.tsx — Matter timeline
+  - portal/matters/[id]/documents/page.tsx — Documents view
+  - portal/matters/[id]/messages/page.tsx — Messages view
+  - components/portal/matters/ — 6 components (list, card, detail, timeline, filters, badge)
+- [x] Create API key management:
+  - portal/api-keys/page.tsx — API key management page
+  - components/portal/api-keys/ — 4 components (list, row, create dialog, revoke dialog)
+- [x] Create billing UI:
+  - portal/billing/page.tsx — Credit balance, packages
+  - portal/billing/history/page.tsx — Transaction history
+  - components/portal/billing/ — 3 components (balance, packages, history)
+- [x] Create settings pages:
+  - portal/settings/page.tsx — Settings overview
+  - portal/settings/profile/page.tsx — Profile editing
+  - portal/settings/security/page.tsx — Password change
+  - portal/settings/preauth/page.tsx — Pre-authorization settings
+  - portal/settings/webhooks/page.tsx — Webhook configuration
+  - components/portal/settings/ — 4 components (profile, password, preauth, webhook)
+- [x] Create API client and data fetching:
+  - lib/api/client.ts — Fetch wrapper with error handling
+  - lib/api/matters.ts — Matter API functions
+  - lib/api/api-keys.ts — API key functions
+  - lib/api/billing.ts — Billing functions
+  - lib/api/settings.ts — Settings functions
+- [x] Create React hooks:
+  - lib/hooks/use-operator.ts — Current operator hook
+  - lib/hooks/use-matters.ts — Matters query hook
+  - lib/hooks/use-api-keys.ts — API keys hook
+  - lib/hooks/use-credits.ts — Credits hook
+- [x] Create Zustand store: lib/stores/operator-store.ts
+- [x] Install dependencies: resend, @oslojs/crypto, @oslojs/encoding
+- [x] Configure next.config.js for @node-rs/argon2 native module
+- [x] Build passes
+- [x] Lint passes
+- [x] Tests pass (150 total)
 
 ### Phase 7: Web Application Foundation (2026-02-03)
 
@@ -204,14 +272,14 @@ _None_
 
 ## What's Next
 
-**Phase 8: Authentication System**
+**Phase 9: Attorney Dashboard**
 
-- Create auth flow for operators, attorneys, and admins
-- Build login and signup pages
-- Implement session management with JWT
-- Add protected route middleware
+- Create attorney authentication flow
+- Build attorney dashboard layout with matter queue
+- Implement consultation review workflow
+- Add attorney-specific settings
 
-See `docs/IMPLEMENTATION_PLAN.md` Phase 8 for full details.
+See `docs/IMPLEMENTATION_PLAN.md` Phase 9 for full details.
 
 ---
 
@@ -219,6 +287,22 @@ See `docs/IMPLEMENTATION_PLAN.md` Phase 8 for full details.
 
 ### 2026-02-03
 
+- Phase 8 complete: Operator Portal
+  - Database schema: Added OperatorSession, EmailVerificationToken, PasswordResetToken models
+  - Auth infrastructure: Argon2id password hashing, secure session tokens, HTTP-only cookies
+  - Email system: Resend integration with verification and password reset templates
+  - Protected route middleware with login redirect
+  - Auth UI: Login, signup, verify-email, forgot-password, reset-password pages
+  - Portal layout: Sidebar navigation, header with user menu, responsive design
+  - Dashboard: Stats cards, recent activity, quick actions
+  - Matter management: List with filters, detail view, timeline, documents, messages
+  - API keys: List, create dialog, revoke dialog
+  - Billing: Credit balance, packages, transaction history
+  - Settings: Profile, security (password change), pre-auth, webhooks
+  - API client: Fetch wrapper with typed endpoints
+  - React hooks: useOperator, useMatters, useApiKeys, useCredits
+  - Zustand store for operator state
+  - Fixed multiple build issues: native modules, server/client boundaries, Suspense for useSearchParams
 - Phase 7 complete: Web Application Foundation
   - Installed Radix UI, CVA, Zustand, React Query, react-hook-form, lucide-react
   - Added Inter and JetBrains Mono fonts with next/font
