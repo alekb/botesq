@@ -30,6 +30,7 @@
 - [x] Add filename sanitization for path traversal prevention
 - [x] Configure S3 bucket security (private, encrypted) — Terraform config in infra/terraform/
 - [x] Add virus scanning for uploads (ClamAV) — virus-scan.service.ts + Docker Compose + Terraform ECS
+- [x] Use cryptographically secure IDs (crypto.randomBytes, 16 chars, 32^16 combinations)
 
 ---
 
@@ -476,6 +477,12 @@ Production is live at https://botesq.com
     - /api/operator/webhook endpoints for configuration management
     - Automatic webhook dispatch on consultation completion
     - Public docs at /docs#webhooks with Node.js, Python, and agent integration examples
+  - Added polling documentation at /docs#polling for agents not using webhooks
+  - Cryptographically secure IDs: Replaced nanoid with crypto.randomBytes
+    - Created utils/secure-id.ts using Node.js CSPRNG
+    - Increased ID length from 6-8 to 16 characters (32^16 = 1.2e24 combinations)
+    - URL-safe alphabet without ambiguous characters
+    - Updated 8 services: consultation, matter, document, retainer, queue, resolve-\*
 - Phase 16.2 complete: Production Deployment
   - Fixed deployment workflow (db:migrate:deploy for production, localhost health checks)
   - Deployed to EC2 via GitHub Actions
