@@ -1,0 +1,7 @@
+export { Header } from './header'
+export { Footer } from './footer'
+export { Hero } from './hero'
+export { FeatureGrid } from './feature-grid'
+export { PricingTable } from './pricing-table'
+export { CTASection } from './cta-section'
+export { HowItWorks } from './how-it-works'

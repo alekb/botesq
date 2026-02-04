@@ -7,7 +7,7 @@
     "moduleResolution": "bundler",
     "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     },
     "incremental": true
   },
