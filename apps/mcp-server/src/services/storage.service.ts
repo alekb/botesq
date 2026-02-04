@@ -9,6 +9,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { fileTypeFromBuffer } from 'file-type'
 import { config } from '../config.js'
 import { ApiError } from '../types.js'
+import { scanBuffer, isVirusScanEnabled, type ScanResult } from './virus-scan.service.js'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
@@ -90,6 +91,50 @@ export async function uploadFile(params: {
     bucket,
     key,
     etag: response.ETag,
+  }
+}
+
+/**
+ * Upload a file to S3 with virus scanning
+ * This is the recommended method for uploading user-provided content
+ */
+export async function uploadFileSecure(params: {
+  key: string
+  body: Buffer
+  contentType: string
+  filename?: string
+  metadata?: Record<string, string>
+}): Promise<{ bucket: string; key: string; etag?: string; scanResult?: ScanResult }> {
+  const { key, body, contentType, filename, metadata } = params
+
+  // Scan for viruses before upload
+  const scanResult = await scanBuffer(body, filename)
+
+  if (scanResult.isInfected) {
+    logger.warn({ key, filename, viruses: scanResult.viruses }, 'Rejected infected file upload')
+    throw new ApiError(
+      'FILE_INFECTED',
+      `File rejected: malware detected (${scanResult.viruses.join(', ')})`,
+      400
+    )
+  }
+
+  // Upload clean file
+  const result = await uploadFile({ key, body, contentType, metadata })
+
+  logger.info(
+    {
+      key,
+      filename,
+      scanDurationMs: scanResult.scanDurationMs,
+      virusScanEnabled: isVirusScanEnabled(),
+    },
+    'Secure file upload completed'
+  )
+
+  return {
+    ...result,
+    scanResult,
   }
 }
 

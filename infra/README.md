@@ -71,6 +71,53 @@ terraform apply -var-file=environments/prod.tfvars
 
 Then attach the IAM policy (`botesq-s3-access-prod`) to your EC2 instance role.
 
+## ClamAV Virus Scanning
+
+### Local Development
+
+Use Docker Compose to run ClamAV locally:
+
+```bash
+# Start ClamAV (takes ~2 minutes to load virus definitions)
+docker compose up -d clamav
+
+# Check status
+docker compose logs -f clamav
+
+# Test connection
+echo "PING" | nc localhost 3310
+```
+
+Then enable in `.env.local`:
+
+```bash
+CLAMAV_ENABLED="true"
+CLAMAV_HOST="127.0.0.1"
+CLAMAV_PORT="3310"
+```
+
+### Production Deployment
+
+Deploy ClamAV as an ECS Fargate service:
+
+```bash
+# Enable ClamAV in tfvars
+echo 'enable_clamav = true' >> environments/prod.tfvars
+
+# Deploy
+terraform apply -var-file=environments/prod.tfvars
+
+# Get connection details
+terraform output clamav_env_config
+```
+
+The service uses:
+
+- ECS Fargate for serverless container hosting
+- EFS for persistent virus definition storage
+- Service Discovery for internal DNS (`clamav.botesq.local:3310`)
+- CloudWatch Logs for monitoring
+
 ## File Structure
 
 ```
@@ -80,11 +127,13 @@ infra/
 │   ├── variables.tf         # Input variables
 │   ├── s3.tf                # S3 bucket and security config
 │   ├── iam.tf               # IAM policies and users
+│   ├── clamav.tf            # ClamAV ECS service
 │   ├── outputs.tf           # Output values
 │   └── environments/
 │       ├── dev.tfvars       # Development environment
 │       └── prod.tfvars      # Production environment
-└── README.md                # This file
+├── README.md                # This file
+└── ../docker-compose.yml    # Local development services
 ```
 
 ## Remote State (Production)

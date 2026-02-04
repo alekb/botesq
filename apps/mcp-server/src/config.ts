@@ -29,6 +29,16 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_SUCCESS_URL: z.string().default('https://botesq.io/portal/billing?success=true'),
   STRIPE_CANCEL_URL: z.string().default('https://botesq.io/portal/billing?canceled=true'),
+
+  // ClamAV virus scanning (optional)
+  CLAMAV_ENABLED: z.string().default('false'),
+  CLAMAV_MODE: z.enum(['daemon', 'local']).default('daemon'),
+  CLAMAV_HOST: z.string().default('127.0.0.1'),
+  CLAMAV_PORT: z.string().default('3310'),
+  CLAMAV_SOCKET: z.string().optional(),
+  CLAMAV_TIMEOUT: z.string().default('60000'),
+  CLAMAV_CLAMSCAN_PATH: z.string().default('/usr/bin/clamscan'),
+  CLAMAV_CLAMDSCAN_PATH: z.string().default('/usr/bin/clamdscan'),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -72,6 +82,17 @@ export const config = {
     webhookSecret: parsed.data.STRIPE_WEBHOOK_SECRET,
     successUrl: parsed.data.STRIPE_SUCCESS_URL,
     cancelUrl: parsed.data.STRIPE_CANCEL_URL,
+  },
+
+  clamav: {
+    enabled: parsed.data.CLAMAV_ENABLED === 'true',
+    mode: parsed.data.CLAMAV_MODE as 'daemon' | 'local',
+    host: parsed.data.CLAMAV_HOST,
+    port: parseInt(parsed.data.CLAMAV_PORT, 10),
+    socket: parsed.data.CLAMAV_SOCKET,
+    timeout: parseInt(parsed.data.CLAMAV_TIMEOUT, 10),
+    clamscanPath: parsed.data.CLAMAV_CLAMSCAN_PATH,
+    clamdscanPath: parsed.data.CLAMAV_CLAMDSCAN_PATH,
   },
 } as const
 

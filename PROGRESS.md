@@ -27,7 +27,7 @@
 - [x] Implement provider webhook signature validation
 - [x] Add filename sanitization for path traversal prevention
 - [x] Configure S3 bucket security (private, encrypted) — Terraform config in infra/terraform/
-- [ ] Add virus scanning for uploads (ClamAV) — requires external service
+- [x] Add virus scanning for uploads (ClamAV) — virus-scan.service.ts + Docker Compose + Terraform ECS
 
 ---
 

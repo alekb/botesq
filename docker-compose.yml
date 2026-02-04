@@ -1,0 +1,65 @@
+version: '3.8'
+
+# BotEsq Local Development Services
+# Usage: docker compose up -d
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16.2-alpine
+    container_name: botesq-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: botesq_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ClamAV Antivirus Daemon
+  clamav:
+    image: clamav/clamav:stable
+    container_name: botesq-clamav
+    restart: unless-stopped
+    ports:
+      - '3310:3310'
+    volumes:
+      - clamav_data:/var/lib/clamav
+    environment:
+      # Reduce memory usage for development
+      CLAMAV_NO_FRESHCLAMD: 'false'
+      CLAMAV_NO_MILTERD: 'true'
+    healthcheck:
+      test: ['CMD', 'clamdscan', '--ping', '1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # ClamAV needs time to load virus definitions
+
+  # Redis (optional - for distributed rate limiting)
+  redis:
+    image: redis:7.2-alpine
+    container_name: botesq-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  clamav_data:
+  redis_data:
