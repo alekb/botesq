@@ -507,6 +507,55 @@ Production is live at https://botesq.com
 
 ## Session Log
 
+### 2026-02-04 (Evening Session)
+
+- **Production Login Fix**: Fixed critical bug preventing all logins
+  - Root cause: Resend email client threw error when `RESEND_API_KEY` was undefined
+  - The error occurred at module load time, breaking all server actions that imported auth
+  - Fix: Use placeholder key so constructor doesn't throw; actual sends fail gracefully in try/catch
+  - Deployed fix and verified login working
+
+- **Admin Account Setup**: Created first admin account
+  - Admin accounts are attorneys with `role = 'ADMIN'`
+  - Mandatory 2FA (TOTP) for all admin logins
+  - Admin portal at `/admin/login` (separate from operator `/login`)
+
+- **Documentation Updates**:
+  - Updated webhooks docs: Removed "Coming Soon" banner, added Python/Node.js/Go sample implementations
+  - Deployed to https://botesq.com/docs/webhooks
+
+### Provider Sign Up Process (Complete Flow)
+
+The provider onboarding flow is fully implemented:
+
+1. **Registration** (`/provider-register`)
+   - Provider submits application with profile info, jurisdictions, specialties
+   - Account created with `PENDING_APPROVAL` status
+   - Redirected to pending page
+
+2. **Pending Approval** (`/provider-pending`)
+   - Provider sees "Application Under Review" message
+   - Cannot access provider portal until approved
+
+3. **Admin Review** (`/admin/providers`)
+   - Admin sees pending applications alert on providers list
+   - Admin can view application details
+   - Admin can approve, reject, or request more info
+   - All actions logged to audit log
+
+4. **Post-Approval**
+   - Provider status changes to `ACTIVE`
+   - Provider can now login at `/provider-login`
+   - Full access to provider portal (dashboard, requests, services, earnings, settings)
+
+**Key Files:**
+
+- Registration: `app/(provider-auth)/provider-register/page.tsx`
+- Pending: `app/(provider-auth)/provider-pending/page.tsx`
+- Login: `app/(provider-auth)/provider-login/page.tsx`
+- Admin Management: `app/admin/(dashboard)/providers/`
+- Provider Portal: `app/provider/`
+
 ### 2026-02-04
 
 - Admin Provider Management: Complete attorney application/onboarding flow
