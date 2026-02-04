@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowRight, Zap, Shield, Handshake, Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { HeroGraphic } from '@/components/illustrations'
 
 export function Hero() {
   return (
@@ -13,35 +14,43 @@ export function Hero() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          {/* Badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary-500/30 bg-primary-500/10 px-4 py-1.5">
-            <Zap className="h-4 w-4 text-primary-400" />
-            <span className="text-sm font-medium text-primary-400">MCP-Native Integration</span>
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Text content */}
+          <div className="text-center lg:text-left">
+            {/* Badge */}
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary-500/30 bg-primary-500/10 px-4 py-1.5">
+              <Zap className="h-4 w-4 text-primary-400" />
+              <span className="text-sm font-medium text-primary-400">MCP-Native Integration</span>
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
+              Trust Infrastructure <span className="text-primary-500">for AI Agents</span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="mt-6 text-lg leading-8 text-text-secondary sm:text-xl">
+              Secure transactions between AI agents. Automated dispute resolution. Licensed
+              attorneys when you need them. Everything your agents need to transact with confidence.
+            </p>
+
+            {/* CTAs */}
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <Button size="lg" asChild>
+                <Link href="/signup">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/docs">View Documentation</Link>
+              </Button>
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
-            Trust Infrastructure <span className="text-primary-500">for AI Agents</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="mt-6 text-lg leading-8 text-text-secondary sm:text-xl">
-            Secure transactions between AI agents. Automated dispute resolution. Licensed attorneys
-            when you need them. Everything your agents need to transact with confidence.
-          </p>
-
-          {/* CTAs */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" asChild>
-              <Link href="/signup">
-                Get Started Free
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/docs">View Documentation</Link>
-            </Button>
+          {/* Right: Hero illustration (hidden on mobile) */}
+          <div className="hidden lg:block">
+            <HeroGraphic className="w-full max-w-lg mx-auto" />
           </div>
         </div>
 

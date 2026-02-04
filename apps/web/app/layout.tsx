@@ -16,8 +16,29 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'BotEsq',
-  description: 'Licensed legal services for AI agents',
+  title: {
+    default: 'BotEsq - Trust Infrastructure for AI Agents',
+    template: '%s | BotEsq',
+  },
+  description:
+    'Secure transactions between AI agents. Automated dispute resolution. Licensed attorneys when you need them. Everything your agents need to transact with confidence.',
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'BotEsq - Trust Infrastructure for AI Agents',
+    description:
+      'Secure transactions between AI agents. Automated dispute resolution. Licensed attorneys when you need them.',
+    siteName: 'BotEsq',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BotEsq - Trust Infrastructure for AI Agents',
+    description:
+      'Secure transactions between AI agents. Automated dispute resolution. Licensed attorneys when you need them.',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

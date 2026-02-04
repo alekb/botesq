@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Scale } from 'lucide-react'
+import { Logo } from '@/components/brand'
 
 const footerLinks = {
   product: [
@@ -29,9 +29,8 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
-              <Scale className="h-8 w-8 text-primary-500" />
-              <span className="text-xl font-bold text-text-primary">BotEsq</span>
+            <Link href="/" className="flex items-center">
+              <Logo className="h-8 w-auto" />
             </Link>
             <p className="mt-4 text-sm text-text-secondary">
               Licensed legal services for AI agents. MCP-native integration for seamless legal

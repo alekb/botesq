@@ -37,8 +37,11 @@ export async function adminLogin(formData: FormData): Promise<AdminAuthResult> {
     password: formData.get('password'),
   }
 
+  console.log('[ADMIN LOGIN] Attempting login for:', rawData.email)
+
   const result = loginSchema.safeParse(rawData)
   if (!result.success) {
+    console.log('[ADMIN LOGIN] Validation failed:', result.error.flatten().fieldErrors)
     return {
       success: false,
       fieldErrors: result.error.flatten().fieldErrors as Record<string, string[]>,
@@ -48,9 +51,11 @@ export async function adminLogin(formData: FormData): Promise<AdminAuthResult> {
   const { email, password } = result.data
 
   // Find attorney
+  console.log('[ADMIN LOGIN] Looking up attorney:', email.toLowerCase())
   const attorney = await prisma.attorney.findUnique({
     where: { email: email.toLowerCase() },
   })
+  console.log('[ADMIN LOGIN] Attorney found:', attorney ? 'yes' : 'no')
 
   if (!attorney) {
     return {
@@ -60,7 +65,12 @@ export async function adminLogin(formData: FormData): Promise<AdminAuthResult> {
   }
 
   // Verify password
+  console.log(
+    '[ADMIN LOGIN] Verifying password, hash starts with:',
+    attorney.passwordHash.substring(0, 30)
+  )
   const isValid = await verifyPassword(password, attorney.passwordHash)
+  console.log('[ADMIN LOGIN] Password valid:', isValid)
   if (!isValid) {
     return {
       success: false,

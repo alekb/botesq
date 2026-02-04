@@ -70,6 +70,23 @@ _None_
   - Added comprehensive sample code (Node.js, Python, agent integration pattern)
 - [ ] Register with MCP Registry (deferred per user request)
 
+### Admin Provider Management (2026-02-04)
+
+- [x] Add Providers link to admin sidebar navigation
+- [x] Add provider audit actions (PROVIDER_VIEW, PROVIDER_APPROVE, PROVIDER_REJECT, PROVIDER_SUSPEND, PROVIDER_REACTIVATE)
+- [x] Create provider list page with pending applications alert
+- [x] Create provider detail page with approve/reject/suspend/reactivate actions
+- [x] Create provider-list.tsx component with search and status filters
+- [x] Create provider-detail.tsx component with dialogs for status changes
+- [x] Create API routes:
+  - GET /api/admin/providers - list providers with filters
+  - GET /api/admin/providers/[id] - get provider detail
+  - PATCH /api/admin/providers/[id] - update provider status
+- [x] Build passes
+
+This completes the attorney application/onboarding flow:
+Apply (provider-register) → Verify (admin reviews) → Onboard → Start (provider portal)
+
 ### Marketing Content Reimagining (2026-02-04)
 
 - [x] Hero: Sharper subheadline emphasizing secure transactions
@@ -492,6 +509,13 @@ Production is live at https://botesq.com
 
 ### 2026-02-04
 
+- Admin Provider Management: Complete attorney application/onboarding flow
+  - Added "Providers" to admin sidebar navigation
+  - Created admin provider management section
+  - List page with pending applications alert and status filters
+  - Detail page with approve/reject/suspend/reactivate actions
+  - API routes for listing and updating providers
+  - Audit logging for all provider status changes
 - Phase 17 complete: Launch Preparation
   - Created 30 E2E tests (marketing, auth, API endpoints)
   - Fixed provider middleware redirect loop
