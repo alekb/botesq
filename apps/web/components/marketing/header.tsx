@@ -2,13 +2,15 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Menu, X, Scale } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Logo } from '@/components/brand'
 import { cn } from '@/lib/utils/cn'
 
 const navigation = [
   { name: 'Features', href: '/features' },
   { name: 'Pricing', href: '/pricing' },
+  { name: 'For Attorneys', href: '/for-attorneys' },
   { name: 'Docs', href: '/docs' },
 ]
 
@@ -19,9 +21,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border-default bg-background-primary/95 backdrop-blur supports-[backdrop-filter]:bg-background-primary/60">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Scale className="h-8 w-8 text-primary-500" />
-          <span className="text-xl font-bold text-text-primary">BotEsq</span>
+        <Link href="/" className="flex items-center">
+          <Logo className="h-8 w-auto" />
         </Link>
 
         {/* Desktop navigation */}
