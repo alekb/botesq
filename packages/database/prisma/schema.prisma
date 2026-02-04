@@ -923,3 +923,195 @@ model OperatorProviderPreference {
   @@unique([operatorId, providerId])
   @@map("operator_provider_preferences")
 }
+
+// ============================================
+// RESOLVE - Agent Dispute Resolution System
+// ============================================
+
+model ResolveAgent {
+  id                    String @id @default(cuid())
+  operatorId            String @map("operator_id")
+  externalId            String @unique @map("external_id")
+  agentIdentifier       String @map("agent_identifier")
+  displayName           String? @map("display_name")
+  description           String?
+  metadata              Json?
+  trustScore            Int @default(50) @map("trust_score")
+  totalTransactions     Int @default(0) @map("total_transactions")
+  completedTransactions Int @default(0) @map("completed_transactions")
+  disputesAsClaimant    Int @default(0) @map("disputes_as_claimant")
+  disputesAsRespondent  Int @default(0) @map("disputes_as_respondent")
+  disputesWon           Int @default(0) @map("disputes_won")
+  disputesLost          Int @default(0) @map("disputes_lost")
+  disputesThisMonth     Int @default(0) @map("disputes_this_month")
+  monthlyDisputeResetAt DateTime @default(now()) @map("monthly_dispute_reset_at")
+  status                ResolveAgentStatus @default(ACTIVE)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  proposedTransactions  ResolveTransaction[] @relation("ProposerAgent")
+  receivedTransactions  ResolveTransaction[] @relation("ReceiverAgent")
+  filedDisputes         ResolveDispute[] @relation("ClaimantAgent")
+  receivedDisputes      ResolveDispute[] @relation("RespondentAgent")
+  trustHistory          ResolveAgentTrustHistory[]
+
+  @@unique([operatorId, agentIdentifier])
+  @@index([operatorId, status])
+  @@index([trustScore])
+  @@map("resolve_agents")
+}
+
+enum ResolveAgentStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+model ResolveAgentTrustHistory {
+  id             String @id @default(cuid())
+  resolveAgentId String @map("resolve_agent_id")
+  previousScore  Int @map("previous_score")
+  newScore       Int @map("new_score")
+  changeAmount   Int @map("change_amount")
+  reason         String
+  referenceType  String? @map("reference_type")
+  referenceId    String? @map("reference_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  resolveAgent   ResolveAgent @relation(fields: [resolveAgentId], references: [id])
+
+  @@index([resolveAgentId, createdAt])
+  @@map("resolve_agent_trust_history")
+}
+
+model ResolveTransaction {
+  id                  String @id @default(cuid())
+  externalId          String @unique @map("external_id")
+  proposerAgentId     String @map("proposer_agent_id")
+  receiverAgentId     String @map("receiver_agent_id")
+  title               String
+  description         String?
+  terms               Json
+  statedValue         Int? @map("stated_value")
+  statedValueCurrency String @default("USD") @map("stated_value_currency")
+  status              ResolveTransactionStatus @default(PROPOSED)
+  proposedAt          DateTime @default(now()) @map("proposed_at")
+  respondedAt         DateTime? @map("responded_at")
+  completedAt         DateTime? @map("completed_at")
+  expiresAt           DateTime @map("expires_at")
+  metadata            Json?
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  proposerAgent       ResolveAgent @relation("ProposerAgent", fields: [proposerAgentId], references: [id])
+  receiverAgent       ResolveAgent @relation("ReceiverAgent", fields: [receiverAgentId], references: [id])
+  disputes            ResolveDispute[]
+
+  @@index([proposerAgentId, status])
+  @@index([receiverAgentId, status])
+  @@map("resolve_transactions")
+}
+
+enum ResolveTransactionStatus {
+  PROPOSED
+  ACCEPTED
+  REJECTED
+  IN_PROGRESS
+  COMPLETED
+  DISPUTED
+  CANCELLED
+  EXPIRED
+}
+
+model ResolveDispute {
+  id                    String @id @default(cuid())
+  externalId            String @unique @map("external_id")
+  transactionId         String @map("transaction_id")
+  claimantAgentId       String @map("claimant_agent_id")
+  respondentAgentId     String @map("respondent_agent_id")
+  claimType             ResolveDisputeClaimType @map("claim_type")
+  claimSummary          String @map("claim_summary")
+  claimDetails          String? @map("claim_details")
+  requestedResolution   String @map("requested_resolution")
+  responseSubmittedAt   DateTime? @map("response_submitted_at")
+  responseSummary       String? @map("response_summary")
+  responseDetails       String? @map("response_details")
+  responseDeadline      DateTime @map("response_deadline")
+  status                ResolveDisputeStatus @default(FILED)
+  ruling                ResolveDisputeRuling?
+  rulingReasoning       String? @map("ruling_reasoning")
+  rulingDetails         Json? @map("ruling_details")
+  ruledAt               DateTime? @map("ruled_at")
+  claimantScoreChange   Int? @map("claimant_score_change")
+  respondentScoreChange Int? @map("respondent_score_change")
+  statedValue           Int? @map("stated_value")
+  creditsCharged        Int @default(0) @map("credits_charged")
+  wasFree               Boolean @default(false) @map("was_free")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  transaction           ResolveTransaction @relation(fields: [transactionId], references: [id])
+  claimantAgent         ResolveAgent @relation("ClaimantAgent", fields: [claimantAgentId], references: [id])
+  respondentAgent       ResolveAgent @relation("RespondentAgent", fields: [respondentAgentId], references: [id])
+  evidence              ResolveEvidence[]
+
+  @@index([transactionId])
+  @@index([claimantAgentId, status])
+  @@index([respondentAgentId, status])
+  @@map("resolve_disputes")
+}
+
+enum ResolveDisputeClaimType {
+  NON_PERFORMANCE
+  PARTIAL_PERFORMANCE
+  QUALITY_ISSUE
+  PAYMENT_DISPUTE
+  MISREPRESENTATION
+  BREACH_OF_TERMS
+  OTHER
+}
+
+enum ResolveDisputeStatus {
+  FILED
+  AWAITING_RESPONSE
+  RESPONSE_RECEIVED
+  IN_ARBITRATION
+  RULED
+  CLOSED
+}
+
+enum ResolveDisputeRuling {
+  CLAIMANT
+  RESPONDENT
+  SPLIT
+  DISMISSED
+}
+
+model ResolveEvidence {
+  id                 String @id @default(cuid())
+  disputeId          String @map("dispute_id")
+  submittedBy        ResolveEvidenceSubmitter @map("submitted_by")
+  submittedByAgentId String @map("submitted_by_agent_id")
+  evidenceType       ResolveEvidenceType @map("evidence_type")
+  title              String
+  content            String
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  dispute            ResolveDispute @relation(fields: [disputeId], references: [id])
+
+  @@index([disputeId, submittedBy])
+  @@map("resolve_evidence")
+}
+
+enum ResolveEvidenceSubmitter {
+  CLAIMANT
+  RESPONDENT
+}
+
+enum ResolveEvidenceType {
+  TEXT_STATEMENT
+  COMMUNICATION_LOG
+  AGREEMENT_EXCERPT
+  TIMELINE
+  OTHER
+}

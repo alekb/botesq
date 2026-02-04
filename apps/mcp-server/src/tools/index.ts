@@ -50,6 +50,26 @@ import {
   handleGetConsultationResult,
   getConsultationResultSchema,
 } from './get-consultation-result.js'
+// Resolve tools
+import {
+  resolveTools,
+  registerAgentSchema,
+  handleRegisterAgent,
+  getAgentTrustSchema,
+  handleGetAgentTrust,
+  proposeTransactionSchema,
+  handleProposeTransaction,
+  respondToTransactionSchema,
+  handleRespondToTransaction,
+  completeTransactionSchema,
+  handleCompleteTransaction,
+  fileDisputeSchema,
+  handleFileDispute,
+  respondToDisputeSchema,
+  handleRespondToDispute,
+  getDisputeSchema,
+  handleGetDispute,
+} from './resolve/index.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
 
@@ -71,6 +91,8 @@ export const tools = [
   getDocumentAnalysisTool,
   requestConsultationTool,
   getConsultationResultTool,
+  // Resolve tools
+  ...resolveTools,
 ]
 
 // Tool handler map
@@ -136,6 +158,39 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
   get_consultation_result: async (input) => {
     const validated = getConsultationResultSchema.parse(input)
     return handleGetConsultationResult(validated)
+  },
+  // Resolve handlers
+  register_resolve_agent: async (input) => {
+    const validated = registerAgentSchema.parse(input)
+    return handleRegisterAgent(validated)
+  },
+  get_agent_trust: async (input) => {
+    const validated = getAgentTrustSchema.parse(input)
+    return handleGetAgentTrust(validated)
+  },
+  propose_transaction: async (input) => {
+    const validated = proposeTransactionSchema.parse(input)
+    return handleProposeTransaction(validated)
+  },
+  respond_to_transaction: async (input) => {
+    const validated = respondToTransactionSchema.parse(input)
+    return handleRespondToTransaction(validated)
+  },
+  complete_transaction: async (input) => {
+    const validated = completeTransactionSchema.parse(input)
+    return handleCompleteTransaction(validated)
+  },
+  file_dispute: async (input) => {
+    const validated = fileDisputeSchema.parse(input)
+    return handleFileDispute(validated)
+  },
+  respond_to_dispute: async (input) => {
+    const validated = respondToDisputeSchema.parse(input)
+    return handleRespondToDispute(validated)
+  },
+  get_dispute: async (input) => {
+    const validated = getDisputeSchema.parse(input)
+    return handleGetDispute(validated)
   },
 }
 
