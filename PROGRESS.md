@@ -17,6 +17,7 @@
 - [x] Load testing (k6 smoke and stress tests created)
 - [x] Final security review (HSTS, CSP, Permissions-Policy added)
 - [x] Documentation review (all docs verified)
+- [x] Operator webhooks for async notifications
 
 ### Security Implementation (Cross-Phase) ✅ Complete
 
@@ -58,6 +59,13 @@ _None_
 - [x] Documentation review
   - All docs verified present and accurate
   - Fixed CLAUDE.md reference (progress.txt → PROGRESS.md)
+- [x] Operator webhooks for async notifications
+  - Created operator-webhook.service.ts with HMAC-SHA256 signing
+  - Added webhookUrl and webhookSecret fields to Operator model
+  - Created /api/operator/webhook API endpoints (GET/PUT/POST)
+  - Integrated webhook notifications into consultation completion flow
+  - Added public webhook documentation at /docs#webhooks
+  - Added comprehensive sample code (Node.js, Python, agent integration pattern)
 - [ ] Register with MCP Registry (deferred per user request)
 
 ### Phase 16.2: Production Deployment (2026-02-04)
@@ -462,6 +470,12 @@ Production is live at https://botesq.com
   - Created k6 load tests (smoke and stress)
   - Security review: Added HSTS, CSP, Permissions-Policy headers
   - Documentation review: All docs verified, fixed CLAUDE.md reference
+  - Operator webhooks: Full implementation for async notification delivery
+    - operator-webhook.service.ts with HMAC-SHA256 signature generation
+    - Database migration for webhookUrl/webhookSecret on Operator model
+    - /api/operator/webhook endpoints for configuration management
+    - Automatic webhook dispatch on consultation completion
+    - Public docs at /docs#webhooks with Node.js, Python, and agent integration examples
 - Phase 16.2 complete: Production Deployment
   - Fixed deployment workflow (db:migrate:deploy for production, localhost health checks)
   - Deployed to EC2 via GitHub Actions
