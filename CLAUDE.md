@@ -321,6 +321,15 @@ rounded-xl: 12px (modals)
 
 ---
 
+## Production Access
+
+```bash
+# SSH into production server
+ssh -i ~/.ssh/botesq-key.pem ec2-user@botesq.com
+```
+
+---
+
 ## Questions to Ask Before Implementing
 
 1. Is this covered in the documentation?
