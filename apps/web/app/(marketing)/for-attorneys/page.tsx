@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Scale, DollarSign, Clock, Shield, Users, Zap, CheckCircle, ArrowRight } from 'lucide-react'
+import { Scale, DollarSign, Clock, Users, Zap, CheckCircle, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -37,12 +37,6 @@ const benefits = [
     icon: Users,
   },
   {
-    name: 'Malpractice Coverage',
-    description:
-      'BotEsq provides professional liability coverage for work performed on the platform.',
-    icon: Shield,
-  },
-  {
     name: 'Growing Market',
     description:
       'Be at the forefront of AI-assisted legal services. The demand for attorney review of AI agent transactions is growing rapidly.',
@@ -53,7 +47,7 @@ const benefits = [
 const requirements = [
   'Active bar membership in good standing in at least one U.S. jurisdiction',
   'Minimum 3 years of legal practice experience',
-  'Malpractice insurance (or willingness to be covered under BotEsq policy)',
+  'Active malpractice insurance coverage',
   'Ability to respond to standard requests within 24-48 hours',
   'Familiarity with technology and online platforms',
   'Commitment to quality and professional ethics',
