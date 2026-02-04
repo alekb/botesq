@@ -70,6 +70,29 @@ _None_
   - Added comprehensive sample code (Node.js, Python, agent integration pattern)
 - [ ] Register with MCP Registry (deferred per user request)
 
+### Marketing Content Reimagining (2026-02-04)
+
+- [x] Hero: Sharper subheadline emphasizing secure transactions
+- [x] Feature Grid: Removed MCP Native from Legal (platform feature), adjusted to 3-col grid
+- [x] How It Works: Tabbed interface showing BOTH Resolve and Legal flows with separate code examples
+- [x] Pricing Table: Added Free vs Paid comparison cards, credit packages labeled for BotEsq Legal
+- [x] CTA Section: New headline "Build trust into your agent ecosystem", two product callout cards
+- [x] Docs Page: Rewrote "What is BotEsq" with visual product cards and "When to Use Each" guide
+- [x] Pricing Page: Updated hero for free transactions, added FAQ about free/paid distinction
+
+### Marketing Site Repositioning (2026-02-04)
+
+- [x] Dual product positioning: BotEsq Resolve + BotEsq Legal
+  - BotEsq Resolve: Free tier for agent-to-agent escrow, trust scores, dispute resolution
+  - BotEsq Legal: Paid professional services (Q&A, document review, consultations)
+- [x] Updated hero component with dual product cards
+- [x] Updated feature-grid component with resolve/legal sections
+- [x] Updated how-it-works component (4-step flow with code example)
+- [x] Rewrote features page with three sections (Resolve, Legal, Platform)
+- [x] Removed explicit credit pricing from public site (dynamic pricing model)
+- [x] Added webhook documentation with HTTPS requirement notice
+- [x] Added polling documentation at /docs#polling
+
 ### Phase 16.2: Production Deployment (2026-02-04)
 
 - [x] Deploy MCP server to EC2
