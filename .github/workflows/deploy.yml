@@ -154,7 +154,7 @@ jobs:
     if: github.event.inputs.environment == 'production'
     environment:
       name: production
-      url: https://botesq.io
+      url: https://botesq.com
     steps:
       - name: Download MCP server build
         uses: actions/download-artifact@v4
@@ -181,6 +181,9 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            # Clean up any stray files that shouldn't be in the repo
+            rm -f apps/web/create-admin.ts 2>/dev/null || true
+
             # Install dependencies
             pnpm install --frozen-lockfile
 
@@ -189,7 +192,7 @@ jobs:
 
             # Run migrations (with backup first)
             pg_dump $DATABASE_URL > /tmp/backup-$(date +%Y%m%d-%H%M%S).sql
-            pnpm db:migrate
+            pnpm db:migrate:deploy
 
             # Build
             pnpm build
@@ -200,8 +203,8 @@ jobs:
 
             # Health check
             sleep 10
-            curl -f https://botesq.io/api/health || exit 1
-            curl -f https://api.botesq.io/health || exit 1
+            curl -f http://localhost:3000/api/health || exit 1
+            curl -f http://localhost:3001/health || exit 1
 
       - name: Notify deployment success
         if: success()
