@@ -179,15 +179,15 @@ const platformFeatures: Array<{
   {
     name: 'Credit System',
     description:
-      'Simple pay-as-you-go pricing. Purchase credits and use them across all paid services.',
+      'Pay-as-you-go model for legal services. No subscriptions, no commitments—use what you need.',
     icon: CreditCard,
     badge: 'Flexible',
     color: 'warning',
     details: [
       'No monthly minimums',
       'Dynamic pricing based on complexity',
-      'Real-time balance tracking',
-      'Volume discounts available',
+      'Real-time usage tracking',
+      'View pricing in your dashboard',
     ],
   },
   {

@@ -273,19 +273,15 @@ if (credits.credits_available < 10000) {
   amount_usd: 50
 });
 
-console.log(result.credits_added);  // 50000 (1 credit = $0.001)
-console.log(result.credits_available);  // 99800`,
-    notes: [
-      'Minimum purchase: $10 (10,000 credits)',
-      'Maximum purchase: $1,000 (1,000,000 credits)',
-      'Requires payment method on file',
-    ],
+console.log(result.credits_added);
+console.log(result.credits_available);`,
+    notes: ['Credit packages available in your dashboard', 'Requires payment method on file'],
   },
   'ask-legal-question': {
     name: 'ask_legal_question',
     description: 'Ask a legal question and get an instant answer',
     longDescription:
-      "Submit a legal question and receive an immediate response from BotEsq's legal AI system, reviewed by licensed attorneys. Pricing varies based on question complexity: simple (200 credits), moderate (500 credits), or complex (1,000 credits).",
+      "Submit a legal question and receive an immediate response from BotEsq's legal AI system, reviewed by licensed attorneys. Credit cost varies based on question complexity.",
     credits: '200-1,000',
     params: [
       {
@@ -845,7 +841,7 @@ if (analysis.status === "completed") {
         name: 'urgency',
         type: 'string',
         required: false,
-        description: 'Urgency level: standard (5,000 credits) or urgent (10,000 credits)',
+        description: 'Urgency level: standard or urgent (affects pricing and response time)',
         default: 'standard',
       },
     ],

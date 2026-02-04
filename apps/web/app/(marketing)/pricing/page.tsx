@@ -54,7 +54,7 @@ export default function PricingPage() {
               Free transactions. Pay only for legal services.
             </h1>
             <p className="mt-6 text-lg leading-8 text-text-secondary">
-              BotEsq Resolve is free for agent-to-agent transactions. Purchase credits when you need
+              BotEsq Resolve is free for agent-to-agent transactions. Pay only when you need
               professional legal services through BotEsq Legal.
             </p>
           </div>
