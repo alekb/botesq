@@ -505,6 +505,208 @@ print(f"Attorney response: {result['response']}")`}
           </pre>
         </div>
       </div>
+
+      {/* Polling Without Webhooks */}
+      <div id="polling" className="space-y-4 scroll-mt-24">
+        <h2 className="text-2xl font-semibold text-text-primary">Polling Without Webhooks</h2>
+        <p className="text-text-secondary">
+          If you prefer not to set up webhooks, you can poll BotEsq directly using the{' '}
+          <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+            get_consultation_result
+          </code>{' '}
+          MCP tool. The{' '}
+          <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+            consultation_id
+          </code>{' '}
+          returned when you submit a request is used to retrieve results.
+        </p>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">How It Works</h3>
+          <ol className="list-inside list-decimal space-y-2 text-text-secondary">
+            <li>
+              Call{' '}
+              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                request_consultation
+              </code>{' '}
+              → receive a{' '}
+              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                consultation_id
+              </code>
+            </li>
+            <li>
+              Store the{' '}
+              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                consultation_id
+              </code>{' '}
+              in your agent&apos;s state
+            </li>
+            <li>
+              Periodically call{' '}
+              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                get_consultation_result
+              </code>{' '}
+              with that ID
+            </li>
+            <li>
+              When status is{' '}
+              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                completed
+              </code>
+              , the response is included
+            </li>
+          </ol>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Polling Example (Python)</h3>
+          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
+            {`import asyncio
+
+class LegalAgent:
+    def __init__(self, mcp_client):
+        self.mcp = mcp_client
+        self.session_token = None
+
+    async def start(self, api_key: str):
+        """Initialize session with BotEsq"""
+        result = await self.mcp.call_tool("start_session", {
+            "api_key": api_key
+        })
+        self.session_token = result["session_token"]
+
+    async def request_consultation(self, matter_id: str, question: str):
+        """Submit a consultation and poll for the result"""
+
+        # 1. Submit the consultation request
+        result = await self.mcp.call_tool("request_consultation", {
+            "session_token": self.session_token,
+            "matter_id": matter_id,
+            "question": question,
+            "priority": "standard"
+        })
+
+        consultation_id = result["consultation_id"]
+        print(f"Consultation submitted: {consultation_id}")
+        print(f"Estimated wait: {result.get('estimated_wait_minutes', 'unknown')} minutes")
+
+        # 2. Poll for the result using the consultation_id
+        while True:
+            status = await self.mcp.call_tool("get_consultation_result", {
+                "session_token": self.session_token,
+                "consultation_id": consultation_id
+            })
+
+            if status["status"] == "completed":
+                return {
+                    "consultation_id": consultation_id,
+                    "response": status["response"],
+                    "attorney_reviewed": status["attorney_reviewed"],
+                    "citations": status.get("citations", [])
+                }
+
+            print(f"Status: {status['status']}, waiting...")
+            await asyncio.sleep(60)  # Poll every 60 seconds
+
+# Usage
+async def main():
+    agent = LegalAgent(mcp_client)
+    await agent.start("be_your_api_key_here")
+
+    result = await agent.request_consultation(
+        matter_id="MTR-ABC123",
+        question="What are the legal requirements for forming an LLC in Delaware?"
+    )
+
+    print(f"Attorney response: {result['response']}")
+    print(f"Reviewed by attorney: {result['attorney_reviewed']}")
+
+asyncio.run(main())`}
+          </pre>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Polling Example (TypeScript)</h3>
+          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
+            {`class LegalAgent {
+  private mcp: MCPClient
+  private sessionToken: string | null = null
+
+  constructor(mcpClient: MCPClient) {
+    this.mcp = mcpClient
+  }
+
+  async start(apiKey: string): Promise<void> {
+    const result = await this.mcp.callTool('start_session', { api_key: apiKey })
+    this.sessionToken = result.session_token
+  }
+
+  async requestConsultation(matterId: string, question: string): Promise<{
+    consultationId: string
+    response: string
+    attorneyReviewed: boolean
+  }> {
+    // 1. Submit consultation
+    const submitResult = await this.mcp.callTool('request_consultation', {
+      session_token: this.sessionToken,
+      matter_id: matterId,
+      question,
+      priority: 'standard'
+    })
+
+    const consultationId = submitResult.consultation_id
+    console.log(\`Consultation submitted: \${consultationId}\`)
+
+    // 2. Poll until complete
+    while (true) {
+      const status = await this.mcp.callTool('get_consultation_result', {
+        session_token: this.sessionToken,
+        consultation_id: consultationId
+      })
+
+      if (status.status === 'completed') {
+        return {
+          consultationId,
+          response: status.response,
+          attorneyReviewed: status.attorney_reviewed
+        }
+      }
+
+      console.log(\`Status: \${status.status}, waiting...\`)
+      await new Promise(resolve => setTimeout(resolve, 60000))
+    }
+  }
+}
+
+// Usage
+const agent = new LegalAgent(mcpClient)
+await agent.start('be_your_api_key_here')
+
+const result = await agent.requestConsultation(
+  'MTR-ABC123',
+  'What are the legal requirements for forming an LLC in Delaware?'
+)
+console.log(\`Response: \${result.response}\`)`}
+          </pre>
+        </div>
+
+        <div className="rounded-lg border border-border-default bg-background-secondary p-4">
+          <h4 className="font-medium text-text-primary">Polling Best Practices</h4>
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-text-secondary">
+            <li>Poll no more frequently than once per minute to avoid rate limits</li>
+            <li>
+              Use the{' '}
+              <code className="rounded bg-background-tertiary px-1 py-0.5 font-mono text-xs">
+                estimated_wait_minutes
+              </code>{' '}
+              field to optimize polling frequency
+            </li>
+            <li>Implement exponential backoff for long-running consultations</li>
+            <li>Store consultation IDs persistently if your agent may restart</li>
+            <li>Consider webhooks for production systems to reduce latency and API calls</li>
+          </ul>
+        </div>
+      </div>
     </div>
   )
 }
