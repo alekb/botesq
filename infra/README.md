@@ -118,6 +118,97 @@ The service uses:
 - Service Discovery for internal DNS (`clamav.botesq.local:3310`)
 - CloudWatch Logs for monitoring
 
+## EC2 Production Deployment
+
+### Prerequisites
+
+1. **SSH Key Pair**: Create an SSH key pair in AWS EC2 console
+2. **Your IP Address**: Get your public IP for SSH access
+
+### Deploy EC2 Instance
+
+1. Update `environments/prod.tfvars`:
+
+```hcl
+enable_ec2            = true
+ec2_instance_type     = "t3.medium"
+ec2_key_name          = "your-key-pair-name"
+ec2_allowed_ssh_cidrs = ["YOUR.PUBLIC.IP/32"]
+domain_name           = "botesq.io"
+```
+
+2. Deploy:
+
+```bash
+cd infra/terraform
+terraform init
+terraform plan -var-file=environments/prod.tfvars
+terraform apply -var-file=environments/prod.tfvars
+```
+
+3. Get connection info:
+
+```bash
+terraform output ssh_command
+terraform output ec2_public_ip
+```
+
+### Configure the Server
+
+1. SSH into the instance:
+
+```bash
+ssh -i ~/.ssh/your-key.pem ec2-user@<EC2_PUBLIC_IP>
+```
+
+2. Configure environment variables:
+
+```bash
+sudo cp /opt/botesq/.env.example /opt/botesq/.env
+sudo nano /opt/botesq/.env
+# Fill in production values (DATABASE_URL, STRIPE_SECRET_KEY, etc.)
+```
+
+3. Deploy the application:
+
+```bash
+sudo /opt/botesq/deploy.sh
+```
+
+4. Set up SSL (after DNS is configured):
+
+```bash
+sudo certbot --nginx -d botesq.io -d www.botesq.io
+```
+
+### What Gets Installed
+
+The EC2 user-data script automatically installs:
+
+- Node.js 20.x via NVM
+- pnpm package manager
+- pm2 process manager
+- nginx reverse proxy
+- certbot for SSL
+- PostgreSQL client
+
+### PM2 Commands
+
+```bash
+# View running processes
+pm2 list
+
+# View logs
+pm2 logs
+
+# Restart all
+pm2 restart all
+
+# Restart specific app
+pm2 restart botesq-web
+pm2 restart botesq-mcp
+```
+
 ## File Structure
 
 ```
@@ -127,8 +218,11 @@ infra/
 │   ├── variables.tf         # Input variables
 │   ├── s3.tf                # S3 bucket and security config
 │   ├── iam.tf               # IAM policies and users
+│   ├── ec2.tf               # EC2 instance and security group
 │   ├── clamav.tf            # ClamAV ECS service
 │   ├── outputs.tf           # Output values
+│   ├── scripts/
+│   │   └── user-data.sh     # EC2 bootstrap script
 │   └── environments/
 │       ├── dev.tfvars       # Development environment
 │       └── prod.tfvars      # Production environment
