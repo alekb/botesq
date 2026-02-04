@@ -151,12 +151,12 @@ test.describe('Attorney User Journeys', () => {
     })
 
     test('attorney work queue redirects to login', async ({ page }) => {
-      await page.goto('/attorney/work')
+      await page.goto('/attorney/queue')
       await expect(page).toHaveURL(/\/attorney\/login/)
     })
 
-    test('attorney dashboard redirects to login', async ({ page }) => {
-      await page.goto('/attorney/dashboard')
+    test('attorney settings redirects to login', async ({ page }) => {
+      await page.goto('/attorney/settings')
       await expect(page).toHaveURL(/\/attorney\/login/)
     })
   })
@@ -209,7 +209,7 @@ test.describe('Provider User Journeys', () => {
     test('can navigate between provider login and register', async ({ page }) => {
       await page.goto('/provider-login')
 
-      const registerLink = page.getByRole('link', { name: /register|sign up|create/i })
+      const registerLink = page.getByRole('link', { name: /apply now|register|sign up|create/i })
       await registerLink.click()
 
       await expect(page).toHaveURL(/\/provider-register/)
@@ -232,12 +232,11 @@ test.describe('Provider User Journeys', () => {
   })
 
   test.describe('Provider Pending State', () => {
-    test('pending page is accessible', async ({ page }) => {
+    test('pending page redirects to login without auth', async ({ page }) => {
       await page.goto('/provider-pending')
 
-      await expect(page).toHaveURL('/provider-pending')
-      // Should show pending approval message
-      await expect(page.getByText(/pending|review|approval/i).first()).toBeVisible()
+      // Should redirect to login when not authenticated
+      await expect(page).toHaveURL(/\/provider-login/)
     })
   })
 })
