@@ -29,9 +29,11 @@ export interface GetMatterStatusOutput {
   assigned_attorney?: string
 }
 
-export async function handleGetMatterStatus(
-  input: GetMatterStatusInput
-): Promise<{ success: boolean; data?: GetMatterStatusOutput; error?: { code: string; message: string } }> {
+export async function handleGetMatterStatus(input: GetMatterStatusInput): Promise<{
+  success: boolean
+  data?: GetMatterStatusOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

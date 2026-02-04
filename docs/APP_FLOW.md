@@ -24,6 +24,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Flow:**
+
 1. Agent queries MCP registry for legal services
 2. Registry returns BotEsq server entry with connection details
 3. Agent connects to BotEsq MCP server
@@ -31,12 +32,14 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 5. Agent is ready to call tools
 
 **Data Requirements:**
+
 - MCP server URL
 - Server capabilities manifest
 - Tool schemas (JSON Schema format)
 - Prompt templates
 
 **Error States:**
+
 - Registry unavailable → Retry with exponential backoff
 - BotEsq server unavailable → Return service unavailable error
 - Invalid MCP version → Return version mismatch error
@@ -59,6 +62,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Request:**
+
 ```json
 {
   "tool": "start_session",
@@ -70,6 +74,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Response (Success):**
+
 ```json
 {
   "session_token": "sess_xxxxxxxxxxxxxxxx",
@@ -90,6 +95,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Response (Error):**
+
 ```json
 {
   "error": {
@@ -126,6 +132,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Request:**
+
 ```json
 {
   "tool": "ask_legal_question",
@@ -139,6 +146,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Response (Instant):**
+
 ```json
 {
   "answer_id": "ANS-123456",
@@ -166,6 +174,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Response (Queued):**
+
 ```json
 {
   "answer_id": "ANS-123457",
@@ -211,6 +220,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Request:**
+
 ```json
 {
   "tool": "create_matter",
@@ -225,6 +235,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Response (Has Retainer):**
+
 ```json
 {
   "matter_id": "MATTER-789012",
@@ -246,6 +257,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Response (Needs Retainer):**
+
 ```json
 {
   "matter_id": "MATTER-789013",
@@ -300,6 +312,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **get_retainer_terms Request:**
+
 ```json
 {
   "tool": "get_retainer_terms",
@@ -311,6 +324,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **get_retainer_terms Response:**
+
 ```json
 {
   "retainer_id": "RET-456790",
@@ -334,6 +348,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **accept_retainer Request (Pre-Auth):**
+
 ```json
 {
   "tool": "accept_retainer",
@@ -346,6 +361,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **accept_retainer Response:**
+
 ```json
 {
   "retainer_id": "RET-456790",
@@ -357,10 +373,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
     "status": "active"
   },
   "message": "Retainer accepted. Matter is now active.",
-  "next_steps": [
-    "Upload documents using submit_document",
-    "Add context via matter messages"
-  ]
+  "next_steps": ["Upload documents using submit_document", "Add context via matter messages"]
 }
 ```
 
@@ -396,6 +409,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **submit_document Request:**
+
 ```json
 {
   "tool": "submit_document",
@@ -411,6 +425,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **submit_document Response:**
+
 ```json
 {
   "document_id": "DOC-345678",
@@ -425,6 +440,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **get_document_analysis Response:**
+
 ```json
 {
   "document_id": "DOC-345678",
@@ -488,22 +504,24 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **check_credits Response:**
+
 ```json
 {
   "balance": 33800,
   "currency": "credits",
-  "usd_equivalent": 338.00,
+  "usd_equivalent": 338.0,
   "low_balance_warning": false,
   "usage_this_month": 16200,
   "top_services": [
-    {"service": "document_review", "credits": 10000},
-    {"service": "legal_questions", "credits": 4200},
-    {"service": "matter_creation", "credits": 2000}
+    { "service": "document_review", "credits": 10000 },
+    { "service": "legal_questions", "credits": 4200 },
+    { "service": "matter_creation", "credits": 2000 }
   ]
 }
 ```
 
 **add_credits Request:**
+
 ```json
 {
   "tool": "add_credits",
@@ -515,6 +533,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **add_credits Response:**
+
 ```json
 {
   "payment_url": "https://checkout.stripe.com/pay/cs_xxx",
@@ -637,6 +656,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Navigation:**
+
 - Dashboard (home)
 - Matters
 - Documents
@@ -681,6 +701,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Filter Options:**
+
 - Status: All, Active, Pending, Resolved, Closed
 - Type: All, Contract Review, Entity Formation, Compliance, IP, etc.
 - Date range
@@ -720,6 +741,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Tabs:**
+
 - **Timeline:** Chronological activity
 - **Documents:** All uploaded documents with analysis
 - **Messages:** Communication history
@@ -815,6 +837,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Authentication Requirements:**
+
 - Email + Password
 - Mandatory 2FA (TOTP or SMS)
 - Session timeout: 4 hours
@@ -864,6 +887,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Queue Priority (top to bottom):**
+
 1. Urgent flag set by operator/agent
 2. SLA at risk (approaching deadline)
 3. High complexity (AI low confidence)
@@ -914,6 +938,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Actions:**
+
 - **Claim:** Take ownership of matter
 - **Skip:** Return to queue for another attorney
 - **Edit:** Modify AI draft directly
@@ -1081,6 +1106,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Navigation:**
+
 - Dashboard (home)
 - Request Queue
 - My Services
@@ -1112,6 +1138,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Request Queue Screen:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  Request Queue                                    [Filter] [Refresh]│
@@ -1144,6 +1171,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Request Detail & Response Screen:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  ← Back to Queue                                                   │
@@ -1183,6 +1211,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Actions:**
+
 - **Accept Request:** Claim the request and start working
 - **Reject Request:** Return to queue (with optional reason)
 - **Save Draft:** Save work in progress
@@ -1227,6 +1256,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Revenue Share Model:**
+
 - Provider receives 70% of credits charged
 - BotEsq retains 30% as platform fee
 - Settlements processed monthly via Stripe Connect
@@ -1272,6 +1302,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Service Edit Dialog:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  Edit Service: Legal Q&A                                     [×]   │
@@ -1363,6 +1394,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Provider List Screen:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  Providers                                    [+ Invite] [Filter ▼]│
@@ -1408,6 +1440,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Provider Application Review Screen:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  ← Back to Providers                                               │
@@ -1454,6 +1487,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Actions:**
+
 - **Approve Provider:** Activate provider account, send welcome email
 - **Reject Application:** Deny with reason, send notification
 - **Request More Info:** Send message requesting additional documentation
@@ -1483,6 +1517,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Provider Detail Screen (Admin View):**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  ← Back to Providers                                               │
@@ -1526,6 +1561,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Suspension Dialog:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  Suspend Provider                                            [×]   │
@@ -1566,6 +1602,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ```
 
 **Reinstatement Flow:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │  Provider Appeal                                                   │
@@ -1608,6 +1645,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 **Trigger:** OpenAI API timeout or error
 
 **Handling:**
+
 1. Display message to agent: "Our AI system is temporarily unavailable"
 2. Offer options:
    - Queue for human attorney review
@@ -1616,6 +1654,7 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 4. Admin alerted if > 3 failures in 5 minutes
 
 **Agent Response:**
+
 ```json
 {
   "error": {
@@ -1624,8 +1663,8 @@ This document defines every user journey, screen, and interaction flow in BotEsq
     "fallback_available": true,
     "estimated_wait_minutes": 30,
     "options": [
-      {"action": "queue_for_human", "description": "Queue for attorney review"},
-      {"action": "retry", "retry_after_seconds": 300}
+      { "action": "queue_for_human", "description": "Queue for attorney review" },
+      { "action": "retry", "retry_after_seconds": 300 }
     ]
   }
 }
@@ -1638,11 +1677,13 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 **Trigger:** Operation cost exceeds available balance
 
 **Handling:**
+
 1. Pre-flight check before expensive operations
 2. Return error with required amount
 3. Provide link/URL to purchase credits
 
 **Agent Response:**
+
 ```json
 {
   "error": {
@@ -1663,11 +1704,13 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 **Trigger:** Operation requires active retainer
 
 **Handling:**
+
 1. Return structured retainer requirement
 2. Provide steps to obtain retainer
 3. No work performed until retainer accepted
 
 **Agent Response:**
+
 ```json
 {
   "error": {
@@ -1690,11 +1733,13 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 **Trigger:** Too many requests in time window
 
 **Handling:**
+
 1. Return 429 status
 2. Include retry-after header
 3. Suggest rate limiting on agent side
 
 **Agent Response:**
+
 ```json
 {
   "error": {
@@ -1716,11 +1761,13 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 **Trigger:** Session token past expiration or revoked
 
 **Handling:**
+
 1. Return 401 status
 2. Indicate session needs refresh
 3. Agent should call start_session again
 
 **Agent Response:**
+
 ```json
 {
   "error": {
@@ -1736,95 +1783,102 @@ This document defines every user journey, screen, and interaction flow in BotEsq
 ## Screen Inventory
 
 ### Public Pages
-| Screen | Route | Authentication |
-|--------|-------|----------------|
-| Landing Page | / | None |
-| Features | /features | None |
-| Pricing | /pricing | None |
-| Documentation | /docs | None |
-| Sign Up | /signup | None |
-| Login | /login | None |
-| Terms of Service | /terms | None |
-| Privacy Policy | /privacy | None |
+
+| Screen           | Route     | Authentication |
+| ---------------- | --------- | -------------- |
+| Landing Page     | /         | None           |
+| Features         | /features | None           |
+| Pricing          | /pricing  | None           |
+| Documentation    | /docs     | None           |
+| Sign Up          | /signup   | None           |
+| Login            | /login    | None           |
+| Terms of Service | /terms    | None           |
+| Privacy Policy   | /privacy  | None           |
 
 ### Operator Portal
-| Screen | Route | Authentication |
-|--------|-------|----------------|
-| Dashboard | /portal | Operator |
-| Matters List | /portal/matters | Operator |
-| Matter Detail | /portal/matters/:id | Operator |
-| Documents | /portal/documents | Operator |
-| Billing | /portal/billing | Operator |
-| API Keys | /portal/api-keys | Operator |
-| Settings | /portal/settings | Operator |
-| Pre-Authorization | /portal/settings/preauth | Operator |
+
+| Screen            | Route                    | Authentication |
+| ----------------- | ------------------------ | -------------- |
+| Dashboard         | /portal                  | Operator       |
+| Matters List      | /portal/matters          | Operator       |
+| Matter Detail     | /portal/matters/:id      | Operator       |
+| Documents         | /portal/documents        | Operator       |
+| Billing           | /portal/billing          | Operator       |
+| API Keys          | /portal/api-keys         | Operator       |
+| Settings          | /portal/settings         | Operator       |
+| Pre-Authorization | /portal/settings/preauth | Operator       |
 
 ### Attorney Dashboard
-| Screen | Route | Authentication |
-|--------|-------|----------------|
-| Login | /attorney/login | None |
-| Queue | /attorney | Attorney |
-| Matter Review | /attorney/matter/:id | Attorney |
-| My Completed | /attorney/completed | Attorney |
-| Profile | /attorney/profile | Attorney |
+
+| Screen        | Route                | Authentication |
+| ------------- | -------------------- | -------------- |
+| Login         | /attorney/login      | None           |
+| Queue         | /attorney            | Attorney       |
+| Matter Review | /attorney/matter/:id | Attorney       |
+| My Completed  | /attorney/completed  | Attorney       |
+| Profile       | /attorney/profile    | Attorney       |
 
 ### Admin Dashboard
-| Screen | Route | Authentication |
-|--------|-------|----------------|
-| Login | /admin/login | None |
-| Overview | /admin | Admin |
-| Operators | /admin/operators | Admin |
-| Operator Detail | /admin/operators/:id | Admin |
-| Attorneys | /admin/attorneys | Admin |
-| Attorney Detail | /admin/attorneys/:id | Admin |
-| Matters | /admin/matters | Admin |
-| Providers | /admin/providers | Admin |
-| Provider Detail | /admin/providers/:id | Admin |
-| Provider Applications | /admin/providers/applications | Admin |
-| Settlements | /admin/settlements | Admin |
-| Audit Log | /admin/audit | Admin |
-| Settings | /admin/settings | Admin |
+
+| Screen                | Route                         | Authentication |
+| --------------------- | ----------------------------- | -------------- |
+| Login                 | /admin/login                  | None           |
+| Overview              | /admin                        | Admin          |
+| Operators             | /admin/operators              | Admin          |
+| Operator Detail       | /admin/operators/:id          | Admin          |
+| Attorneys             | /admin/attorneys              | Admin          |
+| Attorney Detail       | /admin/attorneys/:id          | Admin          |
+| Matters               | /admin/matters                | Admin          |
+| Providers             | /admin/providers              | Admin          |
+| Provider Detail       | /admin/providers/:id          | Admin          |
+| Provider Applications | /admin/providers/applications | Admin          |
+| Settlements           | /admin/settlements            | Admin          |
+| Audit Log             | /admin/audit                  | Admin          |
+| Settings              | /admin/settings               | Admin          |
 
 ### Provider Portal
-| Screen | Route | Authentication |
-|--------|-------|----------------|
-| Login | /provider/login | None |
-| Register | /provider/register | None |
-| Dashboard | /provider | Provider |
-| Request Queue | /provider/requests | Provider |
-| Request Detail | /provider/requests/:id | Provider |
-| My Services | /provider/services | Provider |
-| Earnings | /provider/earnings | Provider |
-| Reviews | /provider/reviews | Provider |
-| Settings | /provider/settings | Provider |
-| Webhook Config | /provider/settings/webhooks | Provider |
+
+| Screen         | Route                       | Authentication |
+| -------------- | --------------------------- | -------------- |
+| Login          | /provider/login             | None           |
+| Register       | /provider/register          | None           |
+| Dashboard      | /provider                   | Provider       |
+| Request Queue  | /provider/requests          | Provider       |
+| Request Detail | /provider/requests/:id      | Provider       |
+| My Services    | /provider/services          | Provider       |
+| Earnings       | /provider/earnings          | Provider       |
+| Reviews        | /provider/reviews           | Provider       |
+| Settings       | /provider/settings          | Provider       |
+| Webhook Config | /provider/settings/webhooks | Provider       |
 
 ---
 
 ## Data Loading States
 
 ### Loading Patterns
+
 - **Skeleton loaders** for lists and cards
 - **Spinner** for action buttons during processing
 - **Progress bar** for document uploads
 - **Polling indicator** for async operations
 
 ### Empty States
-| Context | Message | Action |
-|---------|---------|--------|
-| No matters | "No matters yet" | "Create your first matter via your AI agent" |
-| No documents | "No documents uploaded" | "Upload documents through the MCP interface" |
-| No transactions | "No billing history" | "Activity will appear after you use services" |
-| Queue empty | "All caught up!" | "Check back later for new matters" |
+
+| Context         | Message                 | Action                                        |
+| --------------- | ----------------------- | --------------------------------------------- |
+| No matters      | "No matters yet"        | "Create your first matter via your AI agent"  |
+| No documents    | "No documents uploaded" | "Upload documents through the MCP interface"  |
+| No transactions | "No billing history"    | "Activity will appear after you use services" |
+| Queue empty     | "All caught up!"        | "Check back later for new matters"            |
 
 ---
 
 ## Responsive Breakpoints
 
-| Breakpoint | Width | Layout Changes |
-|------------|-------|----------------|
-| Mobile | < 640px | Single column, hamburger nav |
-| Tablet | 640-1024px | Two columns where appropriate |
-| Desktop | > 1024px | Full sidebar, multi-column layouts |
+| Breakpoint | Width      | Layout Changes                     |
+| ---------- | ---------- | ---------------------------------- |
+| Mobile     | < 640px    | Single column, hamburger nav       |
+| Tablet     | 640-1024px | Two columns where appropriate      |
+| Desktop    | > 1024px   | Full sidebar, multi-column layouts |
 
 All layouts are mobile-first. Desktop is the enhancement.

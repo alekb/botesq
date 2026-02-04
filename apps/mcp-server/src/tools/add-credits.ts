@@ -16,7 +16,9 @@ export const addCreditsSchema = z.object({
 
 export type AddCreditsInput = z.infer<typeof addCreditsSchema>
 
-export async function handleAddCredits(input: AddCreditsInput): Promise<ToolOutput<AddCreditsOutput>> {
+export async function handleAddCredits(
+  input: AddCreditsInput
+): Promise<ToolOutput<AddCreditsOutput>> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
 

@@ -23,9 +23,11 @@ export interface GetConsultationResultOutput {
   estimated_wait_minutes?: number
 }
 
-export async function handleGetConsultationResult(
-  input: GetConsultationResultInput
-): Promise<{ success: boolean; data?: GetConsultationResultOutput; error?: { code: string; message: string } }> {
+export async function handleGetConsultationResult(input: GetConsultationResultInput): Promise<{
+  success: boolean
+  data?: GetConsultationResultOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

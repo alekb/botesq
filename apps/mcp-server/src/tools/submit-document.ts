@@ -76,9 +76,11 @@ function detectMimeType(filename: string): string {
   return mimeMap[ext ?? ''] ?? 'application/octet-stream'
 }
 
-export async function handleSubmitDocument(
-  input: SubmitDocumentInput
-): Promise<{ success: boolean; data?: SubmitDocumentOutput; error?: { code: string; message: string } }> {
+export async function handleSubmitDocument(input: SubmitDocumentInput): Promise<{
+  success: boolean
+  data?: SubmitDocumentOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

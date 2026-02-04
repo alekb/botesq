@@ -1,10 +1,7 @@
 import { z } from 'zod'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
-import {
-  generateLegalResponse,
-  validateLegalQuestion,
-} from '../services/legal-ai.service.js'
+import { generateLegalResponse, validateLegalQuestion } from '../services/legal-ai.service.js'
 import { isLLMAvailable } from '../services/llm.service.js'
 import { queueForHumanReview } from '../services/queue.service.js'
 import { prisma } from '@botesq/database'
@@ -51,9 +48,11 @@ const DISCLAIMERS = [
   'For specific legal advice, please consult with a licensed attorney.',
 ]
 
-export async function handleAskLegalQuestion(
-  input: AskLegalQuestionInput
-): Promise<{ success: boolean; data?: AskLegalQuestionOutput; error?: { code: string; message: string } }> {
+export async function handleAskLegalQuestion(input: AskLegalQuestionInput): Promise<{
+  success: boolean
+  data?: AskLegalQuestionOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
@@ -165,10 +164,7 @@ export async function handleAskLegalQuestion(
         answer_id: queued.externalId,
         status: 'queued',
         complexity: 'moderate',
-        disclaimers: [
-          ...DISCLAIMERS,
-          'Your question has been queued for attorney review.',
-        ],
+        disclaimers: [...DISCLAIMERS, 'Your question has been queued for attorney review.'],
         credits_used: creditsUsed,
         credits_remaining: operator.creditBalance - creditsUsed,
         estimated_wait_minutes: queued.estimatedWaitMinutes,
@@ -192,10 +188,7 @@ export async function handleAskLegalQuestion(
       answer_id: queued.externalId,
       status: 'queued',
       complexity: 'moderate',
-      disclaimers: [
-        ...DISCLAIMERS,
-        'Your question has been queued for attorney review.',
-      ],
+      disclaimers: [...DISCLAIMERS, 'Your question has been queued for attorney review.'],
       credits_used: creditsUsed,
       credits_remaining: operator.creditBalance - creditsUsed,
       estimated_wait_minutes: queued.estimatedWaitMinutes,
@@ -250,7 +243,8 @@ async function deductCredits(
 
 export const askLegalQuestionTool = {
   name: 'ask_legal_question',
-  description: 'Ask a legal question and receive an AI-assisted response. Complex questions may be queued for attorney review.',
+  description:
+    'Ask a legal question and receive an AI-assisted response. Complex questions may be queued for attorney review.',
   inputSchema: {
     type: 'object',
     properties: {

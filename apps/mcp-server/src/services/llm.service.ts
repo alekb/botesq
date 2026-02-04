@@ -54,12 +54,7 @@ export async function chatCompletion(
 ): Promise<LLMResponse> {
   const client = getOpenAIClient()
 
-  const {
-    model = 'gpt-4-turbo',
-    temperature = 0.3,
-    maxTokens = 2048,
-    timeoutMs = 30000,
-  } = options
+  const { model = 'gpt-4-turbo', temperature = 0.3, maxTokens = 2048, timeoutMs = 30000 } = options
 
   logger.debug({ model, messageCount: messages.length }, 'Sending chat completion request')
 

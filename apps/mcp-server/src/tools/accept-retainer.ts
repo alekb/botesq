@@ -29,9 +29,11 @@ export interface AcceptRetainerOutput {
   next_steps: string[]
 }
 
-export async function handleAcceptRetainer(
-  input: AcceptRetainerInput
-): Promise<{ success: boolean; data?: AcceptRetainerOutput; error?: { code: string; message: string } }> {
+export async function handleAcceptRetainer(input: AcceptRetainerInput): Promise<{
+  success: boolean
+  data?: AcceptRetainerOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

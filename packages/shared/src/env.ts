@@ -13,9 +13,7 @@
 import { z } from 'zod'
 
 const envSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'test', 'production'])
-    .default('development'),
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
   // Database
   DATABASE_URL: z
@@ -27,15 +25,9 @@ const envSchema = z.object({
     ),
 
   // Authentication
-  SESSION_SECRET: z
-    .string()
-    .min(32, 'SESSION_SECRET must be at least 32 characters')
-    .optional(),
+  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters').optional(),
 
-  API_KEY_SALT: z
-    .string()
-    .min(32, 'API_KEY_SALT must be at least 32 characters')
-    .optional(),
+  API_KEY_SALT: z.string().min(32, 'API_KEY_SALT must be at least 32 characters').optional(),
 
   // OpenAI
   OPENAI_API_KEY: z
@@ -58,10 +50,7 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z
     .string()
     .min(1, 'STRIPE_WEBHOOK_SECRET is required')
-    .refine(
-      (key) => key.startsWith('whsec_'),
-      'STRIPE_WEBHOOK_SECRET must start with "whsec_"'
-    ),
+    .refine((key) => key.startsWith('whsec_'), 'STRIPE_WEBHOOK_SECRET must start with "whsec_"'),
 
   STRIPE_SUCCESS_URL: z.string().url().optional(),
   STRIPE_CANCEL_URL: z.string().url().optional(),
@@ -79,9 +68,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 
   // Logging
-  LOG_LEVEL: z
-    .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
-    .default('info'),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
 
   // Feature Flags
   FEATURE_PROVIDER_MARKETPLACE: z

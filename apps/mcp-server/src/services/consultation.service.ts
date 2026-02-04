@@ -66,7 +66,11 @@ export async function createConsultation(
     })
 
     if (!matter) {
-      throw new ApiError('MATTER_NOT_FOUND', 'Matter not found or does not belong to this operator', 404)
+      throw new ApiError(
+        'MATTER_NOT_FOUND',
+        'Matter not found or does not belong to this operator',
+        404
+      )
     }
     internalMatterId = matter.id
   }

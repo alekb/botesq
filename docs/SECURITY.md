@@ -12,7 +12,7 @@ Security requirements, implementation patterns, and checklists for the BotEsq pl
 import { hash, verify } from '@node-rs/argon2'
 
 const ARGON2_CONFIG = {
-  memoryCost: 65536,    // 64 MB
+  memoryCost: 65536, // 64 MB
   timeCost: 3,
   parallelism: 4,
   hashLength: 32,
@@ -41,12 +41,12 @@ function generateApiKey(): { key: string; hash: string; prefix: string } {
 
 ### Bucket Configuration
 
-| Setting | Value |
-|---------|-------|
-| Encryption | AES-256 (SSE-S3) |
-| Versioning | Enabled |
-| Block Public Access | All 4 options |
-| Pre-signed URL Expiry | 15 minutes |
+| Setting               | Value            |
+| --------------------- | ---------------- |
+| Encryption            | AES-256 (SSE-S3) |
+| Versioning            | Enabled          |
+| Block Public Access   | All 4 options    |
+| Pre-signed URL Expiry | 15 minutes       |
 
 ### Download Authorization
 
@@ -54,14 +54,18 @@ function generateApiKey(): { key: string; hash: string; prefix: string } {
 async function getDocumentDownloadUrl(s3Key: string, operatorId: string) {
   // CRITICAL: Verify ownership first
   const doc = await prisma.document.findFirst({
-    where: { s3Key, operatorId, deletedAt: null }
+    where: { s3Key, operatorId, deletedAt: null },
   })
   if (!doc) throw new AuthError('UNAUTHORIZED')
 
-  return getSignedUrl(s3Client, new GetObjectCommand({
-    Bucket: process.env.S3_BUCKET,
-    Key: s3Key,
-  }), { expiresIn: 900 })
+  return getSignedUrl(
+    s3Client,
+    new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET,
+      Key: s3Key,
+    }),
+    { expiresIn: 900 }
+  )
 }
 ```
 
@@ -80,7 +84,10 @@ async function getDocumentDownloadUrl(s3Key: string, operatorId: string) {
 ```typescript
 import { fileTypeFromBuffer } from 'file-type'
 
-const ALLOWED = new Set(['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+const ALLOWED = new Set([
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+])
 
 async function validateUpload(base64: string, filename: string) {
   const buffer = Buffer.from(base64, 'base64')
@@ -112,15 +119,18 @@ const event = stripe.webhooks.constructEvent(
 ```typescript
 import { createHmac, timingSafeEqual } from 'crypto'
 
-function verifyProviderWebhook(payload: string, signature: string, secret: string, timestamp: string) {
+function verifyProviderWebhook(
+  payload: string,
+  signature: string,
+  secret: string,
+  timestamp: string
+) {
   // Reject if older than 5 minutes
   if (Math.abs(Date.now() - parseInt(timestamp) * 1000) > 300000) {
     throw new Error('WEBHOOK_EXPIRED')
   }
 
-  const expected = createHmac('sha256', secret)
-    .update(`${timestamp}.${payload}`)
-    .digest('hex')
+  const expected = createHmac('sha256', secret).update(`${timestamp}.${payload}`).digest('hex')
 
   return timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))
 }
@@ -130,10 +140,10 @@ function verifyProviderWebhook(payload: string, signature: string, secret: strin
 
 ## Rate Limiting
 
-| Scope | Limit |
-|-------|-------|
-| Per session | 10 req/min, 100 req/hour |
-| Per API key | 1000 req/day |
+| Scope        | Limit                             |
+| ------------ | --------------------------------- |
+| Per session  | 10 req/min, 100 req/hour          |
+| Per API key  | 1000 req/day                      |
 | Per operator | 20 docs/day, 5 concurrent matters |
 
 ---
@@ -170,29 +180,34 @@ function sanitizeLLMInput(input: string): string {
 ## Pre-Production Checklist
 
 ### Authentication
+
 - [ ] Argon2id for passwords
 - [ ] SHA-256 for API keys
 - [ ] Session tokens 32+ chars, 24h expiry
 - [ ] Row-level security on ALL queries
 
 ### File Storage
+
 - [ ] S3 private, no public access
 - [ ] Encryption at rest
 - [ ] Pre-signed URLs with ownership check
 - [ ] Virus scanning
 
 ### Payments
+
 - [ ] Stripe webhook signature validation
 - [ ] Idempotency keys for credits
 - [ ] No test keys in production
 
 ### Infrastructure
+
 - [ ] HTTPS only
 - [ ] Security headers (Helmet)
 - [ ] Rate limiting enabled
 - [ ] Secrets in env vars (not code)
 
 ### CI/CD
+
 - [ ] `pnpm audit` in pipeline
 - [ ] Secrets detection
 - [ ] Dependency review on PRs

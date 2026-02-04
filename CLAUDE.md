@@ -11,16 +11,16 @@
 
 These documents are law. Reference them for all decisions.
 
-| Document | Purpose | Location |
-|----------|---------|----------|
-| PRD.md | Product requirements, features, acceptance criteria | docs/PRD.md |
-| APP_FLOW.md | User journeys, screens, interactions | docs/APP_FLOW.md |
-| TECH_STACK.md | Exact versions, dependencies, infrastructure | docs/TECH_STACK.md |
-| DESIGN_SYSTEM.md | Colors, typography, spacing, visual tokens | docs/DESIGN_SYSTEM.md |
-| FRONTEND_GUIDELINES.md | Component architecture, engineering rules | docs/FRONTEND_GUIDELINES.md |
-| BACKEND_STRUCTURE.md | Database schema, API contracts, auth logic | docs/BACKEND_STRUCTURE.md |
-| IMPLEMENTATION_PLAN.md | Master build blueprint with phases (immutable) | docs/IMPLEMENTATION_PLAN.md |
-| PROGRESS.md | Current state, active tasks, session log | PROGRESS.md |
+| Document               | Purpose                                             | Location                    |
+| ---------------------- | --------------------------------------------------- | --------------------------- |
+| PRD.md                 | Product requirements, features, acceptance criteria | docs/PRD.md                 |
+| APP_FLOW.md            | User journeys, screens, interactions                | docs/APP_FLOW.md            |
+| TECH_STACK.md          | Exact versions, dependencies, infrastructure        | docs/TECH_STACK.md          |
+| DESIGN_SYSTEM.md       | Colors, typography, spacing, visual tokens          | docs/DESIGN_SYSTEM.md       |
+| FRONTEND_GUIDELINES.md | Component architecture, engineering rules           | docs/FRONTEND_GUIDELINES.md |
+| BACKEND_STRUCTURE.md   | Database schema, API contracts, auth logic          | docs/BACKEND_STRUCTURE.md   |
+| IMPLEMENTATION_PLAN.md | Master build blueprint with phases (immutable)      | docs/IMPLEMENTATION_PLAN.md |
+| PROGRESS.md            | Current state, active tasks, session log            | PROGRESS.md                 |
 
 ---
 
@@ -54,6 +54,7 @@ git worktree remove ../botesq-phase-0
 ```
 
 **Rules:**
+
 - Never work directly on `main` — always use a worktree branch
 - Name worktrees descriptively: `botesq-phase-X`, `botesq-feat-XXX`, `botesq-fix-XXX`
 - Keep worktrees in parent directory (`../`) to avoid nesting
@@ -155,12 +156,15 @@ git worktree remove ../botesq-phase-0
 ## Core Principles
 
 ### Simplicity First
+
 Make every change as simple as possible. Impact minimal code.
 
 ### No Laziness
+
 Find root causes. No temporary fixes. Senior developer standards.
 
 ### Minimal Impact
+
 Changes should only touch what's necessary. Avoid introducing bugs.
 
 ---
@@ -168,6 +172,7 @@ Changes should only touch what's necessary. Avoid introducing bugs.
 ## Tech Stack Quick Reference
 
 ### Frontend
+
 ```
 next: 14.2.3
 react: 18.2.0
@@ -180,6 +185,7 @@ zod: 3.23.8
 ```
 
 ### Backend
+
 ```
 node: 20.11.1
 @modelcontextprotocol/sdk: 1.0.4
@@ -190,6 +196,7 @@ stripe: 15.7.0
 ```
 
 ### Database
+
 ```
 postgresql: 16.2
 ```
@@ -199,16 +206,19 @@ postgresql: 16.2
 ## File Naming Conventions
 
 ### Files & Folders
+
 - Folders: `kebab-case` (e.g., `matter-card/`, `api-keys/`)
 - Component files: `kebab-case.tsx` (e.g., `button.tsx`, `matter-card.tsx`)
 - Utility files: `kebab-case.ts` (e.g., `format-date.ts`)
 - Test files: `*.test.ts` or `*.test.tsx`
 
 ### Components
+
 - Component names: `PascalCase` (e.g., `Button`, `MatterCard`)
 - Props interfaces: `PascalCase` + `Props` suffix (e.g., `ButtonProps`)
 
 ### Variables & Functions
+
 - Variables: `camelCase`
 - Functions: `camelCase` with verb prefix (e.g., `getMatter`, `handleSubmit`)
 - Constants: `SCREAMING_SNAKE_CASE`
@@ -217,25 +227,25 @@ postgresql: 16.2
 
 ## Feature IDs Reference
 
-| ID | Feature | Priority |
-|----|---------|----------|
-| FEAT-001 | MCP Server Core | P0 |
-| FEAT-002 | Agent Authentication & Sessions | P0 |
-| FEAT-003 | Credit System & Payments | P0 |
-| FEAT-004 | Matter Management | P0 |
-| FEAT-005 | Retainer Agreement Flow | P0 |
-| FEAT-006 | Legal Q&A (Instant) | P0 |
-| FEAT-007 | Async Consultation Requests | P0 |
-| FEAT-008 | Document Upload & Review | P1 |
-| FEAT-009 | Internal Legal AI Agent | P0 |
-| FEAT-010 | Attorney Dashboard | P0 |
-| FEAT-011 | Operator Portal | P1 |
-| FEAT-012 | Admin Dashboard | P0 |
-| FEAT-013 | Billing & Invoicing | P1 |
-| FEAT-014 | Marketing Website | P1 |
-| FEAT-015 | API Documentation | P0 |
-| FEAT-016 | Provider Integration Framework | P1 |
-| FEAT-017 | Provider Marketplace | P2 |
+| ID       | Feature                         | Priority |
+| -------- | ------------------------------- | -------- |
+| FEAT-001 | MCP Server Core                 | P0       |
+| FEAT-002 | Agent Authentication & Sessions | P0       |
+| FEAT-003 | Credit System & Payments        | P0       |
+| FEAT-004 | Matter Management               | P0       |
+| FEAT-005 | Retainer Agreement Flow         | P0       |
+| FEAT-006 | Legal Q&A (Instant)             | P0       |
+| FEAT-007 | Async Consultation Requests     | P0       |
+| FEAT-008 | Document Upload & Review        | P1       |
+| FEAT-009 | Internal Legal AI Agent         | P0       |
+| FEAT-010 | Attorney Dashboard              | P0       |
+| FEAT-011 | Operator Portal                 | P1       |
+| FEAT-012 | Admin Dashboard                 | P0       |
+| FEAT-013 | Billing & Invoicing             | P1       |
+| FEAT-014 | Marketing Website               | P1       |
+| FEAT-015 | API Documentation               | P0       |
+| FEAT-016 | Provider Integration Framework  | P1       |
+| FEAT-017 | Provider Marketplace            | P2       |
 
 ---
 
@@ -257,6 +267,7 @@ Info:           list_services, get_disclaimers
 ## Design Tokens Quick Reference
 
 ### Colors
+
 ```
 background-primary: #0a0a0a
 background-secondary: #141414
@@ -269,12 +280,14 @@ error-500: #ef4444 (red)
 ```
 
 ### Spacing (base: 4px)
+
 ```
 space-1: 4px    space-4: 16px   space-8: 32px
 space-2: 8px    space-6: 24px   space-12: 48px
 ```
 
 ### Border Radius
+
 ```
 rounded-md: 6px (buttons, inputs)
 rounded-lg: 8px (cards)
@@ -323,17 +336,20 @@ rounded-xl: 12px (modals)
 ## Error Handling Patterns
 
 ### API Errors
+
 ```typescript
 throw new ApiError('ERROR_CODE', 'Human readable message', statusCode)
 ```
 
 ### Form Validation
+
 ```typescript
 const schema = z.object({...})
 // Use zod with react-hook-form
 ```
 
 ### Component Errors
+
 ```typescript
 // Use error boundaries at route level
 // Show Alert component for recoverable errors
@@ -358,6 +374,7 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 ## Current Project State
 
 See `progress.txt` for:
+
 - Current phase
 - What's built
 - What's in progress

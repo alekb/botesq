@@ -132,17 +132,14 @@ export const prompts = [
 /**
  * Get prompt template by name
  */
-export function getPromptTemplate(name: string): typeof prompts[0] | undefined {
+export function getPromptTemplate(name: string): (typeof prompts)[0] | undefined {
   return prompts.find((p) => p.name === name)
 }
 
 /**
  * Build a prompt from template and arguments
  */
-export function buildPrompt(
-  name: string,
-  args: Record<string, string>
-): string | null {
+export function buildPrompt(name: string, args: Record<string, string>): string | null {
   const template = getPromptTemplate(name)
   if (!template) return null
 

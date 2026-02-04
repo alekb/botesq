@@ -6,9 +6,7 @@ import { listMatters } from '../services/matter.service.js'
 
 export const listMattersSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),
-  status: z
-    .enum(['PENDING_RETAINER', 'ACTIVE', 'ON_HOLD', 'RESOLVED', 'CLOSED'])
-    .optional(),
+  status: z.enum(['PENDING_RETAINER', 'ACTIVE', 'ON_HOLD', 'RESOLVED', 'CLOSED']).optional(),
   limit: z.number().int().min(1).max(100).optional(),
   offset: z.number().int().min(0).optional(),
 })
@@ -34,9 +32,11 @@ export interface ListMattersOutput {
   has_more: boolean
 }
 
-export async function handleListMatters(
-  input: ListMattersInput
-): Promise<{ success: boolean; data?: ListMattersOutput; error?: { code: string; message: string } }> {
+export async function handleListMatters(input: ListMattersInput): Promise<{
+  success: boolean
+  data?: ListMattersOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

@@ -2,7 +2,10 @@ import { z } from 'zod'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { getDocument } from '../services/document.service.js'
-import { getAnalysisStatus, type DocumentAnalysisResult } from '../services/document-analysis.service.js'
+import {
+  getAnalysisStatus,
+  type DocumentAnalysisResult,
+} from '../services/document-analysis.service.js'
 import { ApiError } from '../types.js'
 
 export const getDocumentAnalysisSchema = z.object({
@@ -60,9 +63,11 @@ function formatAnalysis(analysis: DocumentAnalysisResult): GetDocumentAnalysisOu
   }
 }
 
-export async function handleGetDocumentAnalysis(
-  input: GetDocumentAnalysisInput
-): Promise<{ success: boolean; data?: GetDocumentAnalysisOutput; error?: { code: string; message: string } }> {
+export async function handleGetDocumentAnalysis(input: GetDocumentAnalysisInput): Promise<{
+  success: boolean
+  data?: GetDocumentAnalysisOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

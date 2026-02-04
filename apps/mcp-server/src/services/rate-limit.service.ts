@@ -71,15 +71,17 @@ export function getRateLimitStatus(sessionToken: string): {
 
   return {
     minute: {
-      remaining: minuteEntry && now < minuteEntry.resetAt
-        ? Math.max(0, config.rateLimit.requestsPerMinute - minuteEntry.count)
-        : config.rateLimit.requestsPerMinute,
+      remaining:
+        minuteEntry && now < minuteEntry.resetAt
+          ? Math.max(0, config.rateLimit.requestsPerMinute - minuteEntry.count)
+          : config.rateLimit.requestsPerMinute,
       resetAt: minuteEntry?.resetAt ?? now + 60000,
     },
     hour: {
-      remaining: hourEntry && now < hourEntry.resetAt
-        ? Math.max(0, config.rateLimit.requestsPerHour - hourEntry.count)
-        : config.rateLimit.requestsPerHour,
+      remaining:
+        hourEntry && now < hourEntry.resetAt
+          ? Math.max(0, config.rateLimit.requestsPerHour - hourEntry.count)
+          : config.rateLimit.requestsPerHour,
       resetAt: hourEntry?.resetAt ?? now + 3600000,
     },
   }

@@ -1,19 +1,55 @@
 import { startSessionTool, handleStartSession, startSessionSchema } from './start-session.js'
-import { getSessionInfoTool, handleGetSessionInfo, getSessionInfoSchema } from './get-session-info.js'
+import {
+  getSessionInfoTool,
+  handleGetSessionInfo,
+  getSessionInfoSchema,
+} from './get-session-info.js'
 import { listServicesTool, handleListServices } from './list-services.js'
 import { getDisclaimersTool, handleGetDisclaimers } from './get-disclaimers.js'
 import { checkCreditsTool, handleCheckCredits, checkCreditsSchema } from './check-credits.js'
-import { askLegalQuestionTool, handleAskLegalQuestion, askLegalQuestionSchema } from './ask-legal-question.js'
+import {
+  askLegalQuestionTool,
+  handleAskLegalQuestion,
+  askLegalQuestionSchema,
+} from './ask-legal-question.js'
 import { createMatterTool, handleCreateMatter, createMatterSchema } from './create-matter.js'
-import { getMatterStatusTool, handleGetMatterStatus, getMatterStatusSchema } from './get-matter-status.js'
+import {
+  getMatterStatusTool,
+  handleGetMatterStatus,
+  getMatterStatusSchema,
+} from './get-matter-status.js'
 import { listMattersTool, handleListMatters, listMattersSchema } from './list-matters.js'
-import { getRetainerTermsTool, handleGetRetainerTerms, getRetainerTermsSchema } from './get-retainer-terms.js'
-import { acceptRetainerTool, handleAcceptRetainer, acceptRetainerSchema } from './accept-retainer.js'
-import { submitDocumentTool, handleSubmitDocument, submitDocumentSchema } from './submit-document.js'
-import { getDocumentAnalysisTool, handleGetDocumentAnalysis, getDocumentAnalysisSchema } from './get-document-analysis.js'
+import {
+  getRetainerTermsTool,
+  handleGetRetainerTerms,
+  getRetainerTermsSchema,
+} from './get-retainer-terms.js'
+import {
+  acceptRetainerTool,
+  handleAcceptRetainer,
+  acceptRetainerSchema,
+} from './accept-retainer.js'
+import {
+  submitDocumentTool,
+  handleSubmitDocument,
+  submitDocumentSchema,
+} from './submit-document.js'
+import {
+  getDocumentAnalysisTool,
+  handleGetDocumentAnalysis,
+  getDocumentAnalysisSchema,
+} from './get-document-analysis.js'
 import { addCreditsTool, handleAddCredits, addCreditsSchema } from './add-credits.js'
-import { requestConsultationTool, handleRequestConsultation, requestConsultationSchema } from './request-consultation.js'
-import { getConsultationResultTool, handleGetConsultationResult, getConsultationResultSchema } from './get-consultation-result.js'
+import {
+  requestConsultationTool,
+  handleRequestConsultation,
+  requestConsultationSchema,
+} from './request-consultation.js'
+import {
+  getConsultationResultTool,
+  handleGetConsultationResult,
+  getConsultationResultSchema,
+} from './get-consultation-result.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
 

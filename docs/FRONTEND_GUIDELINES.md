@@ -178,6 +178,7 @@ const API_BASE_URL = ''
 Location: `components/ui/`
 
 These are the atomic building blocks. They:
+
 - Have no business logic
 - Accept styling via className prop
 - Use design system tokens exclusively
@@ -185,6 +186,7 @@ These are the atomic building blocks. They:
 - Handle their own states (hover, focus, disabled)
 
 Example:
+
 ```tsx
 // components/ui/button.tsx
 import { cva, type VariantProps } from 'class-variance-authority'
@@ -215,8 +217,7 @@ const buttonVariants = cva(
 )
 
 interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   isLoading?: boolean
 }
 
@@ -247,12 +248,14 @@ export function Button({
 Location: `components/{feature}/`
 
 These combine UI components with business logic. They:
+
 - Compose UI primitives
 - May have internal state
 - May fetch data
 - Are feature-specific
 
 Example:
+
 ```tsx
 // components/portal/matter-card.tsx
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
@@ -281,19 +284,11 @@ export function MatterCard({ matter, onView }: MatterCardProps) {
           <p className="text-xs text-text-muted">{matter.id}</p>
           <h3 className="font-semibold">{matter.title}</h3>
         </div>
-        <Badge variant={statusColors[matter.status]}>
-          {matter.status.replace('_', ' ')}
-        </Badge>
+        <Badge variant={statusColors[matter.status]}>{matter.status.replace('_', ' ')}</Badge>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-text-secondary mb-4">
-          Created {formatDate(matter.createdAt)}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onView(matter.id)}
-        >
+        <p className="text-sm text-text-secondary mb-4">Created {formatDate(matter.createdAt)}</p>
+        <Button variant="outline" size="sm" onClick={() => onView(matter.id)}>
           View Details
         </Button>
       </CardContent>
@@ -307,12 +302,14 @@ export function MatterCard({ matter, onView }: MatterCardProps) {
 Location: `app/` routes
 
 Pages are thin wrappers that:
+
 - Fetch initial data (Server Components)
 - Set up layout
 - Compose composite components
 - Handle route-level concerns
 
 Example:
+
 ```tsx
 // app/portal/matters/page.tsx
 import { getMattersList } from '@/lib/api/matters'
@@ -416,14 +413,14 @@ export const useAuthStore = create<AuthState>()(
 
 ### State Selection Rules
 
-| State Type | Solution |
-|------------|----------|
-| Server data | React Query |
-| Form state | react-hook-form |
-| URL state | Next.js params/searchParams |
-| UI state (global) | Zustand |
-| UI state (local) | useState/useReducer |
-| Auth state | Zustand + persist |
+| State Type        | Solution                    |
+| ----------------- | --------------------------- |
+| Server data       | React Query                 |
+| Form state        | react-hook-form             |
+| URL state         | Next.js params/searchParams |
+| UI state (global) | Zustand                     |
+| UI state (local)  | useState/useReducer         |
+| Auth state        | Zustand + persist           |
 
 ---
 
@@ -439,10 +436,7 @@ interface FetchOptions extends RequestInit {
   token?: string
 }
 
-export async function apiClient<T>(
-  endpoint: string,
-  options: FetchOptions = {}
-): Promise<T> {
+export async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { token, ...fetchOptions } = options
 
   const headers: HeadersInit = {
@@ -493,10 +487,7 @@ export async function getMatter(id: string, token: string): Promise<Matter> {
   return apiClient<Matter>(`/matters/${id}`, { token })
 }
 
-export async function createMatter(
-  input: CreateMatterInput,
-  token: string
-): Promise<Matter> {
+export async function createMatter(input: CreateMatterInput, token: string): Promise<Matter> {
   return apiClient<Matter>('/matters', {
     method: 'POST',
     body: JSON.stringify(input),
@@ -552,11 +543,7 @@ export function CreateMatterForm({ onSuccess }: { onSuccess: () => void }) {
         <label htmlFor="title" className="text-sm font-medium">
           Title
         </label>
-        <Input
-          id="title"
-          {...register('title')}
-          error={errors.title?.message}
-        />
+        <Input id="title" {...register('title')} error={errors.title?.message} />
       </div>
 
       <div>
@@ -568,9 +555,7 @@ export function CreateMatterForm({ onSuccess }: { onSuccess: () => void }) {
           <option value="entity_formation">Entity Formation</option>
           <option value="compliance">Compliance</option>
         </Select>
-        {errors.type && (
-          <p className="text-sm text-error-500">{errors.type.message}</p>
-        )}
+        {errors.type && <p className="text-sm text-error-500">{errors.type.message}</p>}
       </div>
 
       <div>
@@ -618,9 +603,7 @@ export function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center">
       <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
-      <p className="text-text-secondary mb-4">
-        {error.message || 'An unexpected error occurred'}
-      </p>
+      <p className="text-text-secondary mb-4">{error.message || 'An unexpected error occurred'}</p>
       <Button onClick={reset}>Try again</Button>
     </div>
   )
@@ -650,11 +633,7 @@ export function MattersList() {
   }
 
   if (error) {
-    return (
-      <Alert variant="error">
-        Failed to load matters: {error.message}
-      </Alert>
-    )
+    return <Alert variant="error">Failed to load matters: {error.message}</Alert>
   }
 
   if (!data?.length) {
@@ -763,8 +742,7 @@ All interactive elements must be keyboard accessible:
 ```tsx
 // Trap focus in modals
 import { FocusTrap } from '@/components/ui/focus-trap'
-
-<Dialog>
+;<Dialog>
   <FocusTrap>
     <DialogContent>...</DialogContent>
   </FocusTrap>
@@ -813,29 +791,20 @@ import Image from 'next/image'
 // Lazy load heavy components
 import dynamic from 'next/dynamic'
 
-const ResponseEditor = dynamic(
-  () => import('@/components/attorney/response-editor'),
-  {
-    loading: () => <Skeleton className="h-64" />,
-    ssr: false  // If editor doesn't work with SSR
-  }
-)
+const ResponseEditor = dynamic(() => import('@/components/attorney/response-editor'), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false, // If editor doesn't work with SSR
+})
 ```
 
 ### Memoization
 
 ```tsx
 // Memoize expensive computations
-const expensiveValue = useMemo(
-  () => computeExpensiveThing(data),
-  [data]
-)
+const expensiveValue = useMemo(() => computeExpensiveThing(data), [data])
 
 // Memoize callbacks passed to children
-const handleClick = useCallback(
-  () => doSomething(id),
-  [id]
-)
+const handleClick = useCallback(() => doSomething(id), [id])
 
 // Memoize components that receive stable props
 const MemoizedCard = memo(MatterCard)
@@ -885,11 +854,7 @@ import MattersPage from '../page'
 const queryClient = new QueryClient()
 
 function Wrapper({ children }) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }
 
 describe('MattersPage', () => {
@@ -961,6 +926,7 @@ printWidth: 80
 ## Import Order
 
 Imports should follow this order:
+
 1. React/Next.js
 2. Third-party libraries
 3. Internal modules (lib/, types/)

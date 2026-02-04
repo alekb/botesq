@@ -11,12 +11,14 @@
 ## Active Tasks
 
 ### Phase 7: Web Application Foundation
+
 - [ ] Review Phase 7 requirements in IMPLEMENTATION_PLAN.md
 - [ ] Set up Next.js with full design system tokens
 - [ ] Create UI component primitives
 - [ ] Build marketing page foundation
 
 ### Security Implementation (Cross-Phase)
+
 - [ ] Implement Argon2id password hashing
 - [ ] Implement API key generation with SHA-256
 - [ ] Add row-level security checks to all queries

@@ -45,36 +45,42 @@ It must also contain the following sections:
 ## Workflow Orchestration
 
 ### 1. Plan Mode Default
+
 - Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
 - If something goes sideways, STOP and re-plan immediately — don't keep pushing
 - Use plan mode for verification steps, not just building
 - Write detailed specs upfront to reduce ambiguity
 
 ### 2. Subagent Strategy
+
 - Use subagents liberally to keep main context window clean
 - Offload research, exploration, and parallel analysis to subagents
 - For complex problems, throw more compute at it via subagents
 - One task per subagent for focused execution
 
 ### 3. Self-Improvement Loop
+
 - After ANY correction from the user: update LESSONS (.md) with the pattern
 - Write rules for yourself that prevent the same mistake
 - Ruthlessly iterate on these lessons until mistake rate drops
 - Review lessons at session start for relevant project
 
 ### 4. Verification Before Done
+
 - Never mark a task complete without proving it works
 - Diff behavior between main and your changes when relevant
 - Ask yourself: "Would a staff engineer approve this?"
 - Run tests, check logs, demonstrate correctness
 
 ### 5. Demand Elegance (Balanced)
+
 - For non-trivial changes: pause and ask "is there a more elegant way?"
 - If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
 - Skip this for simple, obvious fixes — don't over-engineer
 - Challenge your own work before presenting it
 
 ### 6. Autonomous Bug Fixing
+
 - When given a bug report: just fix it. Don't ask for hand-holding
 - Point at logs, errors, failing tests — then resolve them
 - Zero context switching required from the user
@@ -85,29 +91,34 @@ It must also contain the following sections:
 ## Protection Rules
 
 ### No Regressions
+
 - Before modifying any existing file, diff what exists against what you're changing
 - Never break working functionality to implement new functionality
 - If a change touches more than one system, verify each system still works after
 - When in doubt, ask before overwriting
 
 ### No File Overwrites
+
 - Never overwrite existing documentation files
 - Create new timestamped versions when documentation needs updating
 - Canonical docs maintain history — the AI never destroys previous versions
 
 ### No Assumptions
+
 - If you encounter anything not explicitly covered by documentation, STOP and ask
 - Do not infer. Do not guess. Do not fill gaps with "reasonable defaults"
 - Every undocumented decision gets escalated to the user before implementation
 - Silence is not permission
 
 ### Design System Enforcement
+
 - Before creating ANY component, check DESIGN_SYSTEM (.md) first
 - Never invent colors, spacing values, border radii, shadows, or tokens not in the file
 - If a design need arises that isn't covered, flag it and wait for the user to update DESIGN_SYSTEM (.md)
 - Consistency is non-negotiable. Every pixel references the system.
 
 ### Mobile-First Mandate
+
 - Every component starts as a mobile layout
 - Desktop is the enhancement, not the default
 - Breakpoint behavior is defined in DESIGN_SYSTEM (.md) — follow it exactly
@@ -137,6 +148,7 @@ It must also contain the following sections:
 ## Session Startup Sequence
 
 At the start of every session, read these files in this order:
+
 1. CLAUDE (.md) (this file — your rules)
 2. progress (.txt) (where is the project right now)
 3. IMPLEMENTATION_PLAN (.md) (what phase/step is next)

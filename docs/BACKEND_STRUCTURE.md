@@ -829,7 +829,7 @@ All MCP tools follow this request/response pattern:
 ```typescript
 // Tool Input Schema
 interface ToolInput {
-  session_token?: string  // Required for authenticated tools
+  session_token?: string // Required for authenticated tools
   // ... tool-specific parameters
 }
 
@@ -860,7 +860,7 @@ interface StartSessionInput {
 
 interface StartSessionOutput {
   session_token: string
-  expires_at: string  // ISO 8601
+  expires_at: string // ISO 8601
   operator: {
     id: string
     name: string
@@ -1017,7 +1017,7 @@ interface GetRetainerTermsOutput {
 interface AcceptRetainerInput {
   session_token: string
   retainer_id: string
-  pre_auth_token?: string  // Required if using pre-authorization
+  pre_auth_token?: string // Required if using pre-authorization
 }
 
 interface AcceptRetainerOutput {
@@ -1026,7 +1026,7 @@ interface AcceptRetainerOutput {
   accepted_at?: string
   accepted_by?: string
   matter: { id: string; status: MatterStatus }
-  manual_signing_url?: string  // If pre-auth not available
+  manual_signing_url?: string // If pre-auth not available
   message: string
   next_steps: string[]
 }
@@ -1164,7 +1164,7 @@ interface AddCreditsOutput {
 
 // list_services
 interface ListServicesInput {
-  session_token?: string  // Optional for public pricing
+  session_token?: string // Optional for public pricing
 }
 
 interface ListServicesOutput {
@@ -1384,10 +1384,10 @@ async function authenticateSession(token: string): Promise<Session> {
     where: { token },
     include: {
       apiKey: {
-        include: { operator: true }
+        include: { operator: true },
       },
-      agent: true
-    }
+      agent: true,
+    },
   })
 
   if (!session) {
@@ -1411,8 +1411,8 @@ async function authenticateSession(token: string): Promise<Session> {
     where: { id: session.id },
     data: {
       lastActiveAt: new Date(),
-      requestCount: { increment: 1 }
-    }
+      requestCount: { increment: 1 },
+    },
   })
 
   return session
@@ -1437,8 +1437,8 @@ async function createSession(apiKeyId: string, agentId?: string): Promise<Sessio
       token,
       apiKeyId,
       agentId,
-      expiresAt
-    }
+      expiresAt,
+    },
   })
 }
 ```
@@ -1455,9 +1455,9 @@ const adapter = new PrismaAdapter(prisma.operatorSession, prisma.operator)
 export const lucia = new Lucia(adapter, {
   sessionCookie: {
     attributes: {
-      secure: process.env.NODE_ENV === 'production'
-    }
-  }
+      secure: process.env.NODE_ENV === 'production',
+    },
+  },
 })
 ```
 
@@ -1471,12 +1471,12 @@ export const lucia = new Lucia(adapter, {
 const RATE_LIMITS = {
   session: {
     requestsPerMinute: 10,
-    requestsPerHour: 100
+    requestsPerHour: 100,
   },
   operator: {
     documentsPerDay: 20,
-    concurrentMatters: 5
-  }
+    concurrentMatters: 5,
+  },
 }
 ```
 
@@ -1493,15 +1493,15 @@ export function setupRateLimiting(app: FastifyInstance) {
     timeWindow: '1 minute',
     keyGenerator: (request) => {
       // Use session token or IP
-      return request.headers['x-session-token'] as string || request.ip
+      return (request.headers['x-session-token'] as string) || request.ip
     },
     errorResponseBuilder: (request, context) => ({
       error: {
         code: 'RATE_LIMITED',
         message: `Rate limit exceeded. Retry after ${context.after}`,
-        retry_after_seconds: Math.ceil(context.ttl / 1000)
-      }
-    })
+        retry_after_seconds: Math.ceil(context.ttl / 1000),
+      },
+    }),
   })
 }
 ```
@@ -1517,18 +1517,18 @@ const PRICING = {
   ask_legal_question: {
     simple: 200,
     moderate: 500,
-    complex: 1000
+    complex: 1000,
   },
   create_matter: 10000,
   submit_document: {
     base: 2500,
     perPage: 100,
-    max: 10000
+    max: 10000,
   },
   request_consultation: {
     standard: 5000,
-    urgent: 10000
-  }
+    urgent: 10000,
+  },
 }
 ```
 
@@ -1545,7 +1545,7 @@ async function deductCredits(
   await prisma.$transaction(async (tx) => {
     const operator = await tx.operator.findUnique({
       where: { id: operatorId },
-      select: { creditBalance: true }
+      select: { creditBalance: true },
     })
 
     if (!operator || operator.creditBalance < amount) {
@@ -1554,7 +1554,7 @@ async function deductCredits(
 
     await tx.operator.update({
       where: { id: operatorId },
-      data: { creditBalance: { decrement: amount } }
+      data: { creditBalance: { decrement: amount } },
     })
 
     await tx.creditTransaction.create({
@@ -1566,8 +1566,8 @@ async function deductCredits(
         balanceAfter: operator.creditBalance - amount,
         description,
         referenceType,
-        referenceId
-      }
+        referenceId,
+      },
     })
   })
 }
@@ -1620,15 +1620,15 @@ Provide a response with:
 3. Confidence score (0-100)
 4. Whether attorney review is recommended
 5. Suggested follow-up questions
-`
-    }
+`,
+    },
   ]
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4-turbo',
     messages,
     temperature: 0.3,
-    max_tokens: 2048
+    max_tokens: 2048,
   })
 
   return parseLegalResponse(response.choices[0].message.content)
@@ -1647,7 +1647,7 @@ async function handleLLMRequest<T>(
       setTimeout(() => reject(new Error('LLM_TIMEOUT')), 30000)
     })
 
-    return await Promise.race([operation(), timeoutPromise]) as T
+    return (await Promise.race([operation(), timeoutPromise])) as T
   } catch (error) {
     if (error.message === 'LLM_TIMEOUT' || isLLMError(error)) {
       console.error('LLM unavailable, falling back:', error)
@@ -1737,7 +1737,7 @@ interface ServiceQuote {
   estimatedCredits: number
   estimatedMinutes: number
   confidence: number
-  reason?: string  // Why this provider is/isn't suitable
+  reason?: string // Why this provider is/isn't suitable
 }
 
 interface ServiceResponse {
@@ -1774,10 +1774,7 @@ class ProviderRoutingService {
     const selected = this.selectProvider(quotes, request)
 
     // 3. Create provider request record
-    const providerRequest = await this.createProviderRequest(
-      selected.providerId,
-      request
-    )
+    const providerRequest = await this.createProviderRequest(selected.providerId, request)
 
     // 4. Execute via selected provider
     try {
@@ -1806,45 +1803,34 @@ class ProviderRoutingService {
     return quotes
   }
 
-  private selectProvider(
-    quotes: ProviderQuote[],
-    request: ServiceRequest
-  ): ProviderQuote {
+  private selectProvider(quotes: ProviderQuote[], request: ServiceRequest): ProviderQuote {
     // Apply routing rules in priority order
 
     // 1. Operator-specified provider preference
     if (request.operatorPreferences?.length) {
-      const preferred = this.findPreferredProvider(
-        quotes,
-        request.operatorPreferences
-      )
+      const preferred = this.findPreferredProvider(quotes, request.operatorPreferences)
       if (preferred) return preferred
     }
 
     // 2. Filter by jurisdiction match
-    const jurisdictionMatches = quotes.filter(
-      q => q.jurisdictionMatch === true
-    )
+    const jurisdictionMatches = quotes.filter((q) => q.jurisdictionMatch === true)
 
     // 3. Filter by specialty match
-    const specialtyMatches = jurisdictionMatches.filter(
-      q => q.specialtyMatch === true
-    )
+    const specialtyMatches = jurisdictionMatches.filter((q) => q.specialtyMatch === true)
 
     // 4. Sort by availability, quality, then price
-    const sorted = (specialtyMatches.length ? specialtyMatches : quotes)
-      .sort((a, b) => {
-        // Prioritize availability
-        if (a.estimatedMinutes !== b.estimatedMinutes) {
-          return a.estimatedMinutes - b.estimatedMinutes
-        }
-        // Then quality score
-        if (a.confidence !== b.confidence) {
-          return b.confidence - a.confidence
-        }
-        // Finally price
-        return a.estimatedCredits - b.estimatedCredits
-      })
+    const sorted = (specialtyMatches.length ? specialtyMatches : quotes).sort((a, b) => {
+      // Prioritize availability
+      if (a.estimatedMinutes !== b.estimatedMinutes) {
+        return a.estimatedMinutes - b.estimatedMinutes
+      }
+      // Then quality score
+      if (a.confidence !== b.confidence) {
+        return b.confidence - a.confidence
+      }
+      // Finally price
+      return a.estimatedCredits - b.estimatedCredits
+    })
 
     return sorted[0]
   }
@@ -1857,13 +1843,13 @@ class ProviderRoutingService {
     // Mark original as failed
     await prisma.providerRequest.update({
       where: { id: originalRequest.id },
-      data: { status: 'FAILED' }
+      data: { status: 'FAILED' },
     })
 
     // Try fallback to BotEsq internal
     if (originalRequest.providerId !== 'botesq-internal') {
       const internalProvider = this.providers.get('botesq-internal')
-      if (internalProvider && await internalProvider.canHandle(request)) {
+      if (internalProvider && (await internalProvider.canHandle(request))) {
         return this.routeToProvider(internalProvider, request, 'fallback')
       }
     }
@@ -1892,9 +1878,9 @@ class ExternalProviderAdapter implements LegalServiceProvider {
       headers: {
         'Content-Type': 'application/json',
         'X-BotEsq-Signature': signature,
-        'X-BotEsq-Request-Id': request.id
+        'X-BotEsq-Request-Id': request.id,
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     })
 
     if (response.status === 202) {
@@ -1903,7 +1889,7 @@ class ExternalProviderAdapter implements LegalServiceProvider {
         requestId: request.id,
         status: 'pending',
         processingTime: 0,
-        actualCredits: 0
+        actualCredits: 0,
       }
     }
 
@@ -1930,7 +1916,7 @@ async function handleProviderWebhook(
   payload: ProviderWebhookPayload
 ): Promise<void> {
   const provider = await prisma.provider.findUnique({
-    where: { id: providerId }
+    where: { id: providerId },
   })
 
   // Verify signature
@@ -1945,7 +1931,7 @@ async function handleProviderWebhook(
 
   // Process the callback
   const request = await prisma.providerRequest.findUnique({
-    where: { externalId: payload.requestId }
+    where: { externalId: payload.requestId },
   })
 
   if (payload.event === 'request.completed') {
@@ -1955,8 +1941,8 @@ async function handleProviderWebhook(
         status: 'COMPLETED',
         responsePayload: payload.response,
         responseAt: new Date(),
-        slaMet: new Date() <= request.slaDeadline
-      }
+        slaMet: new Date() <= request.slaDeadline,
+      },
     })
 
     // Calculate and record settlement
@@ -1971,25 +1957,20 @@ async function handleProviderWebhook(
 ### Revenue Sharing
 
 ```typescript
-async function recordProviderEarnings(
-  request: ProviderRequest,
-  response: any
-): Promise<void> {
+async function recordProviderEarnings(request: ProviderRequest, response: any): Promise<void> {
   const provider = await prisma.provider.findUnique({
-    where: { id: request.providerId }
+    where: { id: request.providerId },
   })
 
   const totalCredits = request.creditsCharged
-  const providerShare = Math.floor(
-    totalCredits * (provider.revenueSharePct / 100)
-  )
+  const providerShare = Math.floor(totalCredits * (provider.revenueSharePct / 100))
   const platformShare = totalCredits - providerShare
 
   await prisma.providerRequest.update({
     where: { id: request.id },
     data: {
-      providerEarnings: providerShare
-    }
+      providerEarnings: providerShare,
+    },
   })
 
   // Provider earnings will be settled monthly via ProviderSettlement
@@ -2019,20 +2000,20 @@ async function logAudit(
       resourceId,
       details: details ? JSON.stringify(details) : null,
       ipAddress: request?.ip,
-      userAgent: request?.headers['user-agent']
-    }
+      userAgent: request?.headers['user-agent'],
+    },
   })
 }
 
 // Usage examples
 await logAudit('AGENT', session.agentId, 'CREATE_MATTER', 'matter', matter.id, {
   type: matter.type,
-  title: matter.title
+  title: matter.title,
 })
 
 await logAudit('ATTORNEY', attorney.id, 'APPROVE_RESPONSE', 'consultation', consultationId, {
   responseLength: response.length,
-  timeSpent: timeSpentMinutes
+  timeSpent: timeSpentMinutes,
 })
 ```
 
@@ -2073,7 +2054,7 @@ const ERROR_CODES = {
 
   // System
   LLM_UNAVAILABLE: { status: 503, message: 'AI service temporarily unavailable' },
-  INTERNAL_ERROR: { status: 500, message: 'Internal server error' }
+  INTERNAL_ERROR: { status: 500, message: 'Internal server error' },
 }
 ```
 
@@ -2108,11 +2089,11 @@ CREATE INDEX idx_credits_operator_created ON credit_transactions(operator_id, cr
 
 ## Data Retention
 
-| Data Type | Retention Period | Reason |
-|-----------|-----------------|--------|
-| Matter data | 7 years | Legal requirement |
-| Documents | 7 years | Legal requirement |
-| Audit logs | 7 years | Compliance |
-| Sessions | 30 days | Operational |
-| Credit transactions | 7 years | Financial records |
-| API request logs | 90 days | Debugging |
+| Data Type           | Retention Period | Reason            |
+| ------------------- | ---------------- | ----------------- |
+| Matter data         | 7 years          | Legal requirement |
+| Documents           | 7 years          | Legal requirement |
+| Audit logs          | 7 years          | Compliance        |
+| Sessions            | 30 days          | Operational       |
+| Credit transactions | 7 years          | Financial records |
+| API request logs    | 90 days          | Debugging         |

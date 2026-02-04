@@ -27,9 +27,11 @@ export interface GetRetainerTermsOutput {
   manual_signing_url: string
 }
 
-export async function handleGetRetainerTerms(
-  input: GetRetainerTermsInput
-): Promise<{ success: boolean; data?: GetRetainerTermsOutput; error?: { code: string; message: string } }> {
+export async function handleGetRetainerTerms(input: GetRetainerTermsInput): Promise<{
+  success: boolean
+  data?: GetRetainerTermsOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

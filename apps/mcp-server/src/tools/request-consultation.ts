@@ -28,9 +28,11 @@ export interface RequestConsultationOutput {
   credits_remaining: number
 }
 
-export async function handleRequestConsultation(
-  input: RequestConsultationInput
-): Promise<{ success: boolean; data?: RequestConsultationOutput; error?: { code: string; message: string } }> {
+export async function handleRequestConsultation(input: RequestConsultationInput): Promise<{
+  success: boolean
+  data?: RequestConsultationOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
@@ -43,7 +45,10 @@ export async function handleRequestConsultation(
 
   // Check credits
   if (operator.creditBalance < creditsNeeded) {
-    throw new PaymentError('INSUFFICIENT_CREDITS', `Not enough credits. Need ${creditsNeeded}, have ${operator.creditBalance}`)
+    throw new PaymentError(
+      'INSUFFICIENT_CREDITS',
+      `Not enough credits. Need ${creditsNeeded}, have ${operator.creditBalance}`
+    )
   }
 
   // Create consultation

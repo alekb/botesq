@@ -2,7 +2,13 @@ import Stripe from 'stripe'
 import { prisma } from '@botesq/database'
 import { config } from '../config.js'
 import { PaymentError } from '../types.js'
-import { addCredits, usdToCredits, CREDITS_PER_DOLLAR, MIN_PURCHASE_USD, MAX_PURCHASE_USD } from './credit.service.js'
+import {
+  addCredits,
+  usdToCredits,
+  CREDITS_PER_DOLLAR,
+  MIN_PURCHASE_USD,
+  MAX_PURCHASE_USD,
+} from './credit.service.js'
 
 // Initialize Stripe client (lazy, throws if used without config)
 let stripeClient: Stripe | null = null
@@ -197,7 +203,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   }
 
   // Add credits to operator
-  await addCredits(operatorId, credits, `Credit purchase: $${payment.amountUsd / 100}`, 'payment', payment.id)
+  await addCredits(
+    operatorId,
+    credits,
+    `Credit purchase: $${payment.amountUsd / 100}`,
+    'payment',
+    payment.id
+  )
 
   // Update payment record
   await prisma.payment.update({

@@ -60,9 +60,11 @@ function mapUrgency(urgency?: string): MatterUrgency | undefined {
   return map[urgency]
 }
 
-export async function handleCreateMatter(
-  input: CreateMatterInput
-): Promise<{ success: boolean; data?: CreateMatterOutput; error?: { code: string; message: string } }> {
+export async function handleCreateMatter(input: CreateMatterInput): Promise<{
+  success: boolean
+  data?: CreateMatterOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator

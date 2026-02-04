@@ -233,11 +233,10 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024
 /**
  * Validate file for upload
  */
-export function validateFile(params: {
-  filename: string
-  mimeType: string
-  size: number
-}): { valid: boolean; reason?: string } {
+export function validateFile(params: { filename: string; mimeType: string; size: number }): {
+  valid: boolean
+  reason?: string
+} {
   const { filename, mimeType, size } = params
 
   if (!filename || filename.trim().length === 0) {

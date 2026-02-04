@@ -12,13 +12,13 @@ This document defines the exact frameworks, versions, and dependencies for the B
 
 BotEsq is architected as a **platform**, not just an application. Key design decisions support future third-party provider integration:
 
-| Principle | Implementation | Benefit |
-|-----------|---------------|---------|
-| Provider Abstraction | All legal services go through `LegalServiceProvider` interface | Any provider can be plugged in |
-| Webhook-Based Integration | Async provider communication via webhooks | Providers don't need to run BotEsq code |
-| Standardized Contracts | Typed request/response schemas with Zod | Clear API boundaries for integrators |
-| Event-Driven Architecture | Actions emit events that can trigger webhooks | Real-time integration capabilities |
-| Multi-Tenant Isolation | Operator-scoped data with provider preferences | Each operator can customize provider mix |
+| Principle                 | Implementation                                                 | Benefit                                  |
+| ------------------------- | -------------------------------------------------------------- | ---------------------------------------- |
+| Provider Abstraction      | All legal services go through `LegalServiceProvider` interface | Any provider can be plugged in           |
+| Webhook-Based Integration | Async provider communication via webhooks                      | Providers don't need to run BotEsq code  |
+| Standardized Contracts    | Typed request/response schemas with Zod                        | Clear API boundaries for integrators     |
+| Event-Driven Architecture | Actions emit events that can trigger webhooks                  | Real-time integration capabilities       |
+| Multi-Tenant Isolation    | Operator-scoped data with provider preferences                 | Each operator can customize provider mix |
 
 ### Why These Technology Choices
 
@@ -241,6 +241,7 @@ PostgreSQL: 16.2
 ```
 
 **Configuration:**
+
 - Connection pooling via PgBouncer (production)
 - max_connections: 100
 - shared_buffers: 256MB (adjust for instance size)
@@ -309,6 +310,7 @@ nginx: 1.25.x
 ```
 
 **Configuration:**
+
 - HTTP → HTTPS redirect
 - WebSocket support (if needed)
 - Gzip compression
@@ -321,6 +323,7 @@ pm2: 5.3.1
 ```
 
 **Configuration:**
+
 - Cluster mode (4 instances on t3.medium)
 - Automatic restart on failure
 - Log rotation
@@ -336,6 +339,7 @@ pnpm: 8.15.4
 ```
 
 **Workspace configuration:**
+
 ```
 packages:
   - 'apps/*'
@@ -393,6 +397,7 @@ Workflows:
 ```
 
 **Deployment Strategy:**
+
 1. Push to `main` triggers build
 2. Tests must pass
 3. Build artifacts created
@@ -490,18 +495,19 @@ MCP_SERVER_URL=http://localhost:3001
 
 ### Minimum Versions
 
-| Dependency | Minimum | Reason |
-|------------|---------|--------|
-| Node.js | 20.x | ES modules, native fetch |
-| PostgreSQL | 16.x | JSONB improvements, performance |
-| Next.js | 14.x | App Router stability |
-| React | 18.x | Concurrent features |
+| Dependency | Minimum | Reason                          |
+| ---------- | ------- | ------------------------------- |
+| Node.js    | 20.x    | ES modules, native fetch        |
+| PostgreSQL | 16.x    | JSONB improvements, performance |
+| Next.js    | 14.x    | App Router stability            |
+| React      | 18.x    | Concurrent features             |
 
 ### Locked Versions
 
 All dependencies are locked via `pnpm-lock.yaml`. Updates require explicit review and testing.
 
 **Update Policy:**
+
 - Security patches: Immediate
 - Minor versions: Weekly review
 - Major versions: Quarterly evaluation
@@ -512,29 +518,29 @@ All dependencies are locked via `pnpm-lock.yaml`. Updates require explicit revie
 
 ### Infrastructure (MVP)
 
-| Service | Specification | Est. Cost |
-|---------|--------------|-----------|
-| EC2 | t3.medium | $30 |
-| RDS | db.t3.small | $25 |
-| S3 | 10GB + transfers | $5 |
-| Route 53 | Hosted zone + queries | $1 |
-| **Total Infrastructure** | | **~$61** |
+| Service                  | Specification         | Est. Cost |
+| ------------------------ | --------------------- | --------- |
+| EC2                      | t3.medium             | $30       |
+| RDS                      | db.t3.small           | $25       |
+| S3                       | 10GB + transfers      | $5        |
+| Route 53                 | Hosted zone + queries | $1        |
+| **Total Infrastructure** |                       | **~$61**  |
 
 ### Third-Party Services
 
-| Service | Usage | Est. Cost |
-|---------|-------|-----------|
-| OpenAI | 1M tokens/month | $30 |
-| Stripe | 2.9% + $0.30/txn | Variable |
-| **Total Services** | | **~$30 + fees** |
+| Service            | Usage            | Est. Cost       |
+| ------------------ | ---------------- | --------------- |
+| OpenAI             | 1M tokens/month  | $30             |
+| Stripe             | 2.9% + $0.30/txn | Variable        |
+| **Total Services** |                  | **~$30 + fees** |
 
 ### Scaling Costs
 
-| Scale | Infrastructure | Services |
-|-------|---------------|----------|
-| 100 operators | $61/mo | $50/mo |
-| 500 operators | $200/mo | $200/mo |
-| 1000 operators | $500/mo | $500/mo |
+| Scale          | Infrastructure | Services |
+| -------------- | -------------- | -------- |
+| 100 operators  | $61/mo         | $50/mo   |
+| 500 operators  | $200/mo        | $200/mo  |
+| 1000 operators | $500/mo        | $500/mo  |
 
 ---
 
@@ -608,6 +614,7 @@ Configured via `browserslist` in `package.json`.
 ### Headers
 
 Configured via `@fastify/helmet`:
+
 - Content-Security-Policy
 - X-Frame-Options: DENY
 - X-Content-Type-Options: nosniff

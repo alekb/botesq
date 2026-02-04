@@ -71,10 +71,18 @@ function parseConfidence(content: string): { level: LegalResponse['confidence'];
   } else {
     // Derive score from level
     switch (level) {
-      case 'HIGH': score = 95; break
-      case 'MEDIUM': score = 80; break
-      case 'LOW': score = 60; break
-      case 'REQUIRES_REVIEW': score = 40; break
+      case 'HIGH':
+        score = 95
+        break
+      case 'MEDIUM':
+        score = 80
+        break
+      case 'LOW':
+        score = 60
+        break
+      case 'REQUIRES_REVIEW':
+        score = 40
+        break
     }
   }
 
@@ -171,7 +179,9 @@ function extractFollowups(content: string): string[] {
   const followups: string[] = []
 
   // Look for explicit follow-up section
-  const followupMatch = content.match(/(?:follow[- ]?up|next steps?|you (?:may|might|should) (?:also )?(?:want to |consider ))[\s\S]*?(?:\n\n|$)/i)
+  const followupMatch = content.match(
+    /(?:follow[- ]?up|next steps?|you (?:may|might|should) (?:also )?(?:want to |consider ))[\s\S]*?(?:\n\n|$)/i
+  )
 
   if (followupMatch) {
     // Extract bullet points or numbered items

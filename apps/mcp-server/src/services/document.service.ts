@@ -249,8 +249,7 @@ export async function updateDocumentAnalysis(
       analysis: analysis.results as object,
       confidenceScore: analysis.confidenceScore,
       attorneyReviewRecommended: analysis.attorneyReviewRecommended,
-      analyzedAt:
-        analysis.status === DocumentAnalysisStatus.COMPLETED ? new Date() : undefined,
+      analyzedAt: analysis.status === DocumentAnalysisStatus.COMPLETED ? new Date() : undefined,
     },
   })
 
@@ -268,10 +267,7 @@ export async function updateDocumentAnalysis(
 /**
  * Delete a document (soft delete)
  */
-export async function deleteDocument(
-  documentId: string,
-  operatorId: string
-): Promise<boolean> {
+export async function deleteDocument(documentId: string, operatorId: string): Promise<boolean> {
   const document = await prisma.document.findFirst({
     where: {
       OR: [{ id: documentId }, { externalId: documentId }],

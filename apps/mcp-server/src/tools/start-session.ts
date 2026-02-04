@@ -22,7 +22,8 @@ export async function handleStartSession(
 
 export const startSessionTool = {
   name: 'start_session',
-  description: 'Start a new session with an API key. Returns a session token for subsequent requests.',
+  description:
+    'Start a new session with an API key. Returns a session token for subsequent requests.',
   inputSchema: {
     type: 'object',
     properties: {
