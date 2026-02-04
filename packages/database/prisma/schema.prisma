@@ -49,6 +49,7 @@ model Operator {
   credits         CreditTransaction[]
   payments        Payment[]
   documents       Document[]
+  invoices        Invoice[]
 
   @@map("operators")
 }
@@ -513,6 +514,76 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+
+// ============================================
+// INVOICES
+// ============================================
+
+model Invoice {
+  id          String    @id @default(cuid())
+  operatorId  String    @map("operator_id")
+
+  invoiceNumber String  @unique @map("invoice_number")
+
+  periodStart DateTime  @map("period_start")
+  periodEnd   DateTime  @map("period_end")
+
+  subtotalCredits Int   @map("subtotal_credits")
+  subtotalUsd     Int   @map("subtotal_usd")  // in cents
+  taxUsd          Int   @default(0) @map("tax_usd")
+  totalUsd        Int   @map("total_usd")
+
+  status      InvoiceStatus @default(DRAFT)
+
+  pdfUrl      String?   @map("pdf_url")
+  pdfS3Key    String?   @map("pdf_s3_key")
+
+  sentAt      DateTime? @map("sent_at")
+  paidAt      DateTime? @map("paid_at")
+  voidedAt    DateTime? @map("voided_at")
+
+  notes       String?
+  metadata    Json?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  operator    Operator  @relation(fields: [operatorId], references: [id])
+  lineItems   InvoiceLineItem[]
+
+  @@index([operatorId, periodStart])
+  @@index([status])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+  OVERDUE
+}
+
+model InvoiceLineItem {
+  id          String    @id @default(cuid())
+  invoiceId   String    @map("invoice_id")
+
+  description String
+  quantity    Int       @default(1)
+  unitCredits Int       @map("unit_credits")
+  totalCredits Int      @map("total_credits")
+  totalUsd    Int       @map("total_usd")  // in cents
+
+  referenceType String? @map("reference_type")
+  referenceId   String? @map("reference_id")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  invoice     Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
 }
 
 // ============================================
