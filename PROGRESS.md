@@ -2,22 +2,31 @@
 
 ## Current
 
-**Phase:** Phase 13.6 - Provider Settlement System
-**Step:** Complete
-**Status:** complete
+**Phase:** Phase 16 - Deployment Pipeline
+**Step:** Production deployment remaining
+**Status:** in_progress
 
 ---
 
 ## Active Tasks
 
-### Phase 9: Attorney Dashboard (Next)
+### Phase 16.2: Production Deployment
 
-- [ ] Implement attorney authentication
-- [ ] Create attorney dashboard layout
-- [ ] Build matter queue interface
-- [ ] Add consultation review workflow
+- [ ] Deploy MCP server to EC2
+- [ ] Deploy web app to EC2
+- [ ] Configure pm2 process management
+- [ ] Set up nginx reverse proxy
+- [ ] Configure SSL with Let's Encrypt
 
-### Security Implementation (Cross-Phase)
+### Phase 17: Launch Preparation
+
+- [ ] Register with MCP Registry
+- [ ] End-to-end testing
+- [ ] Load testing
+- [ ] Final security review
+- [ ] Documentation review
+
+### Security Implementation (Cross-Phase) ✅ Complete
 
 - [x] Implement Argon2id password hashing
 - [x] Implement API key generation with SHA-256 (updated prefix to `be_`)
@@ -38,6 +47,49 @@ _None_
 ---
 
 ## Completed
+
+### Phase 16.1: CI/CD Pipeline (2026-02-04)
+
+- [x] GitHub Actions workflows (.github/workflows/)
+  - ci.yml - lint, typecheck, build, test with coverage
+  - Security scanning (pnpm audit, secrets detection, dependency review)
+  - Codecov integration for coverage reports
+  - e2e.yml - Playwright E2E tests
+  - deploy.yml - Deployment workflow
+  - release.yml - Release automation
+
+### Phase 15: Monitoring & Observability (2026-02-04)
+
+- [x] Structured logging with Pino
+- [x] Health check endpoints (apps/mcp-server/src/routes/health.ts)
+- [x] Database connectivity checks
+- [x] Log levels configurable via environment
+
+### Phase 14: Security Hardening (2026-02-04)
+
+- [x] CI security scanning (audit, secrets, dependencies)
+- [x] Security headers via @fastify/helmet
+- [x] Input validation with Zod schemas
+- [x] OWASP Top 10 mitigations implemented
+
+### Phase 10: Admin Dashboard (2026-02-03)
+
+- [x] Admin authentication with 2FA
+- [x] Operator management (list, view, suspend)
+- [x] Attorney management (list, view, status changes)
+- [x] Audit log viewer
+- [x] Settlement management (Phase 13.6)
+
+### Phase 9: Attorney Dashboard (2026-02-03)
+
+- [x] Attorney authentication with mandatory 2FA
+- [x] Dashboard with queue stats, urgent items, recent activity
+- [x] Queue management with filters (status, complexity, search)
+- [x] Consultation detail with claim workflow
+- [x] AI draft panel with confidence scores
+- [x] Response editor with approve/reject actions
+- [x] Attorney stats page
+- [x] Settings (profile, security)
 
 ### Phase 13.6: Provider Settlement System (2026-02-04)
 
@@ -366,14 +418,20 @@ _None_
 
 ## What's Next
 
-**Phase 9: Attorney Dashboard**
+**Phase 16.2: Production Deployment**
 
-- Create attorney authentication flow
-- Build attorney dashboard layout with matter queue
-- Implement consultation review workflow
-- Add attorney-specific settings
+- Deploy MCP server and web app to EC2
+- Configure pm2 for process management
+- Set up nginx reverse proxy with SSL
+- Configure production environment variables
 
-See `docs/IMPLEMENTATION_PLAN.md` Phase 9 for full details.
+**Phase 17: Launch Preparation**
+
+- Register with MCP Registry
+- Perform end-to-end and load testing
+- Final security review
+
+See `docs/IMPLEMENTATION_PLAN.md` Phase 16-17 for full details.
 
 ---
 
