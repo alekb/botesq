@@ -222,9 +222,13 @@ export async function listDocuments(params: {
 
 /**
  * Update document analysis status
+ * @param documentId - Document ID (internal or external)
+ * @param operatorId - Operator ID for row-level security
+ * @param analysis - Analysis results to update
  */
 export async function updateDocumentAnalysis(
   documentId: string,
+  operatorId: string,
   analysis: {
     status: DocumentAnalysisStatus
     results?: unknown
@@ -232,9 +236,11 @@ export async function updateDocumentAnalysis(
     attorneyReviewRecommended?: boolean
   }
 ): Promise<DocumentWithDetails | null> {
+  // Row-level security: only allow updating documents belonging to this operator
   const document = await prisma.document.findFirst({
     where: {
       OR: [{ id: documentId }, { externalId: documentId }],
+      operatorId, // Security: ensure operator ownership
     },
   })
 

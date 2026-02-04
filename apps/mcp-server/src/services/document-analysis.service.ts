@@ -77,7 +77,7 @@ export async function analyzeDocument(params: {
   }
 
   // Mark as processing
-  await updateDocumentAnalysis(documentId, {
+  await updateDocumentAnalysis(documentId, operatorId, {
     status: DocumentAnalysisStatus.PROCESSING,
   })
 
@@ -142,7 +142,7 @@ Provide your analysis in the JSON format specified.`
     }
 
     // Update document with analysis results
-    await updateDocumentAnalysis(documentId, {
+    await updateDocumentAnalysis(documentId, operatorId, {
       status: DocumentAnalysisStatus.COMPLETED,
       results: analysis,
       confidenceScore: analysis.confidenceScore,
@@ -165,7 +165,7 @@ Provide your analysis in the JSON format specified.`
     logger.error({ documentId, error }, 'Document analysis failed')
 
     // Mark as failed
-    await updateDocumentAnalysis(documentId, {
+    await updateDocumentAnalysis(documentId, operatorId, {
       status: DocumentAnalysisStatus.FAILED,
     })
 

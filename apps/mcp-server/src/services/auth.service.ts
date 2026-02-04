@@ -1,9 +1,43 @@
 import { createHash, randomBytes } from 'crypto'
+import { hash as argon2Hash, verify as argon2Verify } from '@node-rs/argon2'
 import { prisma } from '@botesq/database'
 import { AuthError, type AuthenticatedSession } from '../types.js'
 
 /**
- * Hash an API key for storage/comparison
+ * Argon2id configuration per SECURITY.md
+ * - memoryCost: 64 MB (65536 KB)
+ * - timeCost: 3 iterations
+ * - parallelism: 4 threads
+ * - hashLength: 32 bytes output
+ */
+const ARGON2_CONFIG = {
+  memoryCost: 65536,
+  timeCost: 3,
+  parallelism: 4,
+  outputLen: 32,
+}
+
+/**
+ * Hash a password using Argon2id
+ * Use for operator, attorney, and admin passwords
+ */
+export async function hashPassword(password: string): Promise<string> {
+  return argon2Hash(password, ARGON2_CONFIG)
+}
+
+/**
+ * Verify a password against an Argon2id hash
+ */
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  try {
+    return await argon2Verify(hash, password)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Hash an API key for storage/comparison using SHA-256
  */
 export function hashApiKey(apiKey: string): string {
   return createHash('sha256').update(apiKey).digest('hex')
@@ -11,17 +45,15 @@ export function hashApiKey(apiKey: string): string {
 
 /**
  * Generate a new API key
- * Format: ml_live_XXXXXXXX (prefix) + 32 random chars
+ * Format: be_XXXXXXXX (32 random base64url chars)
  */
 export function generateApiKey(): { key: string; prefix: string; hash: string } {
-  const prefix = 'ml_live_'
-  const randomPart = randomBytes(24).toString('base64url')
-  const key = `${prefix}${randomPart}`
+  const key = `be_${randomBytes(32).toString('base64url')}`
   const hash = hashApiKey(key)
 
   return {
     key,
-    prefix: key.slice(0, 16), // First 16 chars for identification
+    prefix: key.slice(0, 11), // "be_" + first 8 chars for identification
     hash,
   }
 }
