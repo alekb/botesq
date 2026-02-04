@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'crypto'
+import { createHmac, timingSafeEqual, randomBytes } from 'crypto'
 
 /**
  * Webhook signature validation error
@@ -103,4 +103,12 @@ export function generateWebhookSignature(
   const signature = createHmac('sha256', secret).update(signedPayload).digest('hex')
 
   return `t=${ts},v1=${signature}`
+}
+
+/**
+ * Generate a secure webhook secret for a provider
+ * @returns A 32-byte hex-encoded secret with whsec_ prefix
+ */
+export function generateWebhookSecret(): string {
+  return `whsec_${randomBytes(32).toString('hex')}`
 }
