@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   Briefcase,
+  Building2,
   Key,
   CreditCard,
   Settings,
@@ -22,6 +23,7 @@ interface SidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/portal', icon: LayoutDashboard },
   { name: 'Matters', href: '/portal/matters', icon: Briefcase },
+  { name: 'Providers', href: '/portal/providers', icon: Building2 },
   { name: 'API Keys', href: '/portal/api-keys', icon: Key },
   { name: 'Billing', href: '/portal/billing', icon: CreditCard },
   { name: 'Settings', href: '/portal/settings', icon: Settings },
