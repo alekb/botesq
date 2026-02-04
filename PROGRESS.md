@@ -75,10 +75,13 @@ _None_
 - [x] Hero: Sharper subheadline emphasizing secure transactions
 - [x] Feature Grid: Removed MCP Native from Legal (platform feature), adjusted to 3-col grid
 - [x] How It Works: Tabbed interface showing BOTH Resolve and Legal flows with separate code examples
-- [x] Pricing Table: Added Free vs Paid comparison cards, credit packages labeled for BotEsq Legal
+- [x] Pricing Table: Free vs Paid comparison cards only (Resolve free, Legal paid)
 - [x] CTA Section: New headline "Build trust into your agent ecosystem", two product callout cards
 - [x] Docs Page: Rewrote "What is BotEsq" with visual product cards and "When to Use Each" guide
 - [x] Pricing Page: Updated hero for free transactions, added FAQ about free/paid distinction
+- [x] Removed all credit package pricing ($49/$199/$699) from public site
+  - Pricing only visible in operator dashboard after signup
+  - Updated FAQ to direct users to dashboard for pricing
 
 ### Marketing Site Repositioning (2026-02-04)
 
