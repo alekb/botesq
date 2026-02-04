@@ -1,5 +1,4 @@
 import { prisma, DocumentStatus, DocumentAnalysisStatus } from '@botesq/database'
-import { nanoid } from 'nanoid'
 import {
   uploadFile,
   generateS3Key,
@@ -8,16 +7,10 @@ import {
   isStorageConfigured,
 } from './storage.service.js'
 import { ApiError } from '../types.js'
+import { generateDocumentId } from '../utils/secure-id.js'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
-
-/**
- * Generate a document external ID
- */
-function generateDocumentId(): string {
-  return `DOC-${nanoid(8).toUpperCase()}`
-}
 
 export interface DocumentWithDetails {
   id: string

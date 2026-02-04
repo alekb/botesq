@@ -1,6 +1,6 @@
 import { prisma, ConsultationComplexity, ConsultationStatus } from '@botesq/database'
-import { nanoid } from 'nanoid'
 import { ApiError } from '../types.js'
+import { generateConsultationId } from '../utils/secure-id.js'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
@@ -15,13 +15,6 @@ export const CONSULTATION_PRICING = {
 const SLA_HOURS = {
   standard: 24,
   urgent: 4,
-}
-
-/**
- * Generate a consultation external ID
- */
-function generateConsultationId(): string {
-  return `CONS-${nanoid(8).toUpperCase()}`
 }
 
 export interface CreateConsultationParams {

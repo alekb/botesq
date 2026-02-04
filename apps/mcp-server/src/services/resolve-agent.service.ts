@@ -1,8 +1,8 @@
 import { prisma, ResolveAgentStatus } from '@botesq/database'
 import type { ResolveDisputeRuling } from '@botesq/database'
-import { nanoid } from 'nanoid'
 import pino from 'pino'
 import { ApiError } from '../types.js'
+import { generateAgentId } from '../utils/secure-id.js'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
@@ -20,13 +20,6 @@ const TRUST_CHANGE_DISPUTE_LOSS_MEDIUM = -5 // $100-999
 const TRUST_CHANGE_DISPUTE_LOSS_LARGE = -10 // >= $1000
 const TRUST_CHANGE_SPLIT_RULING = -1
 const TRUST_CHANGE_DISMISSED = -5 // Frivolous claim
-
-/**
- * Generate a resolve agent external ID
- */
-function generateAgentId(): string {
-  return `RAGENT-${nanoid(8).toUpperCase()}`
-}
 
 export interface RegisterAgentParams {
   operatorId: string

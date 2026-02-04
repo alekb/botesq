@@ -1,15 +1,8 @@
 import { prisma, MatterType, MatterStatus, MatterUrgency } from '@botesq/database'
-import { nanoid } from 'nanoid'
+import { generateMatterId } from '../utils/secure-id.js'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
-
-/**
- * Generate a matter external ID
- */
-function generateMatterId(): string {
-  return `MATTER-${nanoid(6).toUpperCase()}`
-}
 
 export interface CreateMatterParams {
   operatorId: string

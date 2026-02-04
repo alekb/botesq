@@ -1,5 +1,4 @@
 import { prisma, ResolveTransactionStatus } from '@botesq/database'
-import { nanoid } from 'nanoid'
 import pino from 'pino'
 import { ApiError } from '../types.js'
 import {
@@ -7,18 +6,12 @@ import {
   recordTransactionCompletion,
   getAgentByExternalId,
 } from './resolve-agent.service.js'
+import { generateTransactionId } from '../utils/secure-id.js'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
 // Default transaction expiry: 7 days
 const DEFAULT_EXPIRY_DAYS = 7
-
-/**
- * Generate a transaction external ID
- */
-function generateTransactionId(): string {
-  return `RTXN-${nanoid(8).toUpperCase()}`
-}
 
 export interface ProposeTransactionParams {
   proposerAgentId: string

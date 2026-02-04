@@ -7,7 +7,6 @@ import {
   ResolveTransactionStatus,
 } from '@botesq/database'
 import type { ResolveDisputeRuling } from '@botesq/database'
-import { nanoid } from 'nanoid'
 import pino from 'pino'
 import { ApiError } from '../types.js'
 import { deductCredits } from './credit.service.js'
@@ -16,6 +15,7 @@ import {
   getTransactionByExternalId,
   markTransactionDisputed,
 } from './resolve-transaction.service.js'
+import { generateDisputeId } from '../utils/secure-id.js'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
@@ -28,13 +28,6 @@ const FREE_MONTHLY_DISPUTES = 5
 const BASE_DISPUTE_COST = 500 // credits
 const VALUE_MULTIPLIER = 100 // credits per $1000 of value
 const MAX_DISPUTE_COST = 5000 // credits
-
-/**
- * Generate a dispute external ID
- */
-function generateDisputeId(): string {
-  return `RDISP-${nanoid(8).toUpperCase()}`
-}
 
 export interface FileDisputeParams {
   transactionExternalId: string

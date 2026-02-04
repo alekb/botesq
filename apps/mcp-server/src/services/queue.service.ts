@@ -1,15 +1,8 @@
 import { prisma } from '@botesq/database'
-import { nanoid } from 'nanoid'
+import { generateConsultationId } from '../utils/secure-id.js'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
-
-/**
- * Generate a consultation external ID
- */
-function generateConsultationId(): string {
-  return `CONS-${nanoid(8).toUpperCase()}`
-}
 
 export interface QueuedConsultation {
   id: string

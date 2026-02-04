@@ -1,15 +1,8 @@
 import { prisma, RetainerStatus, FeeArrangement, MatterStatus } from '@botesq/database'
-import { nanoid } from 'nanoid'
+import { generateRetainerId } from '../utils/secure-id.js'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
-
-/**
- * Generate a retainer external ID
- */
-function generateRetainerId(): string {
-  return `RET-${nanoid(8).toUpperCase()}`
-}
 
 /**
  * Standard engagement terms template
