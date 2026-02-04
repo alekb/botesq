@@ -1,10 +1,14 @@
 import { Resend } from 'resend'
 
-if (!process.env.RESEND_API_KEY) {
+const apiKey = process.env.RESEND_API_KEY
+
+if (!apiKey) {
   console.warn('RESEND_API_KEY not set - emails will not be sent')
 }
 
-export const resend = new Resend(process.env.RESEND_API_KEY)
+// Only create Resend client if API key is available
+// Use a placeholder key to avoid constructor throwing, actual sends will fail gracefully
+export const resend = new Resend(apiKey || 'placeholder_key_emails_disabled')
 
 export const EMAIL_FROM = process.env.EMAIL_FROM || 'BotEsq <noreply@botesq.com>'
 
