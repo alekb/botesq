@@ -335,9 +335,18 @@ function verifySignature(
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-text-primary">Example Handler</h3>
+          <h3 className="text-lg font-medium text-text-primary">Example Handler (Node.js)</h3>
           <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
             {`// Express.js webhook handler
+import express from 'express'
+import crypto from 'crypto'
+
+const app = express()
+const WEBHOOK_SECRET = process.env.BOTESQ_WEBHOOK_SECRET
+
+// Store pending consultations (use Redis/database in production)
+const pendingConsultations = new Map()
+
 app.post('/webhooks/botesq', express.json(), (req, res) => {
   const signature = req.headers['x-botesq-signature']
   const timestamp = req.headers['x-botesq-timestamp']
@@ -351,13 +360,148 @@ app.post('/webhooks/botesq', express.json(), (req, res) => {
 
   switch (event) {
     case 'consultation.completed':
-      // Notify your agent the response is ready
-      notifyAgent(data.consultation_id, data.response)
+      // Store the response for the agent to retrieve
+      pendingConsultations.set(data.consultation_id, {
+        response: data.response,
+        completedAt: data.completed_at,
+        attorneyReviewed: data.attorney_reviewed
+      })
+      console.log(\`Consultation \${data.consultation_id} completed\`)
+      break
+
+    case 'document.analysis_completed':
+      console.log(\`Document \${data.document_id} analysis ready\`)
       break
   }
 
   res.json({ received: true })
+})
+
+// Endpoint for your agent to check consultation status
+app.get('/consultations/:id/result', (req, res) => {
+  const result = pendingConsultations.get(req.params.id)
+  if (result) {
+    res.json({ status: 'completed', ...result })
+  } else {
+    res.json({ status: 'pending' })
+  }
 })`}
+          </pre>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Example Handler (Python)</h3>
+          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
+            {`# FastAPI webhook handler
+import hmac
+import hashlib
+import time
+from fastapi import FastAPI, Request, HTTPException
+
+app = FastAPI()
+WEBHOOK_SECRET = os.environ["BOTESQ_WEBHOOK_SECRET"]
+
+# Store results (use Redis/database in production)
+consultation_results = {}
+
+def verify_signature(payload: str, signature: str, timestamp: str) -> bool:
+    # Reject old timestamps (> 5 minutes)
+    if time.time() - int(timestamp) > 300:
+        return False
+
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        f"{timestamp}.{payload}".encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected)
+
+@app.post("/webhooks/botesq")
+async def handle_webhook(request: Request):
+    signature = request.headers.get("x-botesq-signature")
+    timestamp = request.headers.get("x-botesq-timestamp")
+    payload = await request.body()
+
+    if not verify_signature(payload.decode(), signature, timestamp):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    data = await request.json()
+    event = data["event"]
+
+    if event == "consultation.completed":
+        consultation_id = data["data"]["consultation_id"]
+        consultation_results[consultation_id] = {
+            "response": data["data"]["response"],
+            "completed_at": data["data"]["completed_at"],
+            "attorney_reviewed": data["data"]["attorney_reviewed"]
+        }
+        print(f"Consultation {consultation_id} completed")
+
+    return {"received": True}
+
+# Your agent polls this endpoint or you push to it
+@app.get("/consultations/{consultation_id}/result")
+async def get_result(consultation_id: str):
+    if consultation_id in consultation_results:
+        return {"status": "completed", **consultation_results[consultation_id]}
+    return {"status": "pending"}`}
+          </pre>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-text-primary">Agent Integration Pattern</h3>
+          <p className="text-text-secondary">
+            Here&apos;s how your AI agent can use webhooks for async consultations:
+          </p>
+          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
+            {`# Python agent example using BotEsq MCP
+import asyncio
+import httpx
+
+class LegalAgent:
+    def __init__(self, mcp_client, webhook_service_url):
+        self.mcp = mcp_client
+        self.webhook_url = webhook_service_url
+
+    async def request_legal_consultation(self, matter_id: str, question: str):
+        # 1. Submit consultation request via MCP
+        result = await self.mcp.call_tool("request_consultation", {
+            "matter_id": matter_id,
+            "question": question,
+            "priority": "standard"
+        })
+
+        consultation_id = result["consultation_id"]
+        print(f"Consultation submitted: {consultation_id}")
+        print("Waiting for attorney response...")
+
+        # 2. Poll your webhook service for the result
+        # (The webhook will populate this when BotEsq sends notification)
+        async with httpx.AsyncClient() as client:
+            while True:
+                response = await client.get(
+                    f"{self.webhook_url}/consultations/{consultation_id}/result"
+                )
+                data = response.json()
+
+                if data["status"] == "completed":
+                    return {
+                        "consultation_id": consultation_id,
+                        "response": data["response"],
+                        "attorney_reviewed": data["attorney_reviewed"]
+                    }
+
+                # Wait before polling again
+                await asyncio.sleep(30)
+
+# Usage
+agent = LegalAgent(mcp_client, "https://your-service.com")
+result = await agent.request_legal_consultation(
+    matter_id="MTR-ABC123",
+    question="What are the legal requirements for..."
+)
+print(f"Attorney response: {result['response']}")`}
           </pre>
         </div>
       </div>
