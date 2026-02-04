@@ -6,6 +6,7 @@ import {
   HeadObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { fileTypeFromBuffer } from 'file-type'
 import { config } from '../config.js'
 import { ApiError } from '../types.js'
 import pino from 'pino'
@@ -214,16 +215,16 @@ export async function deleteFile(key: string): Promise<void> {
 }
 
 /**
- * Allowed file types for document upload
+ * Allowed MIME types for document upload
  */
-export const ALLOWED_MIME_TYPES = [
+export const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'text/plain',
   'image/png',
   'image/jpeg',
-]
+])
 
 /**
  * Maximum file size (10MB)
@@ -231,7 +232,42 @@ export const ALLOWED_MIME_TYPES = [
 export const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 /**
- * Validate file for upload
+ * Sanitize filename to prevent path traversal and other attacks
+ * Removes directory components, null bytes, and dangerous characters
+ */
+export function sanitizeFilename(filename: string): string {
+  // Remove null bytes
+  let sanitized = filename.replace(/\0/g, '')
+
+  // Get just the filename, removing any path components
+  sanitized = sanitized.split(/[\\/]/).pop() ?? ''
+
+  // Remove leading/trailing dots and spaces
+  sanitized = sanitized.replace(/^[\s.]+|[\s.]+$/g, '')
+
+  // Replace dangerous characters with underscore
+  sanitized = sanitized.replace(/[<>:"|?*]/g, '_')
+
+  // Collapse multiple underscores/spaces
+  sanitized = sanitized.replace(/[_\s]+/g, '_')
+
+  // Ensure filename is not empty after sanitization
+  if (!sanitized || sanitized.length === 0) {
+    return 'unnamed_file'
+  }
+
+  // Limit filename length
+  if (sanitized.length > 255) {
+    const ext = sanitized.split('.').pop() ?? ''
+    const name = sanitized.slice(0, 255 - ext.length - 1)
+    sanitized = ext ? `${name}.${ext}` : name
+  }
+
+  return sanitized
+}
+
+/**
+ * Validate file for upload (basic checks without content inspection)
  */
 export function validateFile(params: { filename: string; mimeType: string; size: number }): {
   valid: boolean
@@ -243,7 +279,7 @@ export function validateFile(params: { filename: string; mimeType: string; size:
     return { valid: false, reason: 'Filename is required' }
   }
 
-  if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
     return {
       valid: false,
       reason: `File type not allowed. Allowed types: PDF, Word, TXT, PNG, JPEG`,
@@ -258,4 +294,75 @@ export function validateFile(params: { filename: string; mimeType: string; size:
   }
 
   return { valid: true }
+}
+
+/**
+ * Validate file content using magic bytes detection
+ * This detects actual file type from content, not just the claimed MIME type
+ */
+export async function validateFileContent(buffer: Buffer): Promise<{
+  valid: boolean
+  detectedMime?: string
+  reason?: string
+}> {
+  // Check size first
+  if (buffer.length > MAX_FILE_SIZE) {
+    return {
+      valid: false,
+      reason: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+    }
+  }
+
+  // Detect actual file type from magic bytes
+  const detected = await fileTypeFromBuffer(buffer)
+
+  // text/plain files have no magic bytes, so fileTypeFromBuffer returns undefined
+  // We allow these through if the buffer appears to be valid text
+  if (!detected) {
+    // Check if content appears to be valid UTF-8 text
+    if (isValidTextContent(buffer)) {
+      return { valid: true, detectedMime: 'text/plain' }
+    }
+    return {
+      valid: false,
+      reason: 'Could not determine file type. Ensure file is a valid PDF, Word, TXT, PNG, or JPEG.',
+    }
+  }
+
+  // Check if detected type is in allowed list
+  if (!ALLOWED_MIME_TYPES.has(detected.mime)) {
+    return {
+      valid: false,
+      detectedMime: detected.mime,
+      reason: `File content type (${detected.mime}) not allowed. Allowed types: PDF, Word, TXT, PNG, JPEG`,
+    }
+  }
+
+  return { valid: true, detectedMime: detected.mime }
+}
+
+/**
+ * Check if buffer contains valid UTF-8 text content
+ */
+function isValidTextContent(buffer: Buffer): boolean {
+  try {
+    // Check for common binary indicators
+    // Null bytes in first 8KB typically indicate binary
+    const sample = buffer.slice(0, 8192)
+    if (sample.includes(0)) {
+      return false
+    }
+
+    // Try to decode as UTF-8
+    const text = sample.toString('utf8')
+
+    // Check for replacement characters (indicates invalid UTF-8)
+    if (text.includes('\uFFFD')) {
+      return false
+    }
+
+    return true
+  } catch {
+    return false
+  }
 }
