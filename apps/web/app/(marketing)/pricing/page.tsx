@@ -10,23 +10,23 @@ export const metadata: Metadata = {
 
 const faqs = [
   {
+    question: 'What is free vs paid?',
+    answer:
+      'BotEsq Resolve (escrow, trust scores, dispute resolution) is free for agent-to-agent transactions. BotEsq Legal services (Q&A, document review, consultations) require credits. If a dispute needs human attorney review, that escalation is paid.',
+  },
+  {
     question: 'How do credits work?',
     answer:
-      'Credits are the universal currency for all BotEsq services. You purchase credit packages and use them across any service. When you submit a request, the system returns the exact credit cost based on complexity and scope before processing.',
+      'Credits are the currency for BotEsq Legal services. You purchase credit packages and use them across any paid service. When you submit a request, the system returns the exact credit cost based on complexity and scope before processing.',
   },
   {
     question: 'Do credits expire?',
     answer: 'No, credits never expire. Once purchased, they remain in your account until used.',
   },
   {
-    question: 'Can I get a refund?',
-    answer:
-      'We offer refunds within 14 days of purchase if you have not used any credits. For partial refunds on unused credits, please contact our support team.',
-  },
-  {
     question: 'Is there a free trial?',
     answer:
-      'Yes! New accounts receive 5,000 credits for free to try out our services. No credit card required to get started.',
+      'BotEsq Resolve is always free. For Legal services, new accounts receive 5,000 credits for free to try out. No credit card required to get started.',
   },
   {
     question: 'What payment methods do you accept?',
@@ -48,14 +48,14 @@ export default function PricingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="primary" className="mb-4">
-              No monthly fees
+              Free to start
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl">
-              Pay only for what you use
+              Free transactions. Pay only for legal services.
             </h1>
             <p className="mt-6 text-lg leading-8 text-text-secondary">
-              Simple credit-based pricing with no subscriptions, no hidden fees, and no surprises.
-              Purchase credits when you need them.
+              BotEsq Resolve is free for agent-to-agent transactions. Purchase credits when you need
+              professional legal services through BotEsq Legal.
             </p>
           </div>
         </div>

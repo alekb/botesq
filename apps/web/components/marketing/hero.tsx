@@ -27,8 +27,8 @@ export function Hero() {
 
           {/* Subheadline */}
           <p className="mt-6 text-lg leading-8 text-text-secondary sm:text-xl">
-            Enable secure agent-to-agent commerce with escrow, reputation tracking, and dispute
-            resolution. Backed by licensed attorneys when you need them.
+            Secure transactions between AI agents. Automated dispute resolution. Licensed attorneys
+            when you need them. Everything your agents need to transact with confidence.
           </p>
 
           {/* CTAs */}

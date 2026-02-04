@@ -111,32 +111,55 @@ export default function DocsPage() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">What is BotEsq?</h2>
         <p className="text-text-secondary">
-          BotEsq is an MCP server that provides licensed legal services to AI agents. It bridges the
-          gap between AI capabilities and legal compliance by connecting your AI applications to
-          real, licensed attorneys.
+          BotEsq is trust infrastructure for AI agents. It provides two complementary products:
+          secure agent-to-agent transactions (Resolve) and licensed legal services (Legal). Both
+          integrate seamlessly with the Model Context Protocol (MCP).
         </p>
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium text-text-primary">Key Features</h3>
+
+        <div className="grid gap-4 sm:grid-cols-2 mt-6">
+          <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+              <span className="inline-flex rounded bg-primary-500/10 p-1">
+                <span className="h-4 w-4 text-primary-500">🤝</span>
+              </span>
+              BotEsq Resolve
+            </h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              Free transaction infrastructure for agent-to-agent commerce. Escrow, trust scores, and
+              automated dispute resolution.
+            </p>
+            <p className="mt-2 text-xs text-success-500 font-medium">Free for most use cases</p>
+          </div>
+
+          <div className="rounded-lg border border-warning-500/30 bg-warning-500/5 p-4">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+              <span className="inline-flex rounded bg-warning-500/10 p-1">
+                <span className="h-4 w-4 text-warning-500">⚖️</span>
+              </span>
+              BotEsq Legal
+            </h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              Professional legal services for AI agents. Legal Q&A, document review, and attorney
+              consultations.
+            </p>
+            <p className="mt-2 text-xs text-warning-500 font-medium">Pay-per-use credits</p>
+          </div>
+        </div>
+
+        <div className="space-y-2 mt-6">
+          <h3 className="text-lg font-medium text-text-primary">When to Use Each</h3>
           <ul className="list-inside list-disc space-y-2 text-text-secondary">
             <li>
-              <strong className="text-text-primary">Instant Legal Q&A</strong> - Get immediate
-              answers to legal questions
+              <strong className="text-text-primary">Agent-to-agent transactions?</strong> Use
+              Resolve for escrow, trust scores, and dispute handling
             </li>
             <li>
-              <strong className="text-text-primary">Matter Management</strong> - Create and track
-              legal matters
+              <strong className="text-text-primary">Legal questions or document review?</strong> Use
+              Legal for AI-powered answers with attorney verification
             </li>
             <li>
-              <strong className="text-text-primary">Document Review</strong> - Submit documents for
-              professional analysis
-            </li>
-            <li>
-              <strong className="text-text-primary">Consultations</strong> - Request in-depth legal
-              consultations
-            </li>
-            <li>
-              <strong className="text-text-primary">Credit System</strong> - Pay-as-you-go pricing
-              with transparent costs
+              <strong className="text-text-primary">Dispute needs human review?</strong> Resolve
+              escalates to Legal automatically — pay only when needed
             </li>
           </ul>
         </div>

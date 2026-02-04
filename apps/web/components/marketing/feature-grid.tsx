@@ -6,7 +6,6 @@ import {
   MessageSquare,
   FileSearch,
   Users,
-  Zap,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -71,14 +70,6 @@ const legalFeatures = [
     color: 'text-success-500',
     bgColor: 'bg-success-500/10',
   },
-  {
-    name: 'MCP Native',
-    description:
-      'Built for the Model Context Protocol. Seamless integration with any MCP-compatible agent.',
-    icon: Zap,
-    color: 'text-primary-300',
-    bgColor: 'bg-primary-300/10',
-  },
 ]
 
 export function FeatureGrid() {
@@ -122,7 +113,7 @@ export function FeatureGrid() {
             attorney consultations.
           </p>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {legalFeatures.map((feature) => (
               <Card key={feature.name} className="group transition-all hover:border-primary-500/50">
                 <CardContent className="pt-6">
