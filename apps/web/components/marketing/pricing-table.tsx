@@ -1,49 +1,8 @@
 import Link from 'next/link'
-import { Check, Handshake, Scale } from 'lucide-react'
+import { Check, Handshake, Scale, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils/cn'
-
-const creditPackages = [
-  {
-    name: 'Starter',
-    credits: 50000,
-    price: 49,
-    pricePerCredit: 0.00098,
-    features: ['50,000 credits', 'Legal Q&A access', 'Basic document review', 'Email support'],
-    popular: false,
-  },
-  {
-    name: 'Professional',
-    credits: 250000,
-    price: 199,
-    pricePerCredit: 0.0008,
-    features: [
-      '250,000 credits',
-      'All Starter features',
-      'Priority document review',
-      'Human attorney consultations',
-      'Priority support',
-    ],
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    credits: 1000000,
-    price: 699,
-    pricePerCredit: 0.0007,
-    features: [
-      '1,000,000 credits',
-      'All Professional features',
-      'Dedicated account manager',
-      'Custom integrations',
-      'SLA guarantee',
-      'Volume discounts',
-    ],
-    popular: false,
-  },
-]
 
 export function PricingTable() {
   return (
@@ -54,7 +13,8 @@ export function PricingTable() {
             Simple, transparent pricing
           </h2>
           <p className="mt-4 text-lg text-text-secondary">
-            Start free with BotEsq Resolve. Add credits when you need professional legal services.
+            Start free with BotEsq Resolve. Pay only for professional legal services when you need
+            them.
           </p>
         </div>
 
@@ -91,6 +51,9 @@ export function PricingTable() {
                   MCP integration
                 </li>
               </ul>
+              <Button className="mt-6 w-full" variant="outline" asChild>
+                <Link href="/signup">Get Started Free</Link>
+              </Button>
             </CardContent>
           </Card>
 
@@ -123,72 +86,28 @@ export function PricingTable() {
                   Legal escalation from disputes
                 </li>
               </ul>
+              <Button className="mt-6 w-full" asChild>
+                <Link href="/signup">
+                  Start Building
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* Credit packages for Legal services */}
-        <div className="mt-16">
-          <h3 className="text-xl font-semibold text-text-primary text-center mb-8">
-            Credit Packages for BotEsq Legal
-          </h3>
-          <div className="grid gap-8 lg:grid-cols-3">
-            {creditPackages.map((pkg) => (
-              <Card
-                key={pkg.name}
-                className={cn(
-                  'relative',
-                  pkg.popular && 'border-primary-500 ring-2 ring-primary-500/20'
-                )}
-              >
-                {pkg.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2" variant="primary">
-                    Most Popular
-                  </Badge>
-                )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-xl">{pkg.name}</CardTitle>
-                  <CardDescription>{pkg.credits.toLocaleString()} credits</CardDescription>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-text-primary">${pkg.price}</span>
-                    <span className="text-text-secondary">/package</span>
-                  </div>
-                  <p className="mt-1 text-sm text-text-tertiary">
-                    ${(pkg.pricePerCredit * 1000).toFixed(2)} per 1,000 credits
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {pkg.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <Check className="h-5 w-5 flex-shrink-0 text-success-500" />
-                        <span className="text-sm text-text-secondary">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className="mt-6 w-full"
-                    variant={pkg.popular ? 'primary' : 'outline'}
-                    asChild
-                  >
-                    <Link href="/signup">Get Started</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Pricing info */}
+        {/* How pricing works */}
         <div className="mt-16">
           <div className="mx-auto max-w-2xl text-center">
-            <h3 className="text-xl font-semibold text-text-primary mb-4">
-              Dynamic pricing based on your needs
-            </h3>
+            <h3 className="text-xl font-semibold text-text-primary mb-4">How pricing works</h3>
             <p className="text-text-secondary">
-              Legal service costs vary based on complexity, urgency, and scope. When you submit a
-              request through our MCP tools, you&apos;ll receive the exact credit cost before
-              processing. This ensures you only pay for what you need.
+              BotEsq Legal uses a credit-based system with dynamic pricing. When you submit a
+              request through our MCP tools, you receive the exact credit cost before processing.
+              Pricing varies based on complexity, urgency, and scope—so you only pay for what you
+              need.
+            </p>
+            <p className="mt-4 text-sm text-text-tertiary">
+              Sign up to view credit packages and pricing in your dashboard.
             </p>
           </div>
         </div>

@@ -17,7 +17,7 @@ const faqs = [
   {
     question: 'How do credits work?',
     answer:
-      'Credits are the currency for BotEsq Legal services. You purchase credit packages and use them across any paid service. When you submit a request, the system returns the exact credit cost based on complexity and scope before processing.',
+      'Credits are the currency for BotEsq Legal services. When you submit a request, the system returns the exact credit cost based on complexity and scope before processing. You can purchase credits from your dashboard.',
   },
   {
     question: 'Do credits expire?',
@@ -26,7 +26,7 @@ const faqs = [
   {
     question: 'Is there a free trial?',
     answer:
-      'BotEsq Resolve is always free. For Legal services, new accounts receive 5,000 credits for free to try out. No credit card required to get started.',
+      'BotEsq Resolve is always free. For Legal services, new accounts receive starter credits to try out the platform. No credit card required to get started.',
   },
   {
     question: 'What payment methods do you accept?',
@@ -34,9 +34,9 @@ const faqs = [
       'We accept all major credit cards, ACH transfers for US accounts, and wire transfers for enterprise customers.',
   },
   {
-    question: 'Can I upgrade or downgrade my plan?',
+    question: 'How do I see pricing?',
     answer:
-      'BotEsq uses a pay-as-you-go model, so there are no plans to upgrade or downgrade. Simply purchase more credits when you need them.',
+      'Sign up for a free account to view credit packages and pricing in your dashboard. Pricing varies based on volume and usage.',
   },
 ]
 
