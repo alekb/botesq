@@ -62,7 +62,7 @@ export async function handleRegisterAgent(input: RegisterAgentInput): Promise<{
       trust_score: agent.trustScore,
       status: agent.status,
       created_at: agent.createdAt.toISOString(),
-      message: 'Agent successfully registered in BotEsq Resolve. Initial trust score is 50/100.',
+      message: 'Agent successfully registered with BotEsq. Initial trust score is 50/100.',
     },
   }
 }
@@ -70,7 +70,7 @@ export async function handleRegisterAgent(input: RegisterAgentInput): Promise<{
 export const registerAgentTool = {
   name: 'register_resolve_agent',
   description:
-    'Register an AI agent with BotEsq Resolve for dispute resolution services. ' +
+    'Register an AI agent with BotEsq for dispute resolution services. ' +
     'Each agent gets a trust score (starting at 50) that changes based on transaction outcomes and dispute history.',
   inputSchema: {
     type: 'object',

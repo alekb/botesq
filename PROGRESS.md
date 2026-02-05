@@ -146,25 +146,22 @@ Apply (provider-register) → Verify (admin reviews) → Onboard → Start (prov
 ### Marketing Content Reimagining (2026-02-04)
 
 - [x] Hero: Sharper subheadline emphasizing secure transactions
-- [x] Feature Grid: Removed MCP Native from Legal (platform feature), adjusted to 3-col grid
-- [x] How It Works: Tabbed interface showing BOTH Resolve and Legal flows with separate code examples
-- [x] Pricing Table: Free vs Paid comparison cards only (Resolve free, Legal paid)
-- [x] CTA Section: New headline "Build trust into your agent ecosystem", two product callout cards
-- [x] Docs Page: Rewrote "What is BotEsq" with visual product cards and "When to Use Each" guide
-- [x] Pricing Page: Updated hero for free transactions, added FAQ about free/paid distinction
+- [x] Feature Grid: Adjusted to 3-col grid for core features
+- [x] How It Works: Shows dispute resolution flow with code examples
+- [x] CTA Section: New headline "Build trust into your agent ecosystem"
+- [x] Docs Page: Rewrote "What is BotEsq" with feature overview
+- [x] Pricing Page: Updated hero, added FAQ
 - [x] Removed all credit package pricing ($49/$199/$699) from public site
   - Pricing only visible in operator dashboard after signup
   - Updated FAQ to direct users to dashboard for pricing
 
 ### Marketing Site Repositioning (2026-02-04)
 
-- [x] Dual product positioning: BotEsq Resolve + BotEsq Legal
-  - BotEsq Resolve: Free tier for agent-to-agent escrow, trust scores, dispute resolution
-  - BotEsq Legal: Paid professional services (Q&A, document review, consultations)
-- [x] Updated hero component with dual product cards
-- [x] Updated feature-grid component with resolve/legal sections
+- [x] Simplified to single BotEsq brand (neutral AI dispute resolution service)
+- [x] Updated hero component with feature highlights
+- [x] Updated feature-grid component with core capabilities
 - [x] Updated how-it-works component (4-step flow with code example)
-- [x] Rewrote features page with three sections (Resolve, Legal, Platform)
+- [x] Rewrote features page with escrow, trust scores, and dispute resolution
 - [x] Removed explicit credit pricing from public site (dynamic pricing model)
 - [x] Added webhook documentation with HTTPS requirement notice
 - [x] Added polling documentation at /docs#polling
@@ -641,12 +638,11 @@ The provider onboarding flow is fully implemented:
     - Updated 8 services: consultation, matter, document, retainer, queue, resolve-\*
   - Webhook security: Require HTTPS for webhook URLs (HTTP only for localhost/127.0.0.1/::1)
   - Remove explicit service pricing from site (dynamic pricing based on request)
-  - Reposition marketing site for dual product:
-    - BotEsq Resolve: Agent-to-agent escrow, trust scores, dispute resolution (free tier)
-    - BotEsq Legal: Direct legal services - Q&A, document review, consultations (paid)
-    - New hero with two product cards
-    - Split feature grid by product
-    - How It Works shows 4-step resolve flow with escalation
+  - Reposition marketing site for dispute resolution service:
+    - Core features: escrow, trust scores, dispute resolution
+    - Updated hero with feature highlights
+    - Streamlined feature grid
+    - How It Works shows 4-step dispute resolution flow with escalation
 - Phase 16.2 complete: Production Deployment
   - Fixed deployment workflow (db:migrate:deploy for production, localhost health checks)
   - Deployed to EC2 via GitHub Actions

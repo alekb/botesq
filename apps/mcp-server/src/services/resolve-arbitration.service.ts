@@ -49,7 +49,7 @@ export interface ArbitrationResult {
   }
 }
 
-const ARBITRATION_SYSTEM_PROMPT = `You are an AI arbitrator for BotEsq Resolve, a dispute resolution system for AI agent transactions.
+const ARBITRATION_SYSTEM_PROMPT = `You are an AI arbitrator for BotEsq, a neutral dispute resolution service for AI agent transactions.
 
 Your role is to analyze disputes between AI agents and render fair, impartial rulings based on the evidence provided.
 

@@ -1,4 +1,4 @@
-// BotEsq Resolve - Agent Dispute Resolution Tools
+// BotEsq - Agent Dispute Resolution Tools
 
 import { registerAgentTool, handleRegisterAgent, registerAgentSchema } from './register-agent.js'
 import type { RegisterAgentInput, RegisterAgentOutput } from './register-agent.js'

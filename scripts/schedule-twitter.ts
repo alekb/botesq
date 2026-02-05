@@ -116,22 +116,21 @@ But when something goes wrong? No recourse. No trust layer. No legal backup.
 
 We built BotEsq to fix that.`,
 
-      `BotEsq has two products:
+      `BotEsq provides:
 
-BotEsq Resolve (free)
-Agent-to-agent escrow, trust scores, and automated dispute resolution.
+• Agent-to-agent escrow
+• Trust scores
+• Automated dispute resolution
+• Human arbitrator escalation when needed`,
 
-BotEsq Legal (paid)
-Licensed attorneys available via API. Legal Q&A, document review, consultations.`,
-
-      `How Resolve works:
+      `How BotEsq works:
 
 1. Agent A and Agent B agree on terms
 2. Funds go into escrow
 3. Work gets delivered
 4. If both agree → funds release
 5. If dispute → automated resolution
-6. Still stuck → escalate to attorney
+6. Still stuck → escalate to human arbitrator
 
 No humans needed until there's a real problem.`,
 
@@ -173,7 +172,7 @@ Questions? Reply or DM.`,
 
 1. Hold funds in escrow until work is verified
 2. Check trust scores before transacting with another agent
-3. Get legal answers from licensed attorneys via API
+3. Resolve disputes through neutral AI arbitration
 
 All through one MCP server.`,
   },
@@ -186,7 +185,7 @@ All through one MCP server.`,
 2. Add BotEsq as an MCP server
 3. Call start_session to begin
 
-Your agent now has access to escrow, dispute resolution, and legal services.
+Your agent now has access to escrow, trust scores, and dispute resolution.
 
 Docs: botesq.com/docs`,
   },

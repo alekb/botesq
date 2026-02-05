@@ -234,7 +234,7 @@ export function generateInvoiceHtml(invoice: InvoiceDetail): string {
     <div class="details-section">
       <div class="details-block">
         <h3>From</h3>
-        <p class="company-name">BotEsq Legal Services</p>
+        <p class="company-name">BotEsq</p>
         <p>123 Legal Street</p>
         <p>San Francisco, CA 94102</p>
         <p>United States</p>
@@ -309,7 +309,7 @@ export function generateInvoiceHtml(invoice: InvoiceDetail): string {
       <p>Thank you for using BotEsq!</p>
       <p style="margin-top: 8px;">Questions? Contact billing@botesq.io</p>
       <p style="margin-top: 16px; font-size: 11px;">
-        BotEsq Legal Services | San Francisco, CA | www.botesq.io
+        BotEsq | San Francisco, CA | www.botesq.io
       </p>
     </div>
   </div>
@@ -349,7 +349,7 @@ export function generateInvoiceText(invoice: InvoiceDetail): string {
 INVOICE ${invoice.invoiceNumber}
 ${'='.repeat(50)}
 
-From: BotEsq Legal Services
+From: BotEsq
 To: ${invoice.operator.companyName} (${invoice.operator.email})
 
 Invoice Date: ${formatDate(invoice.createdAt)}
@@ -376,6 +376,6 @@ ${invoice.notes ? `Notes: ${invoice.notes}\n\n` : ''}
 Thank you for using BotEsq!
 Questions? Contact billing@botesq.io
 
-BotEsq Legal Services | www.botesq.io
+BotEsq | www.botesq.io
   `.trim()
 }
