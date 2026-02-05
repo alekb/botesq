@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CodeBlock } from '../components/code-block'
+import { MultiLanguageCodeBlock } from '../components/multi-language-code-block'
+import { TYPESCRIPT_PYTHON } from '../components/code-samples'
 
 const prompts = [
   {
@@ -188,13 +190,13 @@ export default function PromptsPage() {
         <p className="text-text-secondary">
           To use a prompt, call{' '}
           <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-            mcp.getPrompt()
+            getPrompt()
           </code>{' '}
           with the prompt name and arguments:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`// Get the prompt template with your arguments
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `// Get the prompt template with your arguments
 const prompt = await mcp.getPrompt("contract_review", {
   contract_type: "SaaS Agreement",
   party_role: "customer",
@@ -205,7 +207,26 @@ const prompt = await mcp.getPrompt("contract_review", {
 const result = await mcp.callTool("ask_legal_question", {
   session_token: "sess_xyz789...",
   question: prompt.messages[0].content
-});`}
+});`,
+            `# Get the prompt template with your arguments
+prompt = await session.get_prompt(
+    "contract_review",
+    arguments={
+        "contract_type": "SaaS Agreement",
+        "party_role": "customer",
+        "key_concerns": "liability caps, data protection"
+    }
+)
+
+# Use the generated prompt with ask_legal_question
+result = await session.call_tool(
+    "ask_legal_question",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "question": prompt.messages[0].content
+    }
+)`
+          )}
         />
       </div>
 

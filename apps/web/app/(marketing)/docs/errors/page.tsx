@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CodeBlock } from '../components/code-block'
+import { MultiLanguageCodeBlock } from '../components/multi-language-code-block'
+import { TYPESCRIPT_PYTHON } from '../components/code-samples'
 
 const errorCategories = [
   {
@@ -247,9 +249,9 @@ export default function ErrorsPage() {
         <p className="text-text-secondary">
           Here is a recommended pattern for handling BotEsq errors:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`async function callBotEsq(tool: string, params: object) {
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `async function callBotEsq(tool: string, params: object) {
   try {
     const result = await mcp.callTool(tool, params);
     return result;
@@ -281,7 +283,44 @@ export default function ErrorsPage() {
 
     throw error;
   }
-}`}
+}`,
+            `import asyncio
+import json
+
+async def call_botesq(session, tool: str, params: dict):
+    try:
+        result = await session.call_tool(tool, arguments=params)
+        return json.loads(result.content[0].text)
+    except Exception as error:
+        error_data = getattr(error, 'data', {})
+        code = error_data.get('code', '')
+
+        if code == 'SESSION_EXPIRED':
+            # Refresh session and retry
+            await refresh_session()
+            return await session.call_tool(tool, arguments=params)
+
+        if code == 'INSUFFICIENT_CREDITS':
+            # Notify user or auto-purchase credits
+            details = error_data.get('details', {})
+            print(f"Need {details.get('required_credits')} credits")
+            raise Exception('Insufficient credits for this operation')
+
+        if code == 'RATE_LIMITED':
+            # Implement exponential backoff
+            details = error_data.get('details', {})
+            retry_after = details.get('retry_after', 60)
+            await asyncio.sleep(retry_after)
+            return await session.call_tool(tool, arguments=params)
+
+        # Log unexpected errors for debugging
+        print(f"BotEsq error: {code}", {
+            'message': error_data.get('message'),
+            'request_id': error_data.get('request_id')
+        })
+
+        raise error`
+          )}
         />
       </div>
 
@@ -327,9 +366,9 @@ export default function ErrorsPage() {
         <p className="text-text-secondary">
           For transient errors (5xx, rate limits), use exponential backoff:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`async function withRetry<T>(
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `async function withRetry<T>(
   fn: () => Promise<T>,
   maxRetries = 3,
   baseDelay = 1000
@@ -354,7 +393,39 @@ export default function ErrorsPage() {
   }
 
   throw lastError;
-}`}
+}`,
+            `import asyncio
+import random
+from typing import TypeVar, Callable, Awaitable
+
+T = TypeVar('T')
+
+async def with_retry(
+    fn: Callable[[], Awaitable[T]],
+    max_retries: int = 3,
+    base_delay: float = 1.0
+) -> T:
+    last_error: Exception = None
+
+    for attempt in range(max_retries):
+        try:
+            return await fn()
+        except Exception as error:
+            last_error = error
+            error_data = getattr(error, 'data', {})
+            status = error_data.get('status', 500)
+            code = error_data.get('code', '')
+
+            # Don't retry client errors (except rate limits)
+            if 400 <= status < 500 and code != 'RATE_LIMITED':
+                raise error
+
+            # Calculate delay with jitter
+            delay = base_delay * (2 ** attempt) + random.random()
+            await asyncio.sleep(delay)
+
+    raise last_error`
+          )}
         />
       </div>
     </div>
