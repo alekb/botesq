@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CodeBlock } from '../components/code-block'
+import { MultiLanguageCodeBlock } from '../components/multi-language-code-block'
+import { TYPESCRIPT_PYTHON } from '../components/code-samples'
 
 export default function AuthenticationPage() {
   return (
@@ -80,15 +82,29 @@ botesq_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`}
           </code>{' '}
           tool. They are used for all subsequent API calls.
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`const session = await mcp.callTool("start_session", {
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `const session = await mcp.callTool("start_session", {
   api_key: process.env.BOTESQ_API_KEY,
   agent_identifier: "my-legal-assistant-v1"
 });
 
 // Store the session token for subsequent calls
-const sessionToken = session.session_token;`}
+const sessionToken = session.session_token;`,
+            `import os
+
+session = await mcp_session.call_tool(
+    "start_session",
+    arguments={
+        "api_key": os.environ["BOTESQ_API_KEY"],
+        "agent_identifier": "my-legal-assistant-v1"
+    }
+)
+session_data = json.loads(session.content[0].text)
+
+# Store the session token for subsequent calls
+session_token = session_data["session_token"]`
+          )}
         />
         <h3 className="text-lg font-medium text-text-primary">Session Properties</h3>
         <div className="overflow-x-auto">
@@ -148,9 +164,9 @@ BOTESQ_SERVER_URL=https://api.botesq.com`}
         <p className="text-text-secondary">
           Best practices for managing sessions in your application:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`class BotEsqClient {
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `class BotEsqClient {
   private sessionToken: string | null = null;
   private sessionExpiry: Date | null = null;
 
@@ -183,7 +199,53 @@ BOTESQ_SERVER_URL=https://api.botesq.com`}
 
     return result.answer;
   }
-}`}
+}`,
+            `import os
+import json
+from datetime import datetime, timedelta
+from typing import Optional
+
+class BotEsqClient:
+    def __init__(self, mcp_session):
+        self.mcp = mcp_session
+        self.session_token: Optional[str] = None
+        self.session_expiry: Optional[datetime] = None
+
+    async def ensure_session(self) -> str:
+        # Check if we have a valid session
+        if self.session_token and self.session_expiry and self.session_expiry > datetime.now():
+            return self.session_token
+
+        # Start a new session
+        result = await self.mcp.call_tool(
+            "start_session",
+            arguments={
+                "api_key": os.environ["BOTESQ_API_KEY"],
+                "agent_identifier": "my-agent"
+            }
+        )
+        session_data = json.loads(result.content[0].text)
+
+        self.session_token = session_data["session_token"]
+        # Sessions last 24 hours, but refresh on activity
+        self.session_expiry = datetime.now() + timedelta(hours=23)
+
+        return self.session_token
+
+    async def ask_question(self, question: str) -> str:
+        token = await self.ensure_session()
+
+        result = await self.mcp.call_tool(
+            "ask_legal_question",
+            arguments={
+                "session_token": token,
+                "question": question
+            }
+        )
+        answer_data = json.loads(result.content[0].text)
+
+        return answer_data["answer"]`
+          )}
         />
       </div>
 

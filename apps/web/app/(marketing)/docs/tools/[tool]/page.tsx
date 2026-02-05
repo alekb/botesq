@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { CodeBlock } from '../../components/code-block'
+import { MultiLanguageCodeBlock } from '../../components/multi-language-code-block'
+import { TYPESCRIPT_PYTHON } from '../../components/code-samples'
 
 interface ToolParam {
   name: string
@@ -20,7 +21,8 @@ interface ToolDoc {
   credits: string | number
   params: ToolParam[]
   returns: ToolParam[]
-  example: string
+  exampleTs: string
+  examplePy: string
   notes?: string[]
 }
 
@@ -71,13 +73,24 @@ const tools: Record<string, ToolDoc> = {
         description: 'List of enabled services',
       },
     ],
-    example: `const session = await mcp.callTool("start_session", {
+    exampleTs: `const session = await mcp.callTool("start_session", {
   api_key: "botesq_live_abc123...",
   agent_identifier: "my-legal-assistant-v1"
 });
 
 console.log(session.session_token);  // "sess_xyz789..."
 console.log(session.credits_available);  // 50000`,
+    examplePy: `result = await session.call_tool(
+    "start_session",
+    arguments={
+        "api_key": "botesq_live_abc123...",
+        "agent_identifier": "my-legal-assistant-v1"
+    }
+)
+session_data = json.loads(result.content[0].text)
+
+print(session_data["session_token"])  # "sess_xyz789..."
+print(session_data["credits_available"])  # 50000`,
   },
   'get-session-info': {
     name: 'get_session_info',
@@ -126,12 +139,20 @@ console.log(session.credits_available);  // 50000`,
         description: 'Session expiration timestamp (ISO 8601)',
       },
     ],
-    example: `const info = await mcp.callTool("get_session_info", {
+    exampleTs: `const info = await mcp.callTool("get_session_info", {
   session_token: "sess_xyz789..."
 });
 
 console.log(info.credits_available);  // 49800
 console.log(info.expires_at);  // "2024-01-16T12:00:00Z"`,
+    examplePy: `result = await session.call_tool(
+    "get_session_info",
+    arguments={"session_token": "sess_xyz789..."}
+)
+info = json.loads(result.content[0].text)
+
+print(info["credits_available"])  # 49800
+print(info["expires_at"])  # "2024-01-16T12:00:00Z"`,
   },
   'list-services': {
     name: 'list_services',
@@ -148,7 +169,7 @@ console.log(info.expires_at);  // "2024-01-16T12:00:00Z"`,
         description: 'Array of available services',
       },
     ],
-    example: `const result = await mcp.callTool("list_services", {});
+    exampleTs: `const result = await mcp.callTool("list_services", {});
 
 // Returns:
 // {
@@ -158,6 +179,17 @@ console.log(info.expires_at);  // "2024-01-16T12:00:00Z"`,
 //     ...
 //   ]
 // }`,
+    examplePy: `result = await session.call_tool("list_services", arguments={})
+services = json.loads(result.content[0].text)
+
+# Returns:
+# {
+#   "services": [
+#     {"id": "legal_qa", "name": "Legal Q&A", "description": "...", "pricing": {...}},
+#     {"id": "matters", "name": "Matter Management", "description": "...", "pricing": {...}},
+#     ...
+#   ]
+# }`,
   },
   'get-disclaimers': {
     name: 'get_disclaimers',
@@ -180,11 +212,17 @@ console.log(info.expires_at);  // "2024-01-16T12:00:00Z"`,
         description: 'URL to full terms of service',
       },
     ],
-    example: `const result = await mcp.callTool("get_disclaimers", {});
+    exampleTs: `const result = await mcp.callTool("get_disclaimers", {});
 
 // Always show disclaimers before legal advice
 console.log(result.disclaimers[0].text);
 // "This information is for educational purposes only..."`,
+    examplePy: `result = await session.call_tool("get_disclaimers", arguments={})
+disclaimers = json.loads(result.content[0].text)
+
+# Always show disclaimers before legal advice
+print(disclaimers["disclaimers"][0]["text"])
+# "This information is for educational purposes only..."`,
   },
   'check-credits': {
     name: 'check_credits',
@@ -220,13 +258,21 @@ console.log(result.disclaimers[0].text);
         description: 'Total credits used by this operator',
       },
     ],
-    example: `const credits = await mcp.callTool("check_credits", {
+    exampleTs: `const credits = await mcp.callTool("check_credits", {
   session_token: "sess_xyz789..."
 });
 
 if (credits.credits_available < 10000) {
   console.log("Low credits! Consider adding more.");
 }`,
+    examplePy: `result = await session.call_tool(
+    "check_credits",
+    arguments={"session_token": "sess_xyz789..."}
+)
+credits = json.loads(result.content[0].text)
+
+if credits["credits_available"] < 10000:
+    print("Low credits! Consider adding more.")`,
   },
   'add-credits': {
     name: 'add_credits',
@@ -268,13 +314,24 @@ if (credits.credits_available < 10000) {
         description: 'Payment transaction ID',
       },
     ],
-    example: `const result = await mcp.callTool("add_credits", {
+    exampleTs: `const result = await mcp.callTool("add_credits", {
   session_token: "sess_xyz789...",
   amount_usd: 50
 });
 
 console.log(result.credits_added);
 console.log(result.credits_available);`,
+    examplePy: `result = await session.call_tool(
+    "add_credits",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "amount_usd": 50
+    }
+)
+data = json.loads(result.content[0].text)
+
+print(data["credits_added"])
+print(data["credits_available"])`,
     notes: ['Credit packages available in your dashboard', 'Requires payment method on file'],
   },
   'ask-legal-question': {
@@ -336,7 +393,7 @@ console.log(result.credits_available);`,
         description: 'ID of reviewing attorney',
       },
     ],
-    example: `const result = await mcp.callTool("ask_legal_question", {
+    exampleTs: `const result = await mcp.callTool("ask_legal_question", {
   session_token: "sess_xyz789...",
   question: "What are the key elements required for a valid contract?",
   jurisdiction: "US-CA"
@@ -348,6 +405,22 @@ console.log(result.answer);
 
 console.log(result.complexity);  // "simple"
 console.log(result.credits_charged);  // 200`,
+    examplePy: `result = await session.call_tool(
+    "ask_legal_question",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "question": "What are the key elements required for a valid contract?",
+        "jurisdiction": "US-CA"
+    }
+)
+answer = json.loads(result.content[0].text)
+
+print(answer["answer"])
+# "A valid contract under California law requires four key elements:
+# 1. Offer and acceptance, 2. Consideration, 3. Capacity, 4. Legality..."
+
+print(answer["complexity"])  # "simple"
+print(answer["credits_charged"])  # 200`,
     notes: [
       'Simple questions: 200 credits (basic definitions, straightforward answers)',
       'Moderate questions: 500 credits (multi-part answers, some analysis)',
@@ -420,7 +493,7 @@ console.log(result.credits_charged);  // 200`,
         description: 'Credits deducted (10,000)',
       },
     ],
-    example: `const matter = await mcp.callTool("create_matter", {
+    exampleTs: `const matter = await mcp.callTool("create_matter", {
   session_token: "sess_xyz789...",
   matter_type: "CONTRACT_REVIEW",
   title: "SaaS Agreement Review",
@@ -430,6 +503,20 @@ console.log(result.credits_charged);  // 200`,
 
 console.log(matter.matter_id);  // "mat_abc123..."
 // Next: Get and accept the retainer before submitting documents`,
+    examplePy: `result = await session.call_tool(
+    "create_matter",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "matter_type": "CONTRACT_REVIEW",
+        "title": "SaaS Agreement Review",
+        "description": "Review of enterprise SaaS contract with Acme Corp",
+        "urgency": "high"
+    }
+)
+matter = json.loads(result.content[0].text)
+
+print(matter["matter_id"])  # "mat_abc123..."
+# Next: Get and accept the retainer before submitting documents`,
     notes: [
       'A retainer agreement must be accepted before work can begin',
       'Use get_retainer_terms and accept_retainer after creating a matter',
@@ -473,13 +560,24 @@ console.log(matter.matter_id);  // "mat_abc123..."
         description: 'Associated consultations',
       },
     ],
-    example: `const status = await mcp.callTool("get_matter_status", {
+    exampleTs: `const status = await mcp.callTool("get_matter_status", {
   session_token: "sess_xyz789...",
   matter_id: "mat_abc123..."
 });
 
 console.log(status.status);  // "active"
 console.log(status.documents.length);  // 3`,
+    examplePy: `result = await session.call_tool(
+    "get_matter_status",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "matter_id": "mat_abc123..."
+    }
+)
+status = json.loads(result.content[0].text)
+
+print(status["status"])  # "active"
+print(len(status["documents"]))  # 3`,
   },
   'list-matters': {
     name: 'list_matters',
@@ -525,7 +623,7 @@ console.log(status.documents.length);  // 3`,
         description: 'Whether more results exist',
       },
     ],
-    example: `const result = await mcp.callTool("list_matters", {
+    exampleTs: `const result = await mcp.callTool("list_matters", {
   session_token: "sess_xyz789...",
   status: "active",
   limit: 10
@@ -534,6 +632,18 @@ console.log(status.documents.length);  // 3`,
 result.matters.forEach(matter => {
   console.log(\`\${matter.title}: \${matter.status}\`);
 });`,
+    examplePy: `result = await session.call_tool(
+    "list_matters",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "status": "active",
+        "limit": 10
+    }
+)
+data = json.loads(result.content[0].text)
+
+for matter in data["matters"]:
+    print(f"{matter['title']}: {matter['status']}")`,
   },
   'get-retainer-terms': {
     name: 'get_retainer_terms',
@@ -577,7 +687,7 @@ result.matters.forEach(matter => {
         description: 'When the offer expires (ISO 8601)',
       },
     ],
-    example: `const retainer = await mcp.callTool("get_retainer_terms", {
+    exampleTs: `const retainer = await mcp.callTool("get_retainer_terms", {
   session_token: "sess_xyz789...",
   matter_id: "mat_abc123..."
 });
@@ -587,6 +697,20 @@ console.log(retainer.scope_of_work);
 
 console.log(retainer.fee_structure);
 // { type: "credit_based", estimated_credits: 25000 }`,
+    examplePy: `result = await session.call_tool(
+    "get_retainer_terms",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "matter_id": "mat_abc123..."
+    }
+)
+retainer = json.loads(result.content[0].text)
+
+print(retainer["scope_of_work"])
+# "Review and analysis of SaaS agreement..."
+
+print(retainer["fee_structure"])
+# {"type": "credit_based", "estimated_credits": 25000}`,
   },
   'accept-retainer': {
     name: 'accept_retainer',
@@ -634,7 +758,7 @@ console.log(retainer.fee_structure);
         description: 'Acceptance timestamp (ISO 8601)',
       },
     ],
-    example: `const result = await mcp.callTool("accept_retainer", {
+    exampleTs: `const result = await mcp.callTool("accept_retainer", {
   session_token: "sess_xyz789...",
   retainer_id: "ret_def456..."
 });
@@ -643,6 +767,18 @@ if (result.accepted) {
   console.log("Retainer accepted! Matter is now active.");
   // Now you can submit documents or request consultations
 }`,
+    examplePy: `result = await session.call_tool(
+    "accept_retainer",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "retainer_id": "ret_def456..."
+    }
+)
+data = json.loads(result.content[0].text)
+
+if data["accepted"]:
+    print("Retainer accepted! Matter is now active.")
+    # Now you can submit documents or request consultations`,
   },
   'submit-document': {
     name: 'submit_document',
@@ -709,7 +845,7 @@ if (result.accepted) {
       },
       { name: 'credits_charged', type: 'number', required: true, description: 'Credits deducted' },
     ],
-    example: `import { readFileSync } from 'fs';
+    exampleTs: `import { readFileSync } from 'fs';
 
 const content = readFileSync('./contract.pdf');
 const base64 = content.toString('base64');
@@ -725,6 +861,27 @@ const doc = await mcp.callTool("submit_document", {
 
 console.log(doc.document_id);  // "doc_ghi789..."
 console.log(doc.credits_charged);  // 3500 (base + 10 pages)`,
+    examplePy: `import base64
+
+with open("./contract.pdf", "rb") as f:
+    content = f.read()
+base64_content = base64.b64encode(content).decode("utf-8")
+
+result = await session.call_tool(
+    "submit_document",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "filename": "contract.pdf",
+        "content_base64": base64_content,
+        "matter_id": "mat_abc123...",
+        "document_type": "contract",
+        "notes": "Please focus on liability and indemnification clauses"
+    }
+)
+doc = json.loads(result.content[0].text)
+
+print(doc["document_id"])  # "doc_ghi789..."
+print(doc["credits_charged"])  # 3500 (base + 10 pages)`,
     notes: [
       'Base fee: 2,500 credits',
       'Per page: 100 credits',
@@ -787,7 +944,7 @@ console.log(doc.credits_charged);  // 3500 (base + 10 pages)`,
         description: 'Reviewing attorney ID',
       },
     ],
-    example: `const analysis = await mcp.callTool("get_document_analysis", {
+    exampleTs: `const analysis = await mcp.callTool("get_document_analysis", {
   session_token: "sess_xyz789...",
   document_id: "doc_ghi789..."
 });
@@ -799,6 +956,20 @@ if (analysis.status === "completed") {
     console.log(\`[\${risk.severity}] \${risk.description}\`);
   });
 }`,
+    examplePy: `result = await session.call_tool(
+    "get_document_analysis",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "document_id": "doc_ghi789..."
+    }
+)
+analysis = json.loads(result.content[0].text)
+
+if analysis["status"] == "completed":
+    print(analysis["summary"])
+
+    for risk in analysis["risks"]:
+        print(f"[{risk['severity']}] {risk['description']}")`,
   },
   'request-consultation': {
     name: 'request_consultation',
@@ -866,7 +1037,7 @@ if (analysis.status === "completed") {
       },
       { name: 'credits_charged', type: 'number', required: true, description: 'Credits deducted' },
     ],
-    example: `const consult = await mcp.callTool("request_consultation", {
+    exampleTs: `const consult = await mcp.callTool("request_consultation", {
   session_token: "sess_xyz789...",
   question: "We're considering expanding to the EU market. What GDPR compliance steps should we take?",
   context: "We're a B2B SaaS company processing customer data.",
@@ -876,6 +1047,20 @@ if (analysis.status === "completed") {
 
 console.log(consult.consultation_id);  // "con_jkl012..."
 console.log(consult.estimated_completion);  // "2024-01-17T12:00:00Z"`,
+    examplePy: `result = await session.call_tool(
+    "request_consultation",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "question": "We're considering expanding to the EU market. What GDPR compliance steps should we take?",
+        "context": "We're a B2B SaaS company processing customer data.",
+        "jurisdiction": "EU",
+        "urgency": "standard"
+    }
+)
+consult = json.loads(result.content[0].text)
+
+print(consult["consultation_id"])  # "con_jkl012..."
+print(consult["estimated_completion"])  # "2024-01-17T12:00:00Z"`,
     notes: [
       'Standard consultations: 5,000 credits (24-48 hour response)',
       'Urgent consultations: 10,000 credits (4-8 hour response)',
@@ -939,7 +1124,7 @@ console.log(consult.estimated_completion);  // "2024-01-17T12:00:00Z"`,
         description: 'Whether follow-up questions are available',
       },
     ],
-    example: `const result = await mcp.callTool("get_consultation_result", {
+    exampleTs: `const result = await mcp.callTool("get_consultation_result", {
   session_token: "sess_xyz789...",
   consultation_id: "con_jkl012..."
 });
@@ -951,6 +1136,21 @@ if (result.status === "completed") {
 } else {
   console.log(\`Status: \${result.status}. Check back later.\`);
 }`,
+    examplePy: `result = await session.call_tool(
+    "get_consultation_result",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "consultation_id": "con_jkl012..."
+    }
+)
+data = json.loads(result.content[0].text)
+
+if data["status"] == "completed":
+    print(data["response"])
+    # "Based on your B2B SaaS business model, here are the key GDPR
+    # compliance steps you should consider..."
+else:
+    print(f"Status: {data['status']}. Check back later.")`,
   },
 }
 
@@ -1064,7 +1264,7 @@ export default async function ToolPage({ params }: PageProps) {
       {/* Example */}
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">Example</h2>
-        <CodeBlock language="typescript" code={tool.example} />
+        <MultiLanguageCodeBlock samples={TYPESCRIPT_PYTHON(tool.exampleTs, tool.examplePy)} />
       </div>
 
       {/* Notes */}

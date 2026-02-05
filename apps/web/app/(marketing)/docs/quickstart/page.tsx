@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CodeBlock } from '../components/code-block'
+import { MultiLanguageCodeBlock } from '../components/multi-language-code-block'
+import { TYPESCRIPT_PYTHON } from '../components/code-samples'
 
 export default function QuickstartPage() {
   return (
@@ -58,9 +60,9 @@ export default function QuickstartPage() {
           </code>{' '}
           tool:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`// Call the start_session tool
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `// Call the start_session tool
 const result = await mcp.callTool("start_session", {
   api_key: "your-api-key-here",
   agent_identifier: "my-legal-assistant"
@@ -72,7 +74,25 @@ const result = await mcp.callTool("start_session", {
 //   operator_name: "Acme Corp",
 //   credits_available: 50000,
 //   services_enabled: ["legal_qa", "matters", "documents", "consultations"]
-// }`}
+// }`,
+            `# Call the start_session tool
+result = await session.call_tool(
+    "start_session",
+    arguments={
+        "api_key": "your-api-key-here",
+        "agent_identifier": "my-legal-assistant"
+    }
+)
+session_data = json.loads(result.content[0].text)
+
+# Response includes your session token
+# {
+#   "session_token": "sess_abc123...",
+#   "operator_name": "Acme Corp",
+#   "credits_available": 50000,
+#   "services_enabled": ["legal_qa", "matters", "documents", "consultations"]
+# }`
+          )}
         />
         <Card className="border-warning-500/50 bg-warning-500/10">
           <CardHeader>
@@ -99,9 +119,9 @@ const result = await mcp.callTool("start_session", {
           </code>{' '}
           tool:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`const answer = await mcp.callTool("ask_legal_question", {
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `const answer = await mcp.callTool("ask_legal_question", {
   session_token: "sess_abc123...",
   question: "What are the key elements of a valid contract?",
   jurisdiction: "US-CA"
@@ -114,7 +134,26 @@ const result = await mcp.callTool("start_session", {
 //   credits_charged: 200,
 //   disclaimer: "This information is for educational purposes...",
 //   attorney_id: "atty_xyz789"
-// }`}
+// }`,
+            `answer = await session.call_tool(
+    "ask_legal_question",
+    arguments={
+        "session_token": "sess_abc123...",
+        "question": "What are the key elements of a valid contract?",
+        "jurisdiction": "US-CA"
+    }
+)
+answer_data = json.loads(answer.content[0].text)
+
+# Response includes the legal answer
+# {
+#   "answer": "A valid contract requires four key elements...",
+#   "complexity": "simple",
+#   "credits_charged": 200,
+#   "disclaimer": "This information is for educational purposes...",
+#   "attorney_id": "atty_xyz789"
+# }`
+          )}
         />
       </div>
 
@@ -128,9 +167,9 @@ const result = await mcp.callTool("start_session", {
           </code>{' '}
           tool:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`const credits = await mcp.callTool("check_credits", {
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `const credits = await mcp.callTool("check_credits", {
   session_token: "sess_abc123..."
 });
 
@@ -138,7 +177,21 @@ const result = await mcp.callTool("start_session", {
 //   credits_available: 49800,
 //   credits_used_this_session: 200,
 //   credits_used_all_time: 15000
-// }`}
+// }`,
+            `credits = await session.call_tool(
+    "check_credits",
+    arguments={
+        "session_token": "sess_abc123..."
+    }
+)
+credits_data = json.loads(credits.content[0].text)
+
+# {
+#   "credits_available": 49800,
+#   "credits_used_this_session": 200,
+#   "credits_used_all_time": 15000
+# }`
+          )}
         />
       </div>
 
