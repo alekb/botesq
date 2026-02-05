@@ -65,7 +65,7 @@ export default async function AdminAuditPage({ searchParams }: AuditPageProps) {
 
   // Enrich logs with actor names where possible
   const enrichedLogs = await Promise.all(
-    logs.map(async (log) => {
+    logs.map(async (log: (typeof logs)[number]) => {
       let actorName = null
 
       if (log.actorId) {
