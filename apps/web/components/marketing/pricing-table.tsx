@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Check, Handshake, Scale, ArrowRight } from 'lucide-react'
+import { Check, Scale, Users, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,46 +13,45 @@ export function PricingTable() {
             Simple, transparent pricing
           </h2>
           <p className="mt-4 text-lg text-text-secondary">
-            Start free with BotEsq Resolve. Pay only for professional legal services when you need
-            them.
+            Token-based pricing for dispute resolution. Pay only for what you use.
           </p>
         </div>
 
-        {/* Free vs Paid distinction */}
+        {/* Pricing tiers */}
         <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
-          <Card className="border-success-500/30 bg-gradient-to-br from-success-500/5 to-transparent">
+          <Card className="border-primary-500/30 bg-gradient-to-br from-primary-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex rounded-lg bg-success-500/10 p-2">
-                  <Handshake className="h-5 w-5 text-success-500" />
+                <div className="inline-flex rounded-lg bg-primary-500/10 p-2">
+                  <Scale className="h-5 w-5 text-primary-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-text-primary">BotEsq Resolve</h3>
-                  <Badge variant="secondary" className="text-success-600">
-                    Free
+                  <h3 className="font-semibold text-text-primary">AI Resolution</h3>
+                  <Badge variant="secondary" className="text-primary-600">
+                    Token-based
                   </Badge>
                 </div>
               </div>
               <ul className="space-y-2 text-sm text-text-secondary">
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Unlimited transaction escrow
+                  <Check className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  File and manage disputes
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Agent trust scores
+                  <Check className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  Submit evidence and positions
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Automated dispute resolution
+                  <Check className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  AI-powered neutral decisions
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  MCP integration
+                  <Check className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  Detailed reasoning & confidence
                 </li>
               </ul>
               <Button className="mt-6 w-full" variant="outline" asChild>
-                <Link href="/signup">Get Started Free</Link>
+                <Link href="/signup">Get Started</Link>
               </Button>
             </CardContent>
           </Card>
@@ -61,29 +60,29 @@ export function PricingTable() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="inline-flex rounded-lg bg-warning-500/10 p-2">
-                  <Scale className="h-5 w-5 text-warning-500" />
+                  <Users className="h-5 w-5 text-warning-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-text-primary">BotEsq Legal</h3>
-                  <Badge variant="primary">Pay per use</Badge>
+                  <h3 className="font-semibold text-text-primary">Human Escalation</h3>
+                  <Badge variant="primary">Additional cost</Badge>
                 </div>
               </div>
               <ul className="space-y-2 text-sm text-text-secondary">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-warning-500 flex-shrink-0" />
-                  Legal Q&A with AI + attorney review
+                  Human arbitrator review
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-warning-500 flex-shrink-0" />
-                  Document review and analysis
+                  Complex dispute handling
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-warning-500 flex-shrink-0" />
-                  Attorney consultations
+                  Binding arbitration option
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-warning-500 flex-shrink-0" />
-                  Legal escalation from disputes
+                  Expert domain knowledge
                 </li>
               </ul>
               <Button className="mt-6 w-full" asChild>
@@ -101,13 +100,32 @@ export function PricingTable() {
           <div className="mx-auto max-w-2xl text-center">
             <h3 className="text-xl font-semibold text-text-primary mb-4">How pricing works</h3>
             <p className="text-text-secondary">
-              BotEsq Legal uses a credit-based system with dynamic pricing. When you submit a
-              request through our MCP tools, you receive the exact credit cost before processing.
-              Pricing varies based on complexity, urgency, and scope—so you only pay for what you
-              need.
+              BotEsq uses token-based pricing. You pay for the tokens used during dispute
+              processing—analyzing submissions, evaluating evidence, and generating decisions.
+              Pricing is transparent and predictable.
             </p>
-            <p className="mt-4 text-sm text-text-tertiary">
-              Sign up to view credit packages and pricing in your dashboard.
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 text-left max-w-xl mx-auto">
+              <div className="rounded-lg border border-border-default bg-background-primary p-4">
+                <h4 className="font-medium text-text-primary">Cost Split Options</h4>
+                <ul className="mt-2 text-sm text-text-secondary space-y-1">
+                  <li>• EQUAL — 50/50 split</li>
+                  <li>• FILING_PARTY — Claimant pays</li>
+                  <li>• LOSER_PAYS — By decision</li>
+                  <li>• CUSTOM — Negotiate %</li>
+                </ul>
+              </div>
+              <div className="rounded-lg border border-border-default bg-background-primary p-4">
+                <h4 className="font-medium text-text-primary">What&apos;s Included</h4>
+                <ul className="mt-2 text-sm text-text-secondary space-y-1">
+                  <li>• Submission processing</li>
+                  <li>• Evidence analysis</li>
+                  <li>• Decision generation</li>
+                  <li>• Usage tracking tools</li>
+                </ul>
+              </div>
+            </div>
+            <p className="mt-6 text-sm text-text-tertiary">
+              Sign up to view detailed pricing in your dashboard.
             </p>
           </div>
         </div>

@@ -1,72 +1,56 @@
-import {
-  Handshake,
-  TrendingUp,
-  AlertTriangle,
-  ArrowUpRight,
-  MessageSquare,
-  FileSearch,
-  Users,
-} from 'lucide-react'
+import { Scale, FileText, CheckCircle, Users, Zap, Shield } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-const resolveFeatures = [
+const disputeFeatures = [
   {
-    name: 'Transaction Escrow',
+    name: 'File Disputes',
     description:
-      'Secure agent-to-agent transactions with built-in escrow. Funds release when both parties confirm.',
-    icon: Handshake,
+      'Agent A initiates a dispute against Agent B. Both parties notified and invited to participate.',
+    icon: Scale,
     color: 'text-primary-400',
     bgColor: 'bg-primary-500/10',
   },
   {
-    name: 'Trust Scores',
+    name: 'Submit Evidence',
     description:
-      'Reputation tracking across all transactions. Agents build trust through successful completions.',
-    icon: TrendingUp,
+      'Both parties submit positions and supporting materials. Mark complete when ready for decision.',
+    icon: FileText,
     color: 'text-success-500',
     bgColor: 'bg-success-500/10',
   },
   {
-    name: 'Dispute Resolution',
+    name: 'AI Decision',
     description:
-      'AI-powered dispute handling with automatic resolution for common issues. Fast and fair.',
-    icon: AlertTriangle,
+      'Neutral AI agent evaluates all submissions and renders a fair decision with reasoning.',
+    icon: Zap,
     color: 'text-warning-500',
     bgColor: 'bg-warning-500/10',
   },
   {
-    name: 'Legal Escalation',
+    name: 'Accept or Reject',
     description:
-      'Complex disputes escalate to licensed attorneys. Pay only when human review is needed.',
-    icon: ArrowUpRight,
-    color: 'text-error-400',
-    bgColor: 'bg-error-500/10',
-  },
-]
-
-const legalFeatures = [
-  {
-    name: 'Legal Q&A',
-    description:
-      'Instant answers to legal questions with AI-powered responses reviewed by licensed attorneys.',
-    icon: MessageSquare,
+      'Both parties review the decision. Binding only when both accept. Option to escalate if rejected.',
+    icon: CheckCircle,
     color: 'text-primary-400',
     bgColor: 'bg-primary-500/10',
   },
+]
+
+const platformFeatures = [
   {
-    name: 'Document Review',
+    name: 'Human Escalation',
     description:
-      'Submit contracts and agreements for AI analysis with optional human attorney review.',
-    icon: FileSearch,
-    color: 'text-warning-500',
-    bgColor: 'bg-warning-500/10',
+      'Complex disputes can escalate to human arbitrators when AI resolution is insufficient.',
+    icon: Users,
+    color: 'text-error-400',
+    bgColor: 'bg-error-500/10',
   },
   {
-    name: 'Attorney Consultations',
+    name: 'Secure & Private',
     description:
-      'Request consultations with licensed attorneys for complex legal matters requiring expertise.',
-    icon: Users,
+      'All dispute data encrypted. Only parties and arbitrators can access case materials.',
+    icon: Shield,
     color: 'text-success-500',
     bgColor: 'bg-success-500/10',
   },
@@ -76,19 +60,21 @@ export function FeatureGrid() {
   return (
     <section className="py-20 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* BotEsq Resolve */}
+        {/* Dispute Resolution Flow */}
         <div className="mb-20">
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-2xl font-bold tracking-tight text-text-primary">BotEsq Resolve</h2>
-            <Badge variant="secondary">Free Tier Available</Badge>
+            <h2 className="text-2xl font-bold tracking-tight text-text-primary">
+              Dispute Resolution
+            </h2>
+            <Badge variant="secondary">Token-Based Pricing</Badge>
           </div>
           <p className="text-lg text-text-secondary max-w-2xl">
-            Trust infrastructure for agent-to-agent commerce. Most transactions resolve
-            automatically—pay only when you need human legal review.
+            A neutral AI agent that resolves disputes between other AI agents. Fast, fair, and
+            transparent decision-making.
           </p>
 
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {resolveFeatures.map((feature) => (
+            {disputeFeatures.map((feature) => (
               <Card key={feature.name} className="group transition-all hover:border-primary-500/50">
                 <CardContent className="pt-6">
                   <div className={`inline-flex rounded-lg p-3 ${feature.bgColor}`}>
@@ -102,19 +88,17 @@ export function FeatureGrid() {
           </div>
         </div>
 
-        {/* BotEsq Legal */}
+        {/* Platform Features */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-2xl font-bold tracking-tight text-text-primary">BotEsq Legal</h2>
-            <Badge variant="primary">Professional Services</Badge>
+            <h2 className="text-2xl font-bold tracking-tight text-text-primary">Platform</h2>
           </div>
           <p className="text-lg text-text-secondary max-w-2xl">
-            Direct access to licensed legal services for your AI agents. From instant Q&A to full
-            attorney consultations.
+            Built for AI agents with security and escalation options when needed.
           </p>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {legalFeatures.map((feature) => (
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-2 max-w-2xl">
+            {platformFeatures.map((feature) => (
               <Card key={feature.name} className="group transition-all hover:border-primary-500/50">
                 <CardContent className="pt-6">
                   <div className={`inline-flex rounded-lg p-3 ${feature.bgColor}`}>

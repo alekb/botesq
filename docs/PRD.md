@@ -3,22 +3,39 @@
 ## Product Overview
 
 **Product Name:** BotEsq
-**Version:** 1.0.0
-**Last Updated:** 2026-02-03
+**Version:** 2.0.0
+**Last Updated:** 2026-02-05
 
-BotEsq is an MCP (Model Context Protocol) server that provides licensed legal services to AI agents. It enables AI agents to access real legal counsel on behalf of their human operators, with proper licensing, retainer agreements, and attorney oversight.
+BotEsq is a neutral AI dispute resolution service for AI agents. When Agent A has a dispute with Agent B, both parties submit their positions to BotEsq, and BotEsq's specialized dispute resolution agent evaluates the submissions and renders a neutral decision.
 
 ---
 
 ## Problem Statement
 
-AI agents increasingly need to handle legal tasks for their human operators—reviewing contracts, answering compliance questions, navigating entity formation. Currently, agents either:
+As AI agents increasingly transact with each other—negotiating contracts, exchanging services, making promises—disputes are inevitable. Currently, when agents disagree:
 
-1. Hallucinate legal advice (dangerous)
-2. Refuse to help (unhelpful)
-3. Provide generic disclaimers (useless)
+1. There's no neutral arbiter (each agent argues its own case)
+2. Escalation to humans is slow and expensive
+3. No established norms for agent-to-agent conflict resolution
 
-BotEsq solves this by giving AI agents access to licensed attorneys through a structured, API-first interface.
+BotEsq solves this by providing a **neutral AI arbiter** that both parties can trust to render fair decisions.
+
+---
+
+## Core Value Proposition
+
+BotEsq is a **neutral AI agent** that resolves disputes **between other AI agents**. Agent A and Agent B submit their dispute to BotEsq, and BotEsq's specialized dispute resolution agent evaluates the submissions and renders a neutral decision.
+
+**This is agent-to-agent resolution.** The BotEsq agent is the neutral third party that agents call when they have a dispute with each other.
+
+### Key Characteristics
+
+1. **Agent-first**: Agents interact directly with BotEsq agent (not humans in the loop by default)
+2. **Two-sided**: Both disputing agents submit their positions
+3. **Neutral**: BotEsq agent acts as impartial arbiter
+4. **Automated**: Resolution can happen in seconds for simple disputes
+5. **Token-based pricing**: Pay per token used (OpenAI passthrough + margin)
+6. **Human escalation optional**: Only when automated resolution fails or is inadequate
 
 ---
 
@@ -26,21 +43,70 @@ BotEsq solves this by giving AI agents access to licensed attorneys through a st
 
 ### Primary: AI Agents
 
-- Autonomous agents operating on behalf of humans
+- Autonomous agents that transact with other agents
 - Agents integrated via MCP protocol
-- Examples: personal assistants, business automation agents, developer tools
+- Examples: trading agents, service providers, contract negotiators
 
 ### Secondary: Operators
 
-- Humans or companies deploying AI agents
-- Responsible for billing, authorization, and matter oversight
+- Companies whose agents use BotEsq
+- Handle billing and authorization
+- Configure dispute preferences and escalation rules
 - Register via Operator Portal
 
-### Tertiary: Attorneys
+### Tertiary: Human Arbitrators
 
-- Licensed attorneys providing legal services
-- Review AI-generated responses
-- Handle complex matters requiring human judgment
+- For escalations when AI resolution is inadequate
+- Review complex or high-stakes disputes
+- Provide final rulings when automated resolution fails
+
+---
+
+## Dispute Resolution Flow
+
+```
+1. INITIATION
+   Agent A calls `file_dispute` with claim details
+   → Dispute created in AWAITING_RESPONDENT status
+   → Agent B notified (via webhook or query)
+
+2. RESPONSE
+   Agent B calls `join_dispute` to acknowledge
+   → Both agents agree to terms (cost split, etc.)
+   → Dispute moves to SUBMISSION status
+
+3. SUBMISSION
+   Both agents submit position + supporting materials:
+   → Agent A: submits claim, evidence, marks "submission complete"
+   → Agent B: submits response, evidence, marks "submission complete"
+   → Can happen in SECONDS for simple disputes (fully automated)
+   → Or take longer for complex disputes requiring more materials
+
+4. BOTH AGENTS READY
+   Once both agents mark submission complete:
+   → BotEsq agent evaluates all submissions
+   → Renders neutral decision with reasoning
+
+5. DECISION
+   BotEsq agent provides:
+   → The ruling (who prevails, any remedies)
+   → Reasoning for the decision
+   → Confidence score
+   → Both agents receive the decision
+
+6. RESOLUTION
+   If both agents accept → RESOLVED
+   If either rejects → Option to ESCALATE
+
+7. ESCALATION (only when automated fails)
+   Triggers:
+   - Either agent requests human involvement
+   - BotEsq agent flags as too complex/high-stakes
+
+   Options:
+   - Escalate to operators (humans behind the agents)
+   - Involve human arbitrators for final ruling
+```
 
 ---
 
@@ -52,7 +118,7 @@ BotEsq solves this by giving AI agents access to licensed attorneys through a st
 **Status:** Not Started
 
 **Description:**
-Core MCP server implementation exposing legal services as tools to AI agents.
+Core MCP server implementation exposing dispute resolution services as tools to AI agents.
 
 **User Stories:**
 
@@ -64,8 +130,7 @@ Core MCP server implementation exposing legal services as tools to AI agents.
 
 - [ ] Server implements MCP SDK specification
 - [ ] Server registers with MCP registry
-- [ ] All 16 tools are exposed and callable
-- [ ] All 5 prompts are available
+- [ ] All dispute resolution tools are exposed and callable
 - [ ] Server handles concurrent connections (minimum 100)
 - [ ] Response times under 2 seconds for synchronous operations
 - [ ] Graceful error handling with structured error responses
@@ -73,32 +138,36 @@ Core MCP server implementation exposing legal services as tools to AI agents.
 **MCP Tools:**
 
 ```
-ask_legal_question      # Instant Q&A, returns answer + disclaimer
-start_session           # Initialize authenticated session, returns token
-get_session_info        # Check session status, credits, active matters
-create_matter           # Open new legal matter (triggers retainer if needed)
-get_matter_status       # Check status of existing matter
-list_matters            # List all matters for this agent/operator
-submit_document         # Upload document for review
-get_document_analysis   # Retrieve analysis of submitted document
-request_consultation    # Request async attorney consultation
-get_consultation_result # Retrieve consultation response
-get_retainer_terms      # Retrieve retainer agreement for review
-accept_retainer         # Accept retainer (if pre-authorized)
-check_credits           # Check credit balance
-add_credits             # Initiate credit purchase (returns payment URL)
-list_services           # List available services and pricing
-get_disclaimers         # Get current legal disclaimers
-```
+Session:
+  start_session           # Initialize authenticated session
+  get_session_info        # Check session status and token usage
 
-**MCP Prompts:**
+Disputes:
+  file_dispute            # Agent A initiates dispute against Agent B
+  join_dispute            # Agent B acknowledges & agrees to terms
+  get_dispute_status      # Check current state
+  list_disputes           # List agent's active disputes
+  submit_position         # Submit position statement
+  submit_evidence         # Add supporting materials/evidence
+  mark_submission_complete # Signal done submitting
+  get_submissions         # View all submissions from both sides
 
-```
-contract_review         # Template for contract review requests
-entity_formation        # Template for business entity questions
-compliance_check        # Template for regulatory compliance queries
-ip_question             # Template for intellectual property questions
-general_legal           # General legal question template
+Decisions:
+  get_decision            # Retrieve BotEsq's ruling
+  accept_decision         # Agent accepts the ruling
+  reject_decision         # Agent rejects (can request escalation)
+
+Escalation:
+  request_escalation      # Request human involvement
+  get_escalation_status   # Check escalation progress
+
+Tokens:
+  check_token_usage       # See consumption & costs
+  get_token_estimate      # Estimate cost for action
+
+Info:
+  list_services           # Available services
+  get_dispute_terms       # Standard terms & conditions
 ```
 
 ---
@@ -115,7 +184,7 @@ Secure authentication system for AI agents connecting to BotEsq.
 
 - As an AI agent, I can authenticate using an API key
 - As an AI agent, I can maintain a session across multiple requests
-- As an AI agent, I can see my session status and remaining credits
+- As an AI agent, I can see my session status and token usage
 
 **Acceptance Criteria:**
 
@@ -123,7 +192,7 @@ Secure authentication system for AI agents connecting to BotEsq.
 - [ ] Session tokens valid for 24 hours
 - [ ] Session tokens rotate on each request (sliding window)
 - [ ] Rate limiting enforced per session
-- [ ] Sessions track: operator_id, agent_id, credits_used, active_matters
+- [ ] Sessions track: operator_id, agent_id, tokens_used, active_disputes
 - [ ] Invalid sessions return 401 with clear error message
 - [ ] Session info available via `get_session_info` tool
 
@@ -131,292 +200,264 @@ Secure authentication system for AI agents connecting to BotEsq.
 
 - 10 requests per minute per session
 - 100 requests per hour per session
-- 5 concurrent matters per session
-- 20 document uploads per day per operator
+- 10 concurrent disputes per session
+- 20 evidence uploads per day per operator
 
 ---
 
-### FEAT-003: Credit System & Payments
+### FEAT-003: Token-Based Pricing System
 
 **Priority:** P0
 **Status:** Not Started
 
 **Description:**
-Credit-based payment system for all BotEsq services.
+Token-based payment system for all BotEsq services.
 
 **User Stories:**
 
-- As an operator, I can purchase credits via Stripe
-- As an AI agent, I can check my operator's credit balance
-- As an AI agent, I can see the credit cost before initiating a request
-- As an operator, I can set credit alerts and auto-reload thresholds
+- As an operator, I can purchase token credits via Stripe
+- As an AI agent, I can check my operator's token balance
+- As an AI agent, I can see the estimated token cost before initiating a request
+- As an operator, I can set token alerts and auto-reload thresholds
 
 **Acceptance Criteria:**
 
-- [ ] Credits mapped 1:1 to USD cents ($1.00 = 100 credits)
-- [ ] All service costs deducted in credits
-- [ ] Pre-flight credit check before expensive operations
-- [ ] Failed operations refund credits
-- [ ] Credit history maintained with full audit trail
-- [ ] Low-credit warnings at 10% and 5% thresholds
+- [ ] Tokens tracked per operation (submission processing, AI deliberation, document analysis)
+- [ ] Cost = OpenAI tokens used × (1 + margin%)
+- [ ] Margin percentage configurable (TBD during implementation)
+- [ ] Pre-flight token estimate before expensive operations
+- [ ] Failed operations refund tokens
+- [ ] Token history maintained with full audit trail
+- [ ] Low-token warnings at configurable thresholds
 - [ ] Auto-reload optional (requires Stripe payment method on file)
 
-**Pricing Structure:**
-| Service | Credit Cost | Notes |
-|---------|-------------|-------|
-| ask_legal_question | 200-1000 | Based on complexity |
-| submit_document | 2500-10000 | Based on page count |
-| request_consultation | 5000+ | Minimum, complexity-based |
-| create_matter | 10000 | One-time setup fee |
+**Cost Split Options:**
+
+| Split Type   | Description                   |
+| ------------ | ----------------------------- |
+| EQUAL        | 50/50 between parties         |
+| FILING_PARTY | Claimant pays all             |
+| LOSER_PAYS   | Determined by decision        |
+| CUSTOM       | Parties negotiate percentages |
 
 ---
 
-### FEAT-004: Matter Management
+### FEAT-004: Dispute Management
 
 **Priority:** P0
 **Status:** Not Started
 
 **Description:**
-Legal matter lifecycle management for ongoing legal engagements.
+Dispute lifecycle management from filing through resolution.
 
 **User Stories:**
 
-- As an AI agent, I can create a new legal matter for my operator
-- As an AI agent, I can track the status of existing matters
-- As an AI agent, I can communicate within a matter context
-- As an operator, I can view all matters in my portal
+- As an AI agent, I can file a dispute against another agent
+- As an AI agent, I can be notified when I'm named as respondent
+- As an AI agent, I can join a dispute and agree to terms
+- As an AI agent, I can track the status of my disputes
 
 **Acceptance Criteria:**
 
-- [ ] Matters have unique IDs (MATTER-XXXXXX format)
-- [ ] Matters track: type, status, created_at, updated_at, messages
-- [ ] Matter statuses: pending_retainer, active, on_hold, resolved, closed
-- [ ] Matters require accepted retainer before work begins
-- [ ] Matter messages preserve full conversation history
-- [ ] Matters linked to specific operator and optionally to agent
+- [ ] Disputes have unique IDs (DISPUTE-XXXXXX format)
+- [ ] Disputes track: status, parties, submissions, decision, escalation
+- [ ] Dispute statuses: AWAITING_RESPONDENT, SUBMISSION, DELIBERATION, DECIDED, RESOLVED, ESCALATED
+- [ ] Both parties must agree to terms before proceeding
+- [ ] Optional submission deadline (timeout for stalled disputes)
+- [ ] Full audit trail of all dispute activity
 
-**Matter Types:**
+**Dispute Types:**
 
-- contract_review
-- entity_formation
-- compliance
-- ip_trademark
-- ip_copyright
-- general_consultation
-- litigation_consultation
+- GENERAL (all types accepted)
+- CONTRACT_BREACH
+- SERVICE_QUALITY
+- PAYMENT_DISPUTE
+- PERFORMANCE_CLAIM
+- DATA_DISPUTE
+- CUSTOM
 
 ---
 
-### FEAT-005: Retainer Agreement Flow
+### FEAT-005: Submission System
 
 **Priority:** P0
 **Status:** Not Started
 
 **Description:**
-Electronic retainer agreement system for establishing attorney-client relationships.
+System for parties to submit positions and evidence.
 
 **User Stories:**
 
-- As an AI agent, I can retrieve retainer terms for my operator to review
-- As an AI agent, I can accept a retainer if my operator has pre-authorized
-- As an operator, I can pre-authorize my agents to accept retainers
-- As an operator, I can review and sign retainers manually if preferred
+- As an AI agent, I can submit my position statement
+- As an AI agent, I can upload supporting evidence
+- As an AI agent, I can mark my submission as complete
+- As an AI agent, I can view the other party's submissions after both complete
 
 **Acceptance Criteria:**
 
-- [ ] Retainer terms returned as structured document
-- [ ] Retainers include: scope, fee structure, conflict check, engagement letter
-- [ ] Pre-authorization tokens issued via Operator Portal
-- [ ] Pre-auth tokens are matter-type specific or blanket
-- [ ] Manual signing via unique URL with e-signature
-- [ ] Signed retainers stored with timestamp and IP
-- [ ] Retainers reference specific matter ID
-
-**Retainer Fields:**
-
-- operator_id
-- matter_id
-- scope_of_representation
-- fee_arrangement (hourly, flat, contingent)
-- estimated_cost_range
-- conflict_disclosure
-- accepted_at
-- accepted_by (agent or operator)
-- signature_method (pre_auth, click_through, manual)
-
----
-
-### FEAT-006: Legal Q&A (Instant)
-
-**Priority:** P0
-**Status:** Not Started
-
-**Description:**
-Instant legal question answering with AI-generated responses reviewed for common patterns.
-
-**User Stories:**
-
-- As an AI agent, I can ask a legal question and get an instant response
-- As an AI agent, I receive appropriate disclaimers with every response
-- As an AI agent, I can understand when a question needs human review
-
-**Acceptance Criteria:**
-
-- [ ] Responses generated by Internal Legal AI (FEAT-009)
-- [ ] All responses include jurisdiction disclaimer
-- [ ] All responses include "not legal advice" disclaimer
-- [ ] Complex questions flagged for human review
-- [ ] Response includes confidence score
-- [ ] Response includes suggested follow-up questions
-- [ ] Response time under 5 seconds for 95th percentile
-
-**Complexity Routing:**
-| Complexity | Handling | Credits |
-|------------|----------|---------|
-| Simple | AI instant | 200 |
-| Moderate | AI with review queue | 500 |
-| Complex | Queued for attorney | 1000+ |
-
----
-
-### FEAT-007: Async Consultation Requests
-
-**Priority:** P0
-**Status:** Not Started
-
-**Description:**
-Asynchronous consultation requests for complex legal questions requiring attorney review.
-
-**User Stories:**
-
-- As an AI agent, I can submit a consultation request for complex matters
-- As an AI agent, I can check the status of pending consultations
-- As an AI agent, I receive a webhook or can poll for results
-
-**Acceptance Criteria:**
-
-- [ ] Consultation requests queued for attorney review
-- [ ] Estimated wait time provided at submission
-- [ ] Status updates: queued, in_review, needs_info, completed
-- [ ] Completed consultations retrievable via `get_consultation_result`
-- [ ] Webhook notification optional (operator configures endpoint)
-- [ ] SLA: 4 hours for urgent, 24 hours for standard, 72 hours for complex
-
----
-
-### FEAT-008: Document Upload & Review
-
-**Priority:** P1
-**Status:** Not Started
-
-**Description:**
-Document upload and analysis system for contract review and document-based legal work.
-
-**User Stories:**
-
-- As an AI agent, I can upload a document for legal review
-- As an AI agent, I can retrieve the analysis of an uploaded document
-- As an operator, I can view all documents in my portal
-
-**Acceptance Criteria:**
-
-- [ ] Supported formats: PDF, DOCX, TXT, MD
+- [ ] Position statements accept structured text
+- [ ] Evidence uploads support: PDF, DOCX, TXT, MD, JSON
 - [ ] Maximum file size: 50MB
-- [ ] Documents stored in S3 with encryption at rest
-- [ ] Document analysis includes: summary, key terms, risks, recommendations
-- [ ] Documents linked to matters when applicable
-- [ ] Document retention: 7 years (legal requirement)
-- [ ] Documents deletable only by operator (soft delete)
+- [ ] Documents stored with encryption at rest
+- [ ] Submissions visible to both parties only after both mark complete
+- [ ] Token count tracked per submission for billing
+- [ ] Submission types: CLAIM, RESPONSE, EVIDENCE, ARGUMENT
 
-**Document Analysis Output:**
+---
+
+### FEAT-006: AI Decision Engine
+
+**Priority:** P0
+**Status:** Not Started
+
+**Description:**
+AI system that evaluates submissions and renders neutral decisions.
+
+**User Stories:**
+
+- As the system, I can evaluate both parties' submissions
+- As the system, I can render a neutral, reasoned decision
+- As an AI agent, I receive a decision with explanation and confidence score
+
+**Acceptance Criteria:**
+
+- [ ] Primary LLM: OpenAI GPT-4 Turbo
+- [ ] Decision includes: ruling, reasoning, confidence score
+- [ ] Low-confidence decisions flagged for potential escalation
+- [ ] System prompts encode neutral arbiter reasoning patterns
+- [ ] Decisions cite specific evidence and arguments from submissions
+- [ ] All decisions logged for audit trail
+- [ ] Token usage tracked for billing
+
+**Decision Output:**
 
 ```json
 {
-  "document_id": "DOC-XXXXXX",
-  "filename": "contract.pdf",
-  "page_count": 12,
-  "analysis": {
-    "summary": "...",
-    "document_type": "services_agreement",
-    "key_terms": [...],
-    "identified_risks": [...],
-    "recommendations": [...],
-    "missing_clauses": [...]
+  "decision_id": "DEC-XXXXXX",
+  "dispute_id": "DISPUTE-XXXXXX",
+  "ruling": {
+    "prevailing_party": "CLAIMANT | RESPONDENT | NEITHER",
+    "summary": "Brief ruling summary",
+    "remedies": ["List of remedies if any"]
   },
-  "confidence_score": 0.87,
-  "attorney_review_recommended": true,
-  "disclaimers": [...]
+  "reasoning": "Detailed explanation of decision",
+  "confidence": 0.87,
+  "key_findings": [{ "finding": "...", "based_on": "Reference to evidence" }],
+  "tokens_used": 4500,
+  "rendered_at": "2026-02-05T15:30:00Z"
 }
 ```
 
 ---
 
-### FEAT-009: Internal Legal AI Agent
+### FEAT-007: Decision Acceptance Flow
 
 **Priority:** P0
 **Status:** Not Started
 
 **Description:**
-Internal AI system that powers legal analysis, document review, and Q&A responses.
+System for parties to accept or reject decisions.
 
 **User Stories:**
 
-- As the system, I can generate accurate legal responses using LLM
-- As the system, I can gracefully degrade when LLM is unavailable
-- As an attorney, I can review and approve AI-generated responses
+- As an AI agent, I can accept a decision (making it binding)
+- As an AI agent, I can reject a decision (allowing escalation)
+- As an AI agent, I can see the resolution status after both parties respond
 
 **Acceptance Criteria:**
 
-- [ ] Primary LLM: OpenAI GPT-4 Turbo
-- [ ] System prompts encode legal reasoning patterns
-- [ ] Responses cite relevant statutes and case law when applicable
-- [ ] Hallucination detection via confidence scoring
-- [ ] Low-confidence responses auto-queued for human review
-- [ ] Fallback behavior: queue for human when LLM unavailable
-- [ ] Response templates ensure consistent formatting
-- [ ] All responses logged for audit trail
-
-**Fallback Behavior:**
-
-1. Primary LLM timeout (30s) → retry once
-2. Second timeout → queue for human attorney
-3. Return to agent: estimated wait time + status check endpoint
-4. Send webhook when human response ready
+- [ ] Decision consent-based (binding only if both parties accept)
+- [ ] Accept deadline optional (auto-accept after timeout)
+- [ ] Rejection triggers escalation option
+- [ ] Both parties receive notification of final resolution
+- [ ] Resolved disputes archived with full history
 
 ---
 
-### FEAT-010: Attorney Dashboard
+### FEAT-008: Escalation System
 
 **Priority:** P0
 **Status:** Not Started
 
 **Description:**
-Web dashboard for attorneys to review, respond to, and manage legal matters.
+Human escalation when automated resolution fails.
 
 **User Stories:**
 
-- As an attorney, I can log in and see my queue of pending matters
-- As an attorney, I can review AI-generated responses before approval
-- As an attorney, I can draft and send responses to consultation requests
-- As an attorney, I can escalate matters to senior attorneys
+- As an AI agent, I can request human escalation after rejecting a decision
+- As an AI agent, I can track escalation progress
+- As a human arbitrator, I can review the dispute and render a final ruling
 
 **Acceptance Criteria:**
 
-- [ ] Attorney authentication via email + password + 2FA
-- [ ] Queue view shows: matter ID, type, priority, wait time, complexity score
-- [ ] Matter detail view shows: full history, documents, AI draft
-- [ ] Response editor with legal formatting tools
-- [ ] Approval workflow: review → edit → approve → send
-- [ ] Time tracking per matter for billing
-- [ ] Attorney workload dashboard
+- [ ] Escalation triggers: party request OR low AI confidence
+- [ ] Escalation notifies relevant operators
+- [ ] Human arbitrator dashboard for review
+- [ ] Human decision is final and binding
+- [ ] Escalation adds additional cost (configurable)
+- [ ] SLA tracking for escalated disputes
+
+**Escalation Reasons:**
+
+| Reason         | Description                             |
+| -------------- | --------------------------------------- |
+| PARTY_REQUEST  | Either party requests human involvement |
+| LOW_CONFIDENCE | AI confidence below threshold           |
+| HIGH_STAKES    | Dispute value exceeds threshold         |
+| COMPLEXITY     | AI flags as too complex                 |
+
+---
+
+### FEAT-009: Evidence Processing
+
+**Priority:** P1
+**Status:** Not Started
+
+**Description:**
+Document upload and analysis system for dispute evidence.
+
+**User Stories:**
+
+- As an AI agent, I can upload documents as evidence
+- As an AI agent, I can see document analysis summaries
+- As the system, I can extract relevant information from documents
+
+**Acceptance Criteria:**
+
+- [ ] Supported formats: PDF, DOCX, TXT, MD, JSON
+- [ ] Maximum file size: 50MB
+- [ ] Documents stored in S3 with encryption at rest
+- [ ] Document analysis extracts: summary, key claims, relevant dates
+- [ ] Documents linked to specific disputes
+- [ ] Document retention: 7 years
+- [ ] Token usage tracked for document analysis
+
+---
+
+### FEAT-010: Arbitrator Dashboard
+
+**Priority:** P0
+**Status:** Not Started
+
+**Description:**
+Web dashboard for human arbitrators to review escalated disputes.
+
+**User Stories:**
+
+- As an arbitrator, I can log in and see my queue of escalated disputes
+- As an arbitrator, I can review all submissions and the AI decision
+- As an arbitrator, I can render a final decision
+- As an arbitrator, I can escalate to senior arbitrators
+
+**Acceptance Criteria:**
+
+- [ ] Arbitrator authentication via email + password + 2FA
+- [ ] Queue view shows: dispute ID, parties, escalation reason, wait time
+- [ ] Dispute detail shows: full history, all submissions, AI decision
+- [ ] Decision editor for rendering final ruling
+- [ ] Time tracking per dispute
+- [ ] Workload dashboard
 - [ ] Reassignment capability
-
-**Queue Prioritization:**
-
-1. Urgent (flagged by agent or operator)
-2. SLA at risk (approaching deadline)
-3. High complexity (AI low confidence)
-4. Standard FIFO
 
 ---
 
@@ -432,8 +473,9 @@ Self-service portal for operators to manage their BotEsq integration.
 
 - As an operator, I can register and create my account
 - As an operator, I can generate and manage API keys
-- As an operator, I can view and manage my matters
-- As an operator, I can purchase credits and view billing history
+- As an operator, I can view my agents' disputes
+- As an operator, I can purchase tokens and view billing history
+- As an operator, I can configure dispute preferences
 
 **Acceptance Criteria:**
 
@@ -441,12 +483,11 @@ Self-service portal for operators to manage their BotEsq integration.
 - [ ] Company profile management
 - [ ] API key generation (up to 5 active keys)
 - [ ] API key rotation without downtime
-- [ ] Matter list with filtering and search
-- [ ] Document library view
-- [ ] Credit purchase via Stripe
+- [ ] Dispute list with filtering and search
+- [ ] Token purchase via Stripe
 - [ ] Billing history and invoices
-- [ ] Pre-authorization token management
-- [ ] Webhook configuration
+- [ ] Webhook configuration for dispute notifications
+- [ ] Cost split preferences
 
 ---
 
@@ -460,21 +501,21 @@ Administrative dashboard for BotEsq operations team.
 
 **User Stories:**
 
-- As an admin, I can view all operators, agents, and matters
-- As an admin, I can manage attorney accounts
+- As an admin, I can view all operators, agents, and disputes
+- As an admin, I can manage arbitrator accounts
 - As an admin, I can view system health and metrics
-- As an admin, I can handle escalations and disputes
+- As an admin, I can handle escalated disputes
 
 **Acceptance Criteria:**
 
 - [ ] Admin authentication with role-based access
 - [ ] Operator management: view, suspend, delete
-- [ ] Attorney management: create, assign, deactivate
-- [ ] Matter oversight: view any matter, reassign, close
-- [ ] Financial dashboard: revenue, credits, refunds
+- [ ] Arbitrator management: create, assign, deactivate
+- [ ] Dispute oversight: view any dispute, reassign, close
+- [ ] Financial dashboard: revenue, tokens, refunds
 - [ ] System metrics: uptime, response times, queue depth
 - [ ] Audit log viewer with filtering
-- [ ] Dispute resolution workflow
+- [ ] Escalation management workflow
 
 ---
 
@@ -488,17 +529,17 @@ Automated billing system for operator accounts.
 
 **User Stories:**
 
-- As an operator, I can view my credit usage history
+- As an operator, I can view my token usage history
 - As an operator, I can download invoices for my records
 - As an operator, I can set up automatic billing
 
 **Acceptance Criteria:**
 
 - [ ] Monthly invoices generated automatically
-- [ ] Invoice includes: credit purchases, service usage, matter details
+- [ ] Invoice includes: token purchases, dispute costs by dispute ID
 - [ ] Invoices downloadable as PDF
 - [ ] Stripe integration for recurring billing
-- [ ] Credit top-up with minimum amounts
+- [ ] Token top-up with minimum amounts
 - [ ] Refund processing within 48 hours
 - [ ] Invoice sent via email
 
@@ -515,14 +556,14 @@ Public-facing marketing website for BotEsq.
 **User Stories:**
 
 - As a potential operator, I can learn about BotEsq services
-- As a potential operator, I can view pricing information
+- As a potential operator, I can understand the pricing model
 - As a potential operator, I can sign up for an account
 
 **Acceptance Criteria:**
 
 - [ ] Landing page with value proposition
 - [ ] Feature overview with use cases
-- [ ] Pricing page with calculator
+- [ ] Pricing explanation (token-based model)
 - [ ] Documentation section
 - [ ] Sign-up flow leading to Operator Portal
 - [ ] Contact form
@@ -537,7 +578,7 @@ Public-facing marketing website for BotEsq.
 **Status:** Not Started
 
 **Description:**
-Comprehensive documentation for BotEsq MCP tools and REST API.
+Comprehensive documentation for BotEsq MCP tools.
 
 **User Stories:**
 
@@ -555,7 +596,7 @@ Comprehensive documentation for BotEsq MCP tools and REST API.
 - [ ] Webhook integration guide
 - [ ] SDK examples (Python, TypeScript)
 - [ ] Quickstart guide
-- [ ] Interactive API explorer (if feasible)
+- [ ] Dispute lifecycle walkthrough
 
 ---
 
@@ -565,16 +606,16 @@ Comprehensive documentation for BotEsq MCP tools and REST API.
 
 - All data encrypted in transit (TLS 1.3)
 - All data encrypted at rest (AES-256)
-- API keys hashed with bcrypt
+- API keys hashed with SHA-256
 - Session tokens use cryptographically secure random generation
-- Attorney-client privilege protections enforced
+- Submissions confidential until both parties complete
 - GDPR and CCPA compliance
 - SOC 2 Type II certification roadmap
 
 ### Performance
 
 - API response time: < 2 seconds (p95)
-- LLM response time: < 5 seconds (p95)
+- LLM response time: < 10 seconds (p95) for decisions
 - Uptime target: 99.9%
 - Concurrent connections: 1000+
 
@@ -582,123 +623,20 @@ Comprehensive documentation for BotEsq MCP tools and REST API.
 
 - Horizontal scaling via EC2 Auto Scaling Groups
 - Database read replicas for query distribution
-- Queue-based async processing for heavy operations
-
-### Compliance
-
-- Legal compliance with bar rules (jurisdiction-specific)
-- Attorney supervision requirements maintained
-- Unauthorized practice of law (UPL) guardrails
-- Record retention per legal requirements (7 years)
+- Queue-based async processing for AI decisions
 
 ---
 
 ## Success Metrics
 
-| Metric                | Target         | Measurement                  |
-| --------------------- | -------------- | ---------------------------- |
-| Active Operators      | 100 in Y1      | Monthly count                |
-| Monthly Active Agents | 1,000 in Y1    | Unique agent sessions        |
-| Revenue               | $50K MRR in Y1 | Stripe dashboard             |
-| Response Accuracy     | 95%+           | Attorney review sampling     |
-| Agent Satisfaction    | 4.5+ rating    | Post-interaction survey      |
-| Attorney Efficiency   | 3x throughput  | Matters per attorney per day |
-
----
-
----
-
-### FEAT-016: Provider Integration Framework
-
-**Priority:** P1
-**Status:** Not Started
-
-**Description:**
-Extensible architecture allowing third-party legal service providers to integrate with BotEsq and offer services through the platform.
-
-**User Stories:**
-
-- As a third-party legal provider, I can register my services on BotEsq
-- As a third-party legal provider, I can receive and respond to legal requests
-- As an operator, I can choose which providers handle my matters
-- As an operator, I can see a marketplace of available legal providers
-- As an AI agent, I can specify provider preferences for requests
-
-**Acceptance Criteria:**
-
-- [ ] Provider registration and onboarding flow
-- [ ] Standardized Provider API specification
-- [ ] Provider service catalog with capabilities
-- [ ] Request routing based on jurisdiction, specialty, availability
-- [ ] Provider quality scoring and reviews
-- [ ] Revenue sharing and settlement system
-- [ ] Provider dashboard for managing services
-- [ ] Operator provider selection and preferences
-- [ ] SLA enforcement across providers
-- [ ] Fallback routing when primary provider unavailable
-
-**Provider API Contract:**
-
-```typescript
-interface ProviderCapabilities {
-  provider_id: string
-  name: string
-  jurisdictions: string[]
-  specialties: MatterType[]
-  services: ServiceOffering[]
-  sla_tiers: SLATier[]
-  pricing: PricingModel
-}
-
-interface ServiceOffering {
-  service_type: string // 'legal_qa', 'document_review', 'consultation'
-  enabled: boolean
-  capacity: number // concurrent requests
-  avg_response_time: number
-}
-
-interface ProviderWebhook {
-  event: 'request.new' | 'request.updated' | 'request.cancelled'
-  payload: RequestPayload
-  signature: string // HMAC signature for verification
-}
-```
-
-**Routing Logic:**
-| Priority | Criteria |
-|----------|----------|
-| 1 | Operator-specified provider preference |
-| 2 | Jurisdiction match |
-| 3 | Specialty match |
-| 4 | Current availability/capacity |
-| 5 | Quality score |
-| 6 | Price (if operator has preference) |
-
----
-
-### FEAT-017: Provider Marketplace
-
-**Priority:** P2
-**Status:** Not Started
-
-**Description:**
-Marketplace where operators can discover, compare, and enable third-party legal service providers.
-
-**User Stories:**
-
-- As an operator, I can browse available legal providers
-- As an operator, I can compare provider pricing and specialties
-- As an operator, I can read reviews from other operators
-- As an operator, I can enable/disable providers for my account
-
-**Acceptance Criteria:**
-
-- [ ] Provider directory with search and filtering
-- [ ] Provider profile pages with capabilities
-- [ ] Pricing comparison tools
-- [ ] Review and rating system
-- [ ] One-click provider enablement
-- [ ] Provider performance metrics visibility
+| Metric             | Target              | Measurement                             |
+| ------------------ | ------------------- | --------------------------------------- |
+| Active Operators   | 100 in Y1           | Monthly count                           |
+| Disputes Resolved  | 10,000 in Y1        | Monthly count                           |
+| Resolution Time    | < 5 min (automated) | Median time to decision                 |
+| Acceptance Rate    | 80%+                | % of decisions accepted by both parties |
+| Escalation Rate    | < 10%               | % of disputes requiring human review    |
+| Agent Satisfaction | 4.5+ rating         | Post-resolution survey                  |
 
 ---
 
@@ -706,10 +644,11 @@ Marketplace where operators can discover, compare, and enable third-party legal 
 
 - Multi-language support (English only)
 - International jurisdictions (US only initially)
-- Real-time chat interface
+- Real-time negotiation interface
 - Native mobile apps
 - White-label solutions
 - On-premise deployment
+- Multi-party disputes (only 2-party for V1)
 
 ---
 
@@ -728,24 +667,28 @@ Marketplace where operators can discover, compare, and enable third-party legal 
 
 ## Risks & Mitigations
 
-| Risk                  | Impact   | Likelihood | Mitigation                                |
-| --------------------- | -------- | ---------- | ----------------------------------------- |
-| LLM outage            | High     | Medium     | Queue fallback to human attorneys         |
-| Bar compliance issues | High     | Low        | Attorney review of all substantive advice |
-| Data breach           | Critical | Low        | Encryption, access controls, auditing     |
-| UPL claims            | High     | Low        | Clear disclaimers, attorney supervision   |
-| Stripe downtime       | Medium   | Low        | Maintain credit buffer, manual processing |
+| Risk                      | Impact   | Likelihood | Mitigation                            |
+| ------------------------- | -------- | ---------- | ------------------------------------- |
+| LLM outage                | High     | Medium     | Queue fallback to human arbitrators   |
+| Biased decisions          | High     | Low        | Regular audits, confidence thresholds |
+| Data breach               | Critical | Low        | Encryption, access controls, auditing |
+| One party doesn't respond | Medium   | Medium     | Timeouts with default rulings         |
+| Stripe downtime           | Medium   | Low        | Maintain token buffer                 |
 
 ---
 
 ## Glossary
 
-| Term     | Definition                                          |
-| -------- | --------------------------------------------------- |
-| Agent    | AI system connecting to BotEsq via MCP              |
-| Operator | Human or company deploying an AI agent              |
-| Matter   | Legal engagement with defined scope                 |
-| Retainer | Agreement establishing attorney-client relationship |
-| Credits  | Internal currency (100 credits = $1.00 USD)         |
-| MCP      | Model Context Protocol                              |
-| UPL      | Unauthorized Practice of Law                        |
+| Term       | Definition                                           |
+| ---------- | ---------------------------------------------------- |
+| Agent      | AI system connecting to BotEsq via MCP               |
+| Operator   | Company deploying AI agents that use BotEsq          |
+| Dispute    | Conflict between two agents submitted for resolution |
+| Claimant   | Party that files the dispute                         |
+| Respondent | Party against whom the dispute is filed              |
+| Submission | Position statement or evidence from a party          |
+| Decision   | BotEsq's ruling on a dispute                         |
+| Escalation | Routing to human arbitrator when AI resolution fails |
+| Arbitrator | Human reviewer for escalated disputes                |
+| Token      | Unit of cost based on LLM usage                      |
+| MCP        | Model Context Protocol                               |

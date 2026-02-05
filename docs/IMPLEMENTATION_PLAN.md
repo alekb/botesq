@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document is the master blueprint for building BotEsq. It contains numbered phases and steps covering the entire build from start to finish. Each step lists exact files to create, features to implement (referencing PRD feature IDs), and tests to write.
+This document is the master blueprint for building BotEsq as a neutral AI dispute resolution service. It contains numbered phases and steps covering the entire build from start to finish. Each step lists exact files to create, features to implement (referencing PRD feature IDs), and tests to write.
 
 **This file is written once and does not get modified during execution.**
 
@@ -128,12 +128,6 @@ pnpm prisma migrate dev --name init
    sudo certbot --nginx -d botesq.io -d www.botesq.io
    ```
 
-**Files to create on server:**
-
-```
-/etc/nginx/conf.d/botesq.conf
-```
-
 **Verification:**
 
 - [ ] HTTPS working at https://botesq.io
@@ -255,23 +249,179 @@ apps/mcp-server/src/
 ```
 apps/mcp-server/src/tools/
 ├── list-services.ts
-├── get-disclaimers.ts
-└── check-credits.ts
+├── get-dispute-terms.ts
+└── check-token-usage.ts
 ```
 
 **Verification:**
 
-- [ ] `list_services` returns pricing info
-- [ ] `get_disclaimers` returns current disclaimers
-- [ ] `check_credits` returns balance
+- [ ] `list_services` returns available services
+- [ ] `get_dispute_terms` returns terms and conditions
+- [ ] `check_token_usage` returns balance and history
 
 ---
 
-## Phase 2: Legal Engine
+## Phase 2: Dispute Management
 
-**Implements:** FEAT-006 (Legal Q&A), FEAT-009 (Internal Legal AI)
+**Implements:** FEAT-004 (Dispute Management)
 
-### 2.1 OpenAI Integration
+### 2.1 Dispute Service
+
+**Files to create:**
+
+```
+apps/mcp-server/src/
+├── services/
+│   └── dispute.service.ts          # Dispute CRUD operations
+└── utils/
+    └── secure-id.ts                # Cryptographically secure ID generation
+```
+
+**Tests to write:**
+
+```
+apps/mcp-server/src/__tests__/services/
+└── dispute.service.test.ts
+```
+
+**Verification:**
+
+- [ ] Disputes created with DISPUTE-XXXXXX format
+- [ ] Status transitions work correctly
+- [ ] Parties tracked correctly
+
+---
+
+### 2.2 Filing & Joining Tools
+
+**Files to create:**
+
+```
+apps/mcp-server/src/tools/
+├── file-dispute.ts
+├── join-dispute.ts
+├── get-dispute-status.ts
+└── list-disputes.ts
+```
+
+**Tests to write:**
+
+```
+apps/mcp-server/src/__tests__/tools/
+├── file-dispute.test.ts
+├── join-dispute.test.ts
+├── get-dispute-status.test.ts
+└── list-disputes.test.ts
+```
+
+**Verification:**
+
+- [ ] Claimant can file dispute
+- [ ] Respondent can join dispute
+- [ ] Status updates correctly
+- [ ] List filters work (status, role)
+
+---
+
+### 2.3 Webhook Notifications
+
+**Files to create:**
+
+```
+apps/mcp-server/src/services/
+└── operator-webhook.service.ts     # Webhook dispatch for operators
+```
+
+**Verification:**
+
+- [ ] Webhook sent when dispute filed against operator
+- [ ] HMAC signature included
+- [ ] Timestamp included for replay protection
+
+---
+
+## Phase 3: Submission System
+
+**Implements:** FEAT-005 (Submission System)
+
+### 3.1 Submission Service
+
+**Files to create:**
+
+```
+apps/mcp-server/src/services/
+└── submission.service.ts           # Submission CRUD
+```
+
+**Verification:**
+
+- [ ] Submissions linked to disputes and parties
+- [ ] Multiple submission types supported
+- [ ] Token usage tracked
+
+---
+
+### 3.2 Submission Tools
+
+**Files to create:**
+
+```
+apps/mcp-server/src/tools/
+├── submit-position.ts
+├── submit-evidence.ts
+├── mark-submission-complete.ts
+└── get-submissions.ts
+```
+
+**Tests to write:**
+
+```
+apps/mcp-server/src/__tests__/tools/
+├── submit-position.test.ts
+├── submit-evidence.test.ts
+├── mark-submission-complete.test.ts
+└── get-submissions.test.ts
+```
+
+**Verification:**
+
+- [ ] Position statements stored correctly
+- [ ] Evidence documents uploaded to S3
+- [ ] Both parties marked complete triggers deliberation
+- [ ] Submissions hidden until both complete
+
+---
+
+### 3.3 Evidence Processing
+
+**Files to create:**
+
+```
+apps/mcp-server/src/
+├── services/
+│   ├── storage.service.ts          # S3 integration
+│   └── document-analysis.service.ts # AI document analysis
+```
+
+**Dependencies:**
+
+```bash
+pnpm add @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+```
+
+**Verification:**
+
+- [ ] Documents upload to S3
+- [ ] File type validation (magic bytes)
+- [ ] Document analysis generates summary
+
+---
+
+## Phase 4: AI Decision Engine
+
+**Implements:** FEAT-006 (AI Decision Engine)
+
+### 4.1 OpenAI Integration
 
 **Files to create:**
 
@@ -279,12 +429,9 @@ apps/mcp-server/src/tools/
 apps/mcp-server/src/
 ├── services/
 │   ├── llm.service.ts              # OpenAI client wrapper
-│   └── legal-ai.service.ts         # Legal prompt engineering
+│   └── decision-engine.service.ts  # Decision generation
 ├── prompts/
-│   ├── legal-qa.prompt.ts
-│   └── document-analysis.prompt.ts
-└── utils/
-    └── token-counter.ts
+│   └── arbiter.prompt.ts           # Neutral arbiter system prompt
 ```
 
 **Dependencies:**
@@ -296,241 +443,132 @@ pnpm add openai tiktoken
 **Verification:**
 
 - [ ] OpenAI connection working
-- [ ] Legal responses generated
+- [ ] Neutral decisions generated
 - [ ] Token counting accurate
 
 ---
 
-### 2.2 Legal Q&A Tool
+### 4.2 Decision Rendering
+
+**Files to create:**
+
+```
+apps/mcp-server/src/services/
+└── decision.service.ts             # Decision creation and storage
+```
+
+**Verification:**
+
+- [ ] Decision includes ruling, reasoning, confidence
+- [ ] Key findings cite evidence
+- [ ] Tokens tracked for billing
+
+---
+
+### 4.3 Decision Tools
 
 **Files to create:**
 
 ```
 apps/mcp-server/src/tools/
-└── ask-legal-question.ts
+└── get-decision.ts
 ```
 
-**Tests:**
+**Verification:**
+
+- [ ] Decision retrievable after rendering
+- [ ] Party acceptance status included
+
+---
+
+## Phase 5: Decision Acceptance Flow
+
+**Implements:** FEAT-007 (Decision Acceptance Flow)
+
+### 5.1 Acceptance Tools
+
+**Files to create:**
+
+```
+apps/mcp-server/src/tools/
+├── accept-decision.ts
+└── reject-decision.ts
+```
+
+**Tests to write:**
 
 ```
 apps/mcp-server/src/__tests__/tools/
-└── ask-legal-question.test.ts
+├── accept-decision.test.ts
+└── reject-decision.test.ts
 ```
 
 **Verification:**
 
-- [ ] Simple questions answered instantly
-- [ ] Complex questions queued for review
-- [ ] Credits deducted correctly
-- [ ] Disclaimers included in response
+- [ ] Both accepting resolves dispute
+- [ ] Rejection enables escalation option
+- [ ] Webhooks sent on resolution
 
 ---
 
-### 2.3 LLM Fallback Handling
+## Phase 6: Escalation System
+
+**Implements:** FEAT-008 (Escalation System)
+
+### 6.1 Escalation Service
 
 **Files to create:**
 
 ```
-apps/mcp-server/src/
-├── services/
-│   └── queue.service.ts            # Human queue management
-└── utils/
-    └── retry.ts                    # Retry with backoff
+apps/mcp-server/src/services/
+└── escalation.service.ts           # Escalation CRUD and queue
 ```
 
 **Verification:**
 
-- [ ] Timeout triggers fallback
-- [ ] Request queued for human review
-- [ ] Estimated wait time returned
+- [ ] Escalations queued correctly
+- [ ] SLA deadlines calculated
+- [ ] Status tracking works
 
 ---
 
-### 2.4 MCP Prompts
-
-**Files to create:**
-
-```
-apps/mcp-server/src/prompts/
-├── index.ts                        # Prompt registry
-├── contract-review.ts
-├── entity-formation.ts
-├── compliance-check.ts
-├── ip-question.ts
-└── general-legal.ts
-```
-
-**Verification:**
-
-- [ ] All 5 prompts registered
-- [ ] Prompts accessible via MCP protocol
-
----
-
-## Phase 3: Matter Management
-
-**Implements:** FEAT-004 (Matter Management), FEAT-005 (Retainer Agreement Flow)
-
-### 3.1 Matter Tools
+### 6.2 Escalation Tools
 
 **Files to create:**
 
 ```
 apps/mcp-server/src/tools/
-├── create-matter.ts
-├── get-matter-status.ts
-└── list-matters.ts
-
-apps/mcp-server/src/services/
-└── matter.service.ts
+├── request-escalation.ts
+└── get-escalation-status.ts
 ```
 
-**Tests:**
+**Tests to write:**
 
 ```
 apps/mcp-server/src/__tests__/tools/
-├── create-matter.test.ts
-├── get-matter-status.test.ts
-└── list-matters.test.ts
+├── request-escalation.test.ts
+└── get-escalation-status.test.ts
 ```
 
 **Verification:**
 
-- [ ] Matters created with correct type
-- [ ] Matter IDs follow MATTER-XXXXXX format
-- [ ] Status transitions work correctly
+- [ ] Escalation created on request
+- [ ] Tokens charged for escalation
+- [ ] Status updates available
 
 ---
 
-### 3.2 Retainer Tools
+## Phase 7: Token System
 
-**Files to create:**
+**Implements:** FEAT-003 (Token-Based Pricing System)
 
-```
-apps/mcp-server/src/tools/
-├── get-retainer-terms.ts
-└── accept-retainer.ts
-
-apps/mcp-server/src/services/
-└── retainer.service.ts
-```
-
-**Tests:**
-
-```
-apps/mcp-server/src/__tests__/tools/
-├── get-retainer-terms.test.ts
-└── accept-retainer.test.ts
-```
-
-**Verification:**
-
-- [ ] Retainer terms generated correctly
-- [ ] Pre-auth acceptance works
-- [ ] Manual signing URL generated
-- [ ] Matter activates after retainer accepted
-
----
-
-### 3.3 Retainer Pre-Authorization
+### 7.1 Stripe Integration
 
 **Files to create:**
 
 ```
 apps/mcp-server/src/services/
-└── preauth.service.ts
-```
-
-**Verification:**
-
-- [ ] Pre-auth tokens validate correctly
-- [ ] Scope restrictions enforced
-- [ ] Credit limits enforced
-
----
-
-## Phase 4: Document Handling
-
-**Implements:** FEAT-008 (Document Upload & Review)
-
-### 4.1 S3 Integration
-
-**Files to create:**
-
-```
-apps/mcp-server/src/services/
-└── storage.service.ts              # S3 upload/download
-
-packages/shared/src/
-└── file-utils.ts                   # File validation
-```
-
-**Dependencies:**
-
-```bash
-pnpm add @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
-```
-
-**Verification:**
-
-- [ ] Files upload to S3
-- [ ] Presigned URLs generated
-- [ ] File type validation works
-
----
-
-### 4.2 Document Tools
-
-**Files to create:**
-
-```
-apps/mcp-server/src/tools/
-├── submit-document.ts
-└── get-document-analysis.ts
-
-apps/mcp-server/src/services/
-└── document.service.ts
-```
-
-**Verification:**
-
-- [ ] Documents upload and store
-- [ ] Analysis queued automatically
-- [ ] Results retrievable when ready
-
----
-
-### 4.3 Document Analysis Pipeline
-
-**Files to create:**
-
-```
-apps/mcp-server/src/
-├── workers/
-│   └── document-analysis.worker.ts
-└── prompts/
-    └── document-analysis.prompt.ts
-```
-
-**Verification:**
-
-- [ ] PDF text extraction works
-- [ ] Analysis generates structured output
-- [ ] Risks and recommendations identified
-
----
-
-## Phase 5: Payments & Credits
-
-**Implements:** FEAT-003 (Credit System & Payments)
-
-### 5.1 Stripe Integration
-
-**Files to create:**
-
-```
-apps/mcp-server/src/services/
-└── stripe.service.ts
+└── stripe.service.ts               # Stripe checkout and webhooks
 
 apps/web/app/api/webhooks/
 └── stripe/route.ts
@@ -546,95 +584,48 @@ pnpm add stripe
 
 - [ ] Checkout sessions created
 - [ ] Webhook events processed
-- [ ] Credits added on successful payment
+- [ ] Tokens added on successful payment
 
 ---
 
-### 5.2 Credit Tools
+### 7.2 Token Service
+
+**Files to create:**
+
+```
+apps/mcp-server/src/services/
+└── token.service.ts                # Token balance management
+```
+
+**Verification:**
+
+- [ ] Balance queries accurate
+- [ ] Deductions tracked with references
+- [ ] Transaction history maintained
+
+---
+
+### 7.3 Token Estimation Tool
 
 **Files to create:**
 
 ```
 apps/mcp-server/src/tools/
-└── add-credits.ts
-
-apps/mcp-server/src/services/
-└── credit.service.ts
+└── get-token-estimate.ts
 ```
 
 **Verification:**
 
-- [ ] Payment URL generated
-- [ ] Credits added after payment
-- [ ] Transaction history accurate
+- [ ] Estimates returned for actions
+- [ ] Sufficiency check included
 
 ---
 
-### 5.3 Credit Deduction Logic
-
-**Files to modify:**
-
-- All tools that consume credits
-
-**Verification:**
-
-- [ ] Pre-flight credit checks work
-- [ ] Credits deducted on success
-- [ ] Refunds on failure
-- [ ] Transaction audit trail complete
-
----
-
-## Phase 6: Consultation System
-
-**Implements:** FEAT-007 (Async Consultation Requests)
-
-### 6.1 Consultation Tools
-
-**Files to create:**
-
-```
-apps/mcp-server/src/tools/
-├── request-consultation.ts
-└── get-consultation-result.ts
-
-apps/mcp-server/src/services/
-└── consultation.service.ts
-```
-
-**Verification:**
-
-- [ ] Consultations queued correctly
-- [ ] SLA deadlines calculated
-- [ ] Status polling works
-
----
-
-### 6.2 Consultation Queue
-
-**Files to create:**
-
-```
-apps/mcp-server/src/services/
-└── queue.service.ts
-
-apps/mcp-server/src/workers/
-└── consultation.worker.ts
-```
-
-**Verification:**
-
-- [ ] AI drafts generated
-- [ ] Queue prioritization correct
-- [ ] SLA tracking works
-
----
-
-## Phase 7: Web Application Foundation
+## Phase 8: Web Application Foundation
 
 **Implements:** FEAT-014 (Marketing Website) foundation
 
-### 7.1 Next.js Setup
+### 8.1 Next.js Setup
 
 **Files to create:**
 
@@ -670,7 +661,7 @@ pnpm add zustand @tanstack/react-query
 
 ---
 
-### 7.2 Design System Implementation
+### 8.2 Design System Implementation
 
 **Files to create:**
 
@@ -700,7 +691,7 @@ apps/web/
 
 ---
 
-### 7.3 Marketing Pages
+### 8.3 Marketing Pages
 
 **Files to create:**
 
@@ -715,7 +706,7 @@ apps/web/app/
 └── components/marketing/
     ├── hero.tsx
     ├── feature-grid.tsx
-    ├── pricing-table.tsx
+    ├── pricing-explanation.tsx
     └── footer.tsx
 ```
 
@@ -727,11 +718,11 @@ apps/web/app/
 
 ---
 
-## Phase 8: Operator Portal
+## Phase 9: Operator Portal
 
 **Implements:** FEAT-011 (Operator Portal)
 
-### 8.1 Authentication UI
+### 9.1 Authentication UI
 
 **Files to create:**
 
@@ -758,7 +749,7 @@ apps/web/app/
 
 ---
 
-### 8.2 Portal Dashboard
+### 9.2 Portal Dashboard
 
 **Files to create:**
 
@@ -781,35 +772,35 @@ apps/web/app/portal/
 
 ---
 
-### 8.3 Matter Management UI
+### 9.3 Dispute Management UI
 
 **Files to create:**
 
 ```
 apps/web/app/portal/
-├── matters/
-│   ├── page.tsx                    # Matter list
+├── disputes/
+│   ├── page.tsx                    # Dispute list
 │   └── [id]/
-│       ├── page.tsx                # Matter detail
+│       ├── page.tsx                # Dispute detail
 │       ├── timeline/page.tsx
-│       ├── documents/page.tsx
-│       └── messages/page.tsx
+│       ├── submissions/page.tsx
+│       └── decision/page.tsx
 └── components/portal/
-    ├── matter-card.tsx
-    ├── matter-list.tsx
-    ├── matter-detail.tsx
-    └── matter-timeline.tsx
+    ├── dispute-card.tsx
+    ├── dispute-list.tsx
+    ├── dispute-detail.tsx
+    └── dispute-timeline.tsx
 ```
 
 **Verification:**
 
-- [ ] Matter list loads
+- [ ] Dispute list loads
 - [ ] Filtering works
 - [ ] Detail view shows all data
 
 ---
 
-### 8.4 API Key Management
+### 9.4 API Key Management
 
 **Files to create:**
 
@@ -830,7 +821,7 @@ apps/web/app/portal/
 
 ---
 
-### 8.5 Billing UI
+### 9.5 Token & Billing UI
 
 **Files to create:**
 
@@ -838,25 +829,22 @@ apps/web/app/portal/
 apps/web/app/portal/
 ├── billing/
 │   ├── page.tsx
-│   ├── history/page.tsx
-│   └── invoices/page.tsx
+│   └── history/page.tsx
 └── components/portal/
-    ├── credit-balance.tsx
-    ├── purchase-credits-dialog.tsx
-    ├── transaction-history.tsx
-    └── invoice-list.tsx
+    ├── token-balance.tsx
+    ├── purchase-tokens-dialog.tsx
+    └── transaction-history.tsx
 ```
 
 **Verification:**
 
-- [ ] Credit balance displays
+- [ ] Token balance displays
 - [ ] Purchase flow works
 - [ ] History loads
-- [ ] Invoice download works
 
 ---
 
-### 8.6 Settings & Pre-Authorization
+### 9.6 Settings & Webhooks
 
 **Files to create:**
 
@@ -865,53 +853,50 @@ apps/web/app/portal/
 ├── settings/
 │   ├── page.tsx
 │   ├── profile/page.tsx
-│   ├── preauth/page.tsx
 │   └── webhooks/page.tsx
 ```
 
 **Verification:**
 
 - [ ] Profile updates work
-- [ ] Pre-auth configuration works
-- [ ] Webhook settings save
+- [ ] Webhook configuration works
 
 ---
 
-## Phase 9: Attorney Dashboard
+## Phase 10: Arbitrator Dashboard
 
-**Implements:** FEAT-010 (Attorney Dashboard)
+**Implements:** FEAT-010 (Arbitrator Dashboard)
 
-### 9.1 Attorney Authentication
+### 10.1 Arbitrator Authentication
 
 **Files to create:**
 
 ```
-apps/web/app/attorney/
+apps/web/app/arbitrator/
 ├── login/page.tsx
 └── lib/
-    └── attorney-auth.ts
+    └── arbitrator-auth.ts
 ```
 
 **Verification:**
 
-- [ ] Attorney login works
+- [ ] Arbitrator login works
 - [ ] 2FA required
 - [ ] Session management correct
 
 ---
 
-### 9.2 Queue Management
+### 10.2 Queue Management
 
 **Files to create:**
 
 ```
-apps/web/app/attorney/
+apps/web/app/arbitrator/
 ├── layout.tsx
 ├── page.tsx                        # Queue view
 └── components/
     ├── queue-list.tsx
     ├── queue-item.tsx
-    ├── queue-filters.tsx
     └── queue-stats.tsx
 ```
 
@@ -919,44 +904,42 @@ apps/web/app/attorney/
 
 - [ ] Queue loads with prioritization
 - [ ] Claiming works
-- [ ] Real-time updates (if implemented)
 
 ---
 
-### 9.3 Matter Review UI
+### 10.3 Escalation Review UI
 
 **Files to create:**
 
 ```
-apps/web/app/attorney/
-├── matter/[id]/
+apps/web/app/arbitrator/
+├── escalation/[id]/
 │   ├── page.tsx
 │   └── components/
-│       ├── matter-header.tsx
-│       ├── request-panel.tsx
-│       ├── ai-draft-panel.tsx
-│       ├── response-editor.tsx
-│       └── action-buttons.tsx
+│       ├── escalation-header.tsx
+│       ├── ai-decision-panel.tsx
+│       ├── submission-panel.tsx
+│       └── decision-editor.tsx
 ```
 
 **Verification:**
 
-- [ ] Full matter context displayed
-- [ ] AI draft shown
-- [ ] Editor works
-- [ ] Approval flow works
+- [ ] Full dispute context displayed
+- [ ] AI decision shown
+- [ ] Decision editor works
+- [ ] Submit decision flow works
 
 ---
 
-### 9.4 Attorney Stats
+### 10.4 Arbitrator Stats
 
 **Files to create:**
 
 ```
-apps/web/app/attorney/
+apps/web/app/arbitrator/
 ├── stats/page.tsx
 └── components/
-    └── attorney-stats.tsx
+    └── arbitrator-stats.tsx
 ```
 
 **Verification:**
@@ -966,11 +949,11 @@ apps/web/app/attorney/
 
 ---
 
-## Phase 10: Admin Dashboard
+## Phase 11: Admin Dashboard
 
 **Implements:** FEAT-012 (Admin Dashboard)
 
-### 10.1 Admin Authentication
+### 11.1 Admin Authentication
 
 **Files to create:**
 
@@ -983,7 +966,7 @@ apps/web/app/admin/
 
 ---
 
-### 10.2 Admin Overview
+### 11.2 Admin Overview
 
 **Files to create:**
 
@@ -993,13 +976,13 @@ apps/web/app/admin/
 ├── page.tsx                        # Overview dashboard
 └── components/
     ├── system-health.tsx
-    ├── revenue-stats.tsx
+    ├── dispute-stats.tsx
     └── alerts.tsx
 ```
 
 ---
 
-### 10.3 Operator Management
+### 11.3 Operator Management
 
 **Files to create:**
 
@@ -1012,13 +995,13 @@ apps/web/app/admin/
 
 ---
 
-### 10.4 Attorney Management
+### 11.4 Arbitrator Management
 
 **Files to create:**
 
 ```
 apps/web/app/admin/
-├── attorneys/
+├── arbitrators/
 │   ├── page.tsx
 │   ├── new/page.tsx
 │   └── [id]/page.tsx
@@ -1026,7 +1009,23 @@ apps/web/app/admin/
 
 ---
 
-### 10.5 Audit Logs
+### 11.5 Dispute Oversight
+
+**Files to create:**
+
+```
+apps/web/app/admin/
+├── disputes/
+│   ├── page.tsx
+│   └── [id]/page.tsx
+├── escalations/
+│   ├── page.tsx
+│   └── [id]/page.tsx
+```
+
+---
+
+### 11.6 Audit Logs
 
 **Files to create:**
 
@@ -1039,11 +1038,11 @@ apps/web/app/admin/
 
 ---
 
-## Phase 11: API Documentation
+## Phase 12: API Documentation
 
 **Implements:** FEAT-015 (API Documentation)
 
-### 11.1 Documentation Site
+### 12.1 Documentation Site
 
 **Files to create:**
 
@@ -1055,7 +1054,6 @@ apps/web/app/docs/
 ├── tools/
 │   ├── page.tsx
 │   └── [tool]/page.tsx
-├── prompts/page.tsx
 ├── errors/page.tsx
 ├── webhooks/page.tsx
 └── examples/
@@ -1072,11 +1070,11 @@ apps/web/app/docs/
 
 ---
 
-## Phase 12: Billing & Invoicing
+## Phase 13: Billing & Invoicing
 
 **Implements:** FEAT-013 (Billing & Invoicing)
 
-### 12.1 Invoice Generation
+### 13.1 Invoice Generation
 
 **Files to create:**
 
@@ -1096,174 +1094,6 @@ apps/mcp-server/src/workers/
 
 ---
 
-## Phase 13: Provider Integration Framework
-
-**Implements:** FEAT-016 (Provider Integration Framework), FEAT-017 (Provider Marketplace)
-
-### 13.1 Provider Data Model
-
-**Files to create/modify:**
-
-```
-packages/database/prisma/
-└── schema.prisma           # Add Provider models (already defined in BACKEND_STRUCTURE)
-
-packages/database/prisma/migrations/
-└── XXXXXX_add_providers/   # Migration for provider tables
-```
-
-**Verification:**
-
-- [ ] All provider tables created
-- [ ] Indexes in place
-- [ ] Foreign keys correct
-
----
-
-### 13.2 Provider Service Abstraction
-
-**Files to create:**
-
-```
-apps/mcp-server/src/
-├── providers/
-│   ├── index.ts                    # Provider registry
-│   ├── types.ts                    # LegalServiceProvider interface
-│   ├── internal-provider.ts        # BotEsq internal implementation
-│   ├── external-adapter.ts         # Adapter for external providers
-│   └── routing-service.ts          # Request routing logic
-```
-
-**Verification:**
-
-- [ ] Internal provider implements interface
-- [ ] External adapter handles webhooks
-- [ ] Routing logic selects correctly
-
----
-
-### 13.3 Provider API Endpoints
-
-**Files to create:**
-
-```
-apps/mcp-server/src/routes/
-├── provider-auth.ts               # Provider login, 2FA
-├── provider-profile.ts            # Profile, services management
-├── provider-requests.ts           # Work queue
-└── provider-webhook.ts            # Callback handler
-
-apps/web/app/api/provider/
-└── [...route]/route.ts            # Provider portal API routes
-```
-
-**Verification:**
-
-- [ ] Provider registration works
-- [ ] Webhook signature validation
-- [ ] Request acceptance flow
-
----
-
-### 13.4 Provider Portal UI
-
-**Files to create:**
-
-```
-apps/web/app/provider/
-├── layout.tsx
-├── page.tsx                        # Provider dashboard
-├── login/page.tsx
-├── register/page.tsx
-├── services/page.tsx               # Manage service offerings
-├── requests/
-│   ├── page.tsx                    # Work queue
-│   └── [id]/page.tsx               # Request detail
-├── earnings/page.tsx               # Revenue dashboard
-└── settings/page.tsx
-```
-
-**Verification:**
-
-- [ ] Provider can register
-- [ ] Provider can manage services
-- [ ] Provider can view/respond to requests
-
----
-
-### 13.5 Operator Provider Preferences
-
-**Files to create:**
-
-```
-apps/web/app/portal/
-├── providers/
-│   ├── page.tsx                    # Provider marketplace
-│   └── [id]/page.tsx               # Provider detail
-└── settings/
-    └── provider-preferences/page.tsx
-
-apps/web/components/portal/
-├── provider-card.tsx
-├── provider-list.tsx
-└── provider-preference-form.tsx
-```
-
-**Verification:**
-
-- [ ] Operators can browse providers
-- [ ] Operators can enable/disable providers
-- [ ] Operator preferences affect routing
-
----
-
-### 13.6 Provider Settlement System
-
-**Files to create:**
-
-```
-apps/mcp-server/src/services/
-└── settlement.service.ts
-
-apps/mcp-server/src/workers/
-└── settlement.worker.ts            # Monthly settlement job
-
-apps/web/app/admin/
-└── settlements/page.tsx
-```
-
-**Verification:**
-
-- [ ] Monthly settlements calculated
-- [ ] Stripe Connect transfers work
-- [ ] Settlement reports generated
-
----
-
-### 13.7 Provider SDK (Optional - Post-Launch)
-
-**Files to create:**
-
-```
-packages/provider-sdk/
-├── package.json
-├── src/
-│   ├── index.ts
-│   ├── client.ts                   # HTTP client for BotEsq API
-│   ├── types.ts                    # Shared types
-│   ├── webhook-handler.ts          # Express/Fastify middleware
-│   └── signature.ts                # HMAC verification
-└── README.md
-```
-
-**Verification:**
-
-- [ ] SDK installable via npm
-- [ ] Example provider works
-- [ ] Documentation complete
-
----
-
 ## Phase 14: Security Hardening
 
 ### 14.1 Security Audit
@@ -1276,7 +1106,6 @@ packages/provider-sdk/
 - [ ] Check for XSS
 - [ ] Review rate limiting
 - [ ] Audit logging completeness
-- [ ] Review provider webhook security
 
 ---
 
@@ -1293,7 +1122,6 @@ apps/mcp-server/src/middleware/
 **Verification:**
 
 - [ ] All OWASP Top 10 addressed
-- [ ] Penetration test passes
 - [ ] Security headers configured
 
 ---
@@ -1433,41 +1261,40 @@ Phase 0 (Infrastructure)
 Phase 1 (MCP Core) ───────────────────┐
     │                                 │
     ▼                                 │
-Phase 2 (Legal Engine)                │
+Phase 2 (Disputes)                    │
     │                                 │
     ▼                                 │
-Phase 3 (Matters) ◄───────────────────┤
+Phase 3 (Submissions) ◄───────────────┤
     │                                 │
     ▼                                 │
-Phase 4 (Documents)                   │
+Phase 4 (AI Decision)                 │
     │                                 │
     ▼                                 │
-Phase 5 (Payments) ◄──────────────────┤
+Phase 5 (Acceptance Flow)             │
     │                                 │
     ▼                                 │
-Phase 6 (Consultations)               │
+Phase 6 (Escalation) ◄────────────────┤
     │                                 │
+    ▼                                 │
+Phase 7 (Token System)                │
     │                                 │
     ├─────────────────────────────────┤
     │                                 │
     ▼                                 ▼
-Phase 7 (Web Foundation)         Phase 9 (Attorney)
+Phase 8 (Web Foundation)         Phase 10 (Arbitrator)
     │                                 │
     ▼                                 │
-Phase 8 (Operator Portal)             │
+Phase 9 (Operator Portal)             │
     │                                 │
     ├─────────────────────────────────┤
     │                                 │
     ▼                                 ▼
-Phase 10 (Admin)                 Phase 11 (Docs)
+Phase 11 (Admin)                 Phase 12 (Docs)
     │                                 │
     ├─────────────────────────────────┤
     │
     ▼
-Phase 12 (Invoicing)
-    │
-    ▼
-Phase 13 (Provider Integration) ◄──── Extensibility layer
+Phase 13 (Invoicing)
     │
     ▼
 Phase 14-17 (Hardening & Launch)
@@ -1477,24 +1304,24 @@ Phase 14-17 (Hardening & Launch)
 
 ## Milestone Checklist
 
-| Phase | Milestone                   | Target  |
-| ----- | --------------------------- | ------- |
-| 0     | Infrastructure ready        | Week 1  |
-| 1     | MCP server responding       | Week 2  |
-| 2     | Legal Q&A working           | Week 3  |
-| 3     | Matters + Retainers         | Week 4  |
-| 4     | Documents working           | Week 5  |
-| 5     | Payments working            | Week 6  |
-| 6     | Consultations working       | Week 7  |
-| 7     | Web foundation              | Week 8  |
-| 8     | Operator portal complete    | Week 10 |
-| 9     | Attorney dashboard complete | Week 11 |
-| 10    | Admin dashboard complete    | Week 12 |
-| 11    | Documentation complete      | Week 13 |
-| 12    | Billing complete            | Week 14 |
-| 13    | Provider integration ready  | Week 16 |
-| 14-16 | Hardening complete          | Week 17 |
-| 17    | Launch ready                | Week 18 |
+| Phase | Milestone                      | Target  |
+| ----- | ------------------------------ | ------- |
+| 0     | Infrastructure ready           | Week 1  |
+| 1     | MCP server responding          | Week 2  |
+| 2     | Disputes can be filed & joined | Week 3  |
+| 3     | Submissions working            | Week 4  |
+| 4     | AI decisions rendering         | Week 5  |
+| 5     | Acceptance flow complete       | Week 6  |
+| 6     | Escalations working            | Week 7  |
+| 7     | Token system complete          | Week 8  |
+| 8     | Web foundation                 | Week 9  |
+| 9     | Operator portal complete       | Week 11 |
+| 10    | Arbitrator dashboard complete  | Week 12 |
+| 11    | Admin dashboard complete       | Week 13 |
+| 12    | Documentation complete         | Week 14 |
+| 13    | Billing complete               | Week 15 |
+| 14-16 | Hardening complete             | Week 17 |
+| 17    | Launch ready                   | Week 18 |
 
 ---
 

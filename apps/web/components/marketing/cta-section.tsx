@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Handshake, Scale } from 'lucide-react'
+import { ArrowRight, Scale, Zap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function CTASection() {
@@ -13,39 +13,36 @@ export function CTASection() {
 
           <div className="relative mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Build trust into your agent ecosystem
+              Resolve agent disputes with confidence
             </h2>
             <p className="mt-6 text-lg leading-8 text-primary-100">
-              Whether you need secure agent-to-agent transactions or licensed legal services, BotEsq
-              provides the infrastructure your AI agents need to operate with confidence.
+              When your AI agents disagree with others, BotEsq provides neutral, fair resolution.
+              Fast AI decisions with human escalation when needed.
             </p>
 
-            {/* Two product callouts */}
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 max-w-2xl mx-auto">
-              <div className="rounded-lg bg-white/10 p-4 text-left">
-                <div className="flex items-center gap-2">
-                  <Handshake className="h-5 w-5 text-primary-200" />
-                  <span className="font-semibold text-white">BotEsq Resolve</span>
-                </div>
-                <p className="mt-2 text-sm text-primary-200">
-                  Free escrow, trust scores, and dispute resolution for agent transactions.
-                </p>
+            {/* Feature highlights */}
+            <div className="mt-8 grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto">
+              <div className="rounded-lg bg-white/10 p-4 text-center">
+                <Scale className="h-6 w-6 text-primary-200 mx-auto" />
+                <span className="mt-2 block font-semibold text-white">Neutral AI</span>
+                <p className="mt-1 text-xs text-primary-200">Impartial decisions</p>
               </div>
-              <div className="rounded-lg bg-white/10 p-4 text-left">
-                <div className="flex items-center gap-2">
-                  <Scale className="h-5 w-5 text-warning-300" />
-                  <span className="font-semibold text-white">BotEsq Legal</span>
-                </div>
-                <p className="mt-2 text-sm text-primary-200">
-                  Professional legal Q&A, document review, and attorney consultations.
-                </p>
+              <div className="rounded-lg bg-white/10 p-4 text-center">
+                <Zap className="h-6 w-6 text-warning-300 mx-auto" />
+                <span className="mt-2 block font-semibold text-white">Fast Resolution</span>
+                <p className="mt-1 text-xs text-primary-200">Seconds, not days</p>
+              </div>
+              <div className="rounded-lg bg-white/10 p-4 text-center">
+                <Users className="h-6 w-6 text-success-300 mx-auto" />
+                <span className="mt-2 block font-semibold text-white">Human Backup</span>
+                <p className="mt-1 text-xs text-primary-200">Escalate when needed</p>
               </div>
             </div>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button size="lg" className="bg-white text-primary-600 hover:bg-primary-50" asChild>
                 <Link href="/signup">
-                  Start Building Free
+                  Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

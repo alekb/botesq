@@ -2,9 +2,65 @@
 
 ## Current
 
-**Phase:** Phase 17 - Launch Preparation
-**Step:** Complete (except MCP Registry)
-**Status:** ready for launch
+**Phase:** Documentation Pivot - Dispute Resolution
+**Step:** Complete
+**Status:** Ready for implementation
+
+---
+
+## Major Pivot (2026-02-05)
+
+**BotEsq has been repositioned from a legal services platform to a neutral AI dispute resolution service.**
+
+### What Changed
+
+**From:** Legal services platform connecting AI agents to human attorneys
+**To:** Neutral AI agent that resolves disputes between other AI agents
+
+### Key Changes
+
+1. **Core Service**: Legal Q&A, retainers, consultations → Dispute filing, submissions, AI decisions
+2. **Pricing Model**: Fixed credits → Token-based (OpenAI passthrough + margin)
+3. **User Flow**: Agent seeks legal advice → Agent A vs Agent B submit dispute to BotEsq
+4. **Human Involvement**: Attorneys review all work → Human arbitrators only for escalations
+5. **Decision Finality**: Legal advice with disclaimers → Consent-based binding decisions
+
+### Updated Documentation
+
+- ✅ PRD.md - Complete rewrite with new features
+- ✅ BACKEND_STRUCTURE.md - New Dispute, Submission, Decision, Escalation models
+- ✅ APP_FLOW.md - New agent and operator journeys for disputes
+- ✅ IMPLEMENTATION_PLAN.md - Restructured phases for dispute resolution
+- ✅ CLAUDE.md - Updated MCP tools reference
+
+### New MCP Tools
+
+```
+Session:      start_session, get_session_info
+Disputes:     file_dispute, join_dispute, get_dispute_status, list_disputes
+Submissions:  submit_position, submit_evidence, mark_submission_complete, get_submissions
+Decisions:    get_decision, accept_decision, reject_decision
+Escalation:   request_escalation, get_escalation_status
+Tokens:       check_token_usage, get_token_estimate
+Info:         list_services, get_dispute_terms
+```
+
+### Removed Features
+
+- Legal Q&A (ask_legal_question)
+- Matter management (create_matter, get_matter_status, list_matters)
+- Retainer agreements (get_retainer_terms, accept_retainer)
+- Consultations (request_consultation, get_consultation_result)
+- Fixed credit pricing
+
+### Next Steps
+
+The existing codebase was built for the legal services model. To implement the dispute resolution pivot:
+
+1. Create new Prisma schema migration for Dispute, DisputeParty, Submission, Decision, Escalation models
+2. Implement new MCP tools for dispute resolution flow
+3. Update web portal for dispute-centric UI
+4. Build arbitrator dashboard for escalation handling
 
 ---
 

@@ -5,38 +5,39 @@ import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
   title: 'Pricing | BotEsq',
-  description: 'Simple, transparent pricing for BotEsq legal services.',
+  description: 'Token-based pricing for AI dispute resolution. Pay only for what you use.',
 }
 
 const faqs = [
   {
-    question: 'What is free vs paid?',
+    question: 'How does token-based pricing work?',
     answer:
-      'BotEsq Resolve (escrow, trust scores, dispute resolution) is free for agent-to-agent transactions. BotEsq Legal services (Q&A, document review, consultations) require credits. If a dispute needs human attorney review, that escalation is paid.',
+      'BotEsq charges based on tokens used during dispute resolution. This includes processing submissions, analyzing evidence, and generating decisions. Pricing is transparent and predictable.',
   },
   {
-    question: 'How do credits work?',
+    question: 'How are costs split between parties?',
     answer:
-      'Credits are the currency for BotEsq Legal services. When you submit a request, the system returns the exact credit cost based on complexity and scope before processing. You can purchase credits from your dashboard.',
+      'When filing a dispute, you choose a cost split option: EQUAL (50/50), FILING_PARTY (claimant pays all), LOSER_PAYS (determined by decision), or CUSTOM (negotiate percentages). Both parties must agree to terms.',
   },
   {
-    question: 'Do credits expire?',
-    answer: 'No, credits never expire. Once purchased, they remain in your account until used.',
+    question: 'What about human escalation costs?',
+    answer:
+      "Human arbitration has additional costs beyond token usage. Pricing varies based on complexity and arbitrator time. You'll see the cost estimate before confirming escalation.",
   },
   {
-    question: 'Is there a free trial?',
+    question: 'How do I track my usage?',
     answer:
-      'BotEsq Resolve is always free. For Legal services, new accounts receive starter credits to try out the platform. No credit card required to get started.',
+      'Use the check_token_usage MCP tool to see your current consumption and costs. The operator portal also provides detailed usage analytics and billing history.',
+  },
+  {
+    question: 'Is there a free tier?',
+    answer:
+      'New accounts receive starter tokens to try the platform. After that, you pay per token used. There are no monthly minimums or subscriptions.',
   },
   {
     question: 'What payment methods do you accept?',
     answer:
       'We accept all major credit cards, ACH transfers for US accounts, and wire transfers for enterprise customers.',
-  },
-  {
-    question: 'How do I see pricing?',
-    answer:
-      'Sign up for a free account to view credit packages and pricing in your dashboard. Pricing varies based on volume and usage.',
   },
 ]
 
@@ -48,14 +49,14 @@ export default function PricingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="primary" className="mb-4">
-              Free to start
+              Token-Based Pricing
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl">
-              Free transactions. Pay only for legal services.
+              Pay only for what you use
             </h1>
             <p className="mt-6 text-lg leading-8 text-text-secondary">
-              BotEsq Resolve is free for agent-to-agent transactions. Pay only when you need
-              professional legal services through BotEsq Legal.
+              Simple token-based pricing for dispute resolution. No subscriptions, no minimums.
+              Transparent and predictable.
             </p>
           </div>
         </div>

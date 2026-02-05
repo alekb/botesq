@@ -13,9 +13,8 @@ export default function DocsPage() {
           BotEsq API Documentation
         </h1>
         <p className="text-lg text-text-secondary">
-          Integrate licensed legal services into your AI agents using the Model Context Protocol
-          (MCP). BotEsq provides a secure, compliant way for AI systems to access real legal
-          expertise.
+          Integrate neutral dispute resolution into your AI agents using the Model Context Protocol
+          (MCP). BotEsq provides a fast, fair way for AI agents to resolve disagreements.
         </p>
       </div>
 
@@ -45,7 +44,7 @@ export default function DocsPage() {
                 <Code className="h-5 w-5 text-primary-500" />
                 MCP Tools
               </CardTitle>
-              <CardDescription>Explore all 16 available tools</CardDescription>
+              <CardDescription>Explore all available dispute resolution tools</CardDescription>
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
@@ -96,7 +95,7 @@ export default function DocsPage() {
                 <Webhook className="h-5 w-5 text-primary-500" />
                 Webhooks
               </CardTitle>
-              <CardDescription>Receive real-time notifications for async events</CardDescription>
+              <CardDescription>Receive notifications for dispute events</CardDescription>
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
@@ -111,55 +110,43 @@ export default function DocsPage() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">What is BotEsq?</h2>
         <p className="text-text-secondary">
-          BotEsq is trust infrastructure for AI agents. It provides two complementary products:
-          secure agent-to-agent transactions (Resolve) and licensed legal services (Legal). Both
-          integrate seamlessly with the Model Context Protocol (MCP).
+          BotEsq is a neutral AI dispute resolution service for AI agents. When Agent A and Agent B
+          have a disagreement, they submit their dispute to BotEsq, which acts as an impartial
+          arbiter and renders a fair decision.
         </p>
 
-        <div className="grid gap-4 sm:grid-cols-2 mt-6">
-          <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4">
-            <h3 className="font-semibold text-text-primary flex items-center gap-2">
-              <span className="inline-flex rounded bg-primary-500/10 p-1">
-                <span className="h-4 w-4 text-primary-500">🤝</span>
-              </span>
-              BotEsq Resolve
-            </h3>
-            <p className="mt-2 text-sm text-text-secondary">
-              Free transaction infrastructure for agent-to-agent commerce. Escrow, trust scores, and
-              automated dispute resolution.
-            </p>
-            <p className="mt-2 text-xs text-success-500 font-medium">Free for most use cases</p>
-          </div>
-
-          <div className="rounded-lg border border-warning-500/30 bg-warning-500/5 p-4">
-            <h3 className="font-semibold text-text-primary flex items-center gap-2">
-              <span className="inline-flex rounded bg-warning-500/10 p-1">
-                <span className="h-4 w-4 text-warning-500">⚖️</span>
-              </span>
-              BotEsq Legal
-            </h3>
-            <p className="mt-2 text-sm text-text-secondary">
-              Professional legal services for AI agents. Legal Q&A, document review, and attorney
-              consultations.
-            </p>
-            <p className="mt-2 text-xs text-warning-500 font-medium">Pay-per-use credits</p>
-          </div>
+        <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4 mt-6">
+          <h3 className="font-semibold text-text-primary flex items-center gap-2">
+            <span className="inline-flex rounded bg-primary-500/10 p-1">
+              <Scale className="h-4 w-4 text-primary-500" />
+            </span>
+            Agent-to-Agent Dispute Resolution
+          </h3>
+          <p className="mt-2 text-sm text-text-secondary">
+            Submit disputes, provide evidence, and receive neutral AI-powered decisions. Human
+            arbitrators available for escalation when needed.
+          </p>
+          <p className="mt-2 text-xs text-primary-500 font-medium">Token-based pricing</p>
         </div>
 
         <div className="space-y-2 mt-6">
-          <h3 className="text-lg font-medium text-text-primary">When to Use Each</h3>
+          <h3 className="text-lg font-medium text-text-primary">Key Features</h3>
           <ul className="list-inside list-disc space-y-2 text-text-secondary">
             <li>
-              <strong className="text-text-primary">Agent-to-agent transactions?</strong> Use
-              Resolve for escrow, trust scores, and dispute handling
+              <strong className="text-text-primary">Neutral AI arbiter</strong> — Impartial
+              evaluation of both parties&apos; positions
             </li>
             <li>
-              <strong className="text-text-primary">Legal questions or document review?</strong> Use
-              Legal for AI-powered answers with attorney verification
+              <strong className="text-text-primary">Evidence-based decisions</strong> — Both parties
+              submit positions and supporting materials
             </li>
             <li>
-              <strong className="text-text-primary">Dispute needs human review?</strong> Resolve
-              escalates to Legal automatically — pay only when needed
+              <strong className="text-text-primary">Consent-based binding</strong> — Decisions
+              become binding only when both parties accept
+            </li>
+            <li>
+              <strong className="text-text-primary">Human escalation</strong> — Complex disputes can
+              escalate to human arbitrators
             </li>
           </ul>
         </div>
@@ -170,57 +157,199 @@ export default function DocsPage() {
         <h2 className="text-2xl font-semibold text-text-primary">How It Works</h2>
         <ol className="list-inside list-decimal space-y-4 text-text-secondary">
           <li>
-            <strong className="text-text-primary">Get an API Key</strong> - Sign up for an operator
+            <strong className="text-text-primary">Get an API Key</strong> — Sign up for an operator
             account and generate API keys
           </li>
           <li>
-            <strong className="text-text-primary">Start a Session</strong> - Use the{' '}
+            <strong className="text-text-primary">Start a Session</strong> — Use the{' '}
             <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
               start_session
             </code>{' '}
             tool to authenticate
           </li>
           <li>
-            <strong className="text-text-primary">Use Legal Tools</strong> - Call any of our 16 MCP
-            tools for legal services
+            <strong className="text-text-primary">File a Dispute</strong> — Use{' '}
+            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+              file_dispute
+            </code>{' '}
+            to initiate resolution
           </li>
           <li>
-            <strong className="text-text-primary">Pay with Credits</strong> - Credits are deducted
-            automatically based on usage
+            <strong className="text-text-primary">Submit Evidence</strong> — Both parties use{' '}
+            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+              submit_position
+            </code>{' '}
+            and{' '}
+            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+              submit_evidence
+            </code>
+          </li>
+          <li>
+            <strong className="text-text-primary">Get Decision</strong> — Once both ready, retrieve
+            the ruling with{' '}
+            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+              get_decision
+            </code>
           </li>
         </ol>
+      </div>
+
+      {/* MCP Tools */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold text-text-primary">MCP Tools</h2>
+        <p className="text-text-secondary">
+          BotEsq provides the following MCP tools for dispute resolution:
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border-default">
+                <th className="py-3 text-left font-medium text-text-primary">Category</th>
+                <th className="py-3 text-left font-medium text-text-primary">Tools</th>
+              </tr>
+            </thead>
+            <tbody className="text-text-secondary">
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Session</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    start_session
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_session_info
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Disputes</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    file_dispute
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    join_dispute
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_dispute_status
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    list_disputes
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Submissions</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    submit_position
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    submit_evidence
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    mark_submission_complete
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_submissions
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Decisions</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_decision
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    accept_decision
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    reject_decision
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Escalation</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    request_escalation
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_escalation_status
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Tokens</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    check_token_usage
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_token_estimate
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Info</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    list_services
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_dispute_terms
+                  </code>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pricing */}
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">Pricing</h2>
         <p className="text-text-secondary">
-          BotEsq uses a credit-based system. Service costs vary based on complexity, urgency, and
-          scope. When you submit a request, the system returns the exact credit cost before
-          processing.
+          BotEsq uses token-based pricing. You pay for the tokens used during dispute processing—
+          analyzing submissions, evaluating evidence, and generating decisions. Pricing is
+          transparent and predictable.
         </p>
         <div className="space-y-2">
-          <h3 className="text-lg font-medium text-text-primary">How It Works</h3>
-          <ol className="list-inside list-decimal space-y-2 text-text-secondary">
+          <h3 className="text-lg font-medium text-text-primary">Cost Split Options</h3>
+          <ul className="list-inside list-disc space-y-2 text-text-secondary">
             <li>
-              <strong className="text-text-primary">Submit a request</strong> — Call the appropriate
-              MCP tool with your request details
+              <strong className="text-text-primary">EQUAL</strong> — 50/50 split between parties
             </li>
             <li>
-              <strong className="text-text-primary">Receive a quote</strong> — The response includes
-              the credit cost for that specific request
+              <strong className="text-text-primary">FILING_PARTY</strong> — Claimant pays all costs
             </li>
             <li>
-              <strong className="text-text-primary">Confirm or cancel</strong> — Credits are only
-              deducted when you proceed with the service
+              <strong className="text-text-primary">LOSER_PAYS</strong> — Determined by the decision
             </li>
-          </ol>
+            <li>
+              <strong className="text-text-primary">CUSTOM</strong> — Parties negotiate percentages
+            </li>
+          </ul>
         </div>
         <div className="rounded-lg border border-border-default bg-background-secondary p-4">
           <p className="text-sm text-text-secondary">
-            <strong className="text-text-primary">Free tools:</strong> Session management,
-            information retrieval, and status checks are always free. Paid services (legal Q&A,
-            consultations, document review) return pricing in the response.
+            <strong className="text-text-primary">Track usage:</strong> Use the{' '}
+            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+              check_token_usage
+            </code>{' '}
+            tool to monitor consumption, or view detailed analytics in the operator portal.
           </p>
         </div>
       </div>
@@ -229,15 +358,15 @@ export default function DocsPage() {
       <div id="webhooks" className="space-y-4 scroll-mt-24">
         <h2 className="text-2xl font-semibold text-text-primary">Webhooks</h2>
         <p className="text-text-secondary">
-          Receive real-time notifications when async operations complete. Configure your webhook URL
-          in the operator portal under Settings → Webhooks.
+          Receive real-time notifications when dispute events occur. Configure your webhook URL in
+          the operator portal under Settings → Webhooks.
         </p>
 
         <div className="rounded-lg border border-primary-500/30 bg-primary-500/10 p-4">
           <h4 className="font-medium text-text-primary">Security Requirement</h4>
           <p className="mt-1 text-sm text-text-secondary">
-            Webhook URLs must use <strong>HTTPS</strong> to protect sensitive legal data in transit.
-            HTTP is only permitted for local development (localhost, 127.0.0.1).
+            Webhook URLs must use <strong>HTTPS</strong> to protect dispute data in transit. HTTP is
+            only permitted for local development (localhost, 127.0.0.1).
           </p>
         </div>
 
@@ -255,18 +384,50 @@ export default function DocsPage() {
                 <tr className="border-b border-border-default">
                   <td className="py-3">
                     <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      consultation.completed
+                      dispute.filed
                     </code>
                   </td>
-                  <td className="py-3">Attorney has submitted a response to your consultation</td>
+                  <td className="py-3">A new dispute has been filed against your agent</td>
                 </tr>
                 <tr className="border-b border-border-default">
                   <td className="py-3">
                     <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      document.analysis_completed
+                      dispute.joined
                     </code>
                   </td>
-                  <td className="py-3">Document analysis has finished</td>
+                  <td className="py-3">Respondent has joined the dispute</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      dispute.decided
+                    </code>
+                  </td>
+                  <td className="py-3">AI has rendered a decision</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      dispute.resolved
+                    </code>
+                  </td>
+                  <td className="py-3">Both parties have accepted the decision</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      escalation.requested
+                    </code>
+                  </td>
+                  <td className="py-3">A party has requested human escalation</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      escalation.completed
+                    </code>
+                  </td>
+                  <td className="py-3">Human arbitrator has rendered a decision</td>
                 </tr>
               </tbody>
             </table>
@@ -280,16 +441,17 @@ export default function DocsPage() {
           </p>
           <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
             {`{
-  "event": "consultation.completed",
-  "timestamp": "2026-02-04T12:34:56.789Z",
+  "event": "dispute.decided",
+  "timestamp": "2026-02-05T12:34:56.789Z",
   "data": {
-    "consultation_id": "CONS-ABC12345",
-    "matter_id": "MTR-XYZ98765",
-    "status": "completed",
-    "question": "What are the requirements for...",
-    "response": "Based on applicable law...",
-    "attorney_reviewed": true,
-    "completed_at": "2026-02-04T12:34:56.789Z"
+    "dispute_id": "DISPUTE-A3C5D7E9",
+    "status": "DECIDED",
+    "decision": {
+      "ruling": "Claimant prevails",
+      "reasoning": "Based on the evidence provided...",
+      "confidence": 0.87,
+      "prevailing_party": "CLAIMANT"
+    }
   }
 }`}
           </pre>
@@ -305,13 +467,13 @@ export default function DocsPage() {
               <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
                 X-BotEsq-Signature
               </code>{' '}
-              - HMAC-SHA256 signature
+              — HMAC-SHA256 signature
             </li>
             <li>
               <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
                 X-BotEsq-Timestamp
               </code>{' '}
-              - Unix timestamp when sent
+              — Unix timestamp when sent
             </li>
           </ul>
           <p className="text-text-secondary">Verify the signature like this:</p>
@@ -341,379 +503,6 @@ function verifySignature(
   )
 }`}
           </pre>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-text-primary">Example Handler (Node.js)</h3>
-          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
-            {`// Express.js webhook handler
-import express from 'express'
-import crypto from 'crypto'
-
-const app = express()
-const WEBHOOK_SECRET = process.env.BOTESQ_WEBHOOK_SECRET
-
-// Store pending consultations (use Redis/database in production)
-const pendingConsultations = new Map()
-
-app.post('/webhooks/botesq', express.json(), (req, res) => {
-  const signature = req.headers['x-botesq-signature']
-  const timestamp = req.headers['x-botesq-timestamp']
-  const payload = JSON.stringify(req.body)
-
-  if (!verifySignature(payload, signature, timestamp, WEBHOOK_SECRET)) {
-    return res.status(401).json({ error: 'Invalid signature' })
-  }
-
-  const { event, data } = req.body
-
-  switch (event) {
-    case 'consultation.completed':
-      // Store the response for the agent to retrieve
-      pendingConsultations.set(data.consultation_id, {
-        response: data.response,
-        completedAt: data.completed_at,
-        attorneyReviewed: data.attorney_reviewed
-      })
-      console.log(\`Consultation \${data.consultation_id} completed\`)
-      break
-
-    case 'document.analysis_completed':
-      console.log(\`Document \${data.document_id} analysis ready\`)
-      break
-  }
-
-  res.json({ received: true })
-})
-
-// Endpoint for your agent to check consultation status
-app.get('/consultations/:id/result', (req, res) => {
-  const result = pendingConsultations.get(req.params.id)
-  if (result) {
-    res.json({ status: 'completed', ...result })
-  } else {
-    res.json({ status: 'pending' })
-  }
-})`}
-          </pre>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-text-primary">Example Handler (Python)</h3>
-          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
-            {`# FastAPI webhook handler
-import hmac
-import hashlib
-import time
-from fastapi import FastAPI, Request, HTTPException
-
-app = FastAPI()
-WEBHOOK_SECRET = os.environ["BOTESQ_WEBHOOK_SECRET"]
-
-# Store results (use Redis/database in production)
-consultation_results = {}
-
-def verify_signature(payload: str, signature: str, timestamp: str) -> bool:
-    # Reject old timestamps (> 5 minutes)
-    if time.time() - int(timestamp) > 300:
-        return False
-
-    expected = hmac.new(
-        WEBHOOK_SECRET.encode(),
-        f"{timestamp}.{payload}".encode(),
-        hashlib.sha256
-    ).hexdigest()
-
-    return hmac.compare_digest(signature, expected)
-
-@app.post("/webhooks/botesq")
-async def handle_webhook(request: Request):
-    signature = request.headers.get("x-botesq-signature")
-    timestamp = request.headers.get("x-botesq-timestamp")
-    payload = await request.body()
-
-    if not verify_signature(payload.decode(), signature, timestamp):
-        raise HTTPException(status_code=401, detail="Invalid signature")
-
-    data = await request.json()
-    event = data["event"]
-
-    if event == "consultation.completed":
-        consultation_id = data["data"]["consultation_id"]
-        consultation_results[consultation_id] = {
-            "response": data["data"]["response"],
-            "completed_at": data["data"]["completed_at"],
-            "attorney_reviewed": data["data"]["attorney_reviewed"]
-        }
-        print(f"Consultation {consultation_id} completed")
-
-    return {"received": True}
-
-# Your agent polls this endpoint or you push to it
-@app.get("/consultations/{consultation_id}/result")
-async def get_result(consultation_id: str):
-    if consultation_id in consultation_results:
-        return {"status": "completed", **consultation_results[consultation_id]}
-    return {"status": "pending"}`}
-          </pre>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-text-primary">Agent Integration Pattern</h3>
-          <p className="text-text-secondary">
-            Here&apos;s how your AI agent can use webhooks for async consultations:
-          </p>
-          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
-            {`# Python agent example using BotEsq MCP
-import asyncio
-import httpx
-
-class LegalAgent:
-    def __init__(self, mcp_client, webhook_service_url):
-        self.mcp = mcp_client
-        self.webhook_url = webhook_service_url
-
-    async def request_legal_consultation(self, matter_id: str, question: str):
-        # 1. Submit consultation request via MCP
-        result = await self.mcp.call_tool("request_consultation", {
-            "matter_id": matter_id,
-            "question": question,
-            "priority": "standard"
-        })
-
-        consultation_id = result["consultation_id"]
-        print(f"Consultation submitted: {consultation_id}")
-        print("Waiting for attorney response...")
-
-        # 2. Poll your webhook service for the result
-        # (The webhook will populate this when BotEsq sends notification)
-        async with httpx.AsyncClient() as client:
-            while True:
-                response = await client.get(
-                    f"{self.webhook_url}/consultations/{consultation_id}/result"
-                )
-                data = response.json()
-
-                if data["status"] == "completed":
-                    return {
-                        "consultation_id": consultation_id,
-                        "response": data["response"],
-                        "attorney_reviewed": data["attorney_reviewed"]
-                    }
-
-                # Wait before polling again
-                await asyncio.sleep(30)
-
-# Usage
-agent = LegalAgent(mcp_client, "https://your-service.com")
-result = await agent.request_legal_consultation(
-    matter_id="MTR-ABC123",
-    question="What are the legal requirements for..."
-)
-print(f"Attorney response: {result['response']}")`}
-          </pre>
-        </div>
-      </div>
-
-      {/* Polling Without Webhooks */}
-      <div id="polling" className="space-y-4 scroll-mt-24">
-        <h2 className="text-2xl font-semibold text-text-primary">Polling Without Webhooks</h2>
-        <p className="text-text-secondary">
-          If you prefer not to set up webhooks, you can poll BotEsq directly using the{' '}
-          <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-            get_consultation_result
-          </code>{' '}
-          MCP tool. The{' '}
-          <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-            consultation_id
-          </code>{' '}
-          returned when you submit a request is used to retrieve results.
-        </p>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-text-primary">How It Works</h3>
-          <ol className="list-inside list-decimal space-y-2 text-text-secondary">
-            <li>
-              Call{' '}
-              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                request_consultation
-              </code>{' '}
-              → receive a{' '}
-              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                consultation_id
-              </code>
-            </li>
-            <li>
-              Store the{' '}
-              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                consultation_id
-              </code>{' '}
-              in your agent&apos;s state
-            </li>
-            <li>
-              Periodically call{' '}
-              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                get_consultation_result
-              </code>{' '}
-              with that ID
-            </li>
-            <li>
-              When status is{' '}
-              <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                completed
-              </code>
-              , the response is included
-            </li>
-          </ol>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-text-primary">Polling Example (Python)</h3>
-          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
-            {`import asyncio
-
-class LegalAgent:
-    def __init__(self, mcp_client):
-        self.mcp = mcp_client
-        self.session_token = None
-
-    async def start(self, api_key: str):
-        """Initialize session with BotEsq"""
-        result = await self.mcp.call_tool("start_session", {
-            "api_key": api_key
-        })
-        self.session_token = result["session_token"]
-
-    async def request_consultation(self, matter_id: str, question: str):
-        """Submit a consultation and poll for the result"""
-
-        # 1. Submit the consultation request
-        result = await self.mcp.call_tool("request_consultation", {
-            "session_token": self.session_token,
-            "matter_id": matter_id,
-            "question": question,
-            "priority": "standard"
-        })
-
-        consultation_id = result["consultation_id"]
-        print(f"Consultation submitted: {consultation_id}")
-        print(f"Estimated wait: {result.get('estimated_wait_minutes', 'unknown')} minutes")
-
-        # 2. Poll for the result using the consultation_id
-        while True:
-            status = await self.mcp.call_tool("get_consultation_result", {
-                "session_token": self.session_token,
-                "consultation_id": consultation_id
-            })
-
-            if status["status"] == "completed":
-                return {
-                    "consultation_id": consultation_id,
-                    "response": status["response"],
-                    "attorney_reviewed": status["attorney_reviewed"],
-                    "citations": status.get("citations", [])
-                }
-
-            print(f"Status: {status['status']}, waiting...")
-            await asyncio.sleep(60)  # Poll every 60 seconds
-
-# Usage
-async def main():
-    agent = LegalAgent(mcp_client)
-    await agent.start("be_your_api_key_here")
-
-    result = await agent.request_consultation(
-        matter_id="MTR-ABC123",
-        question="What are the legal requirements for forming an LLC in Delaware?"
-    )
-
-    print(f"Attorney response: {result['response']}")
-    print(f"Reviewed by attorney: {result['attorney_reviewed']}")
-
-asyncio.run(main())`}
-          </pre>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-text-primary">Polling Example (TypeScript)</h3>
-          <pre className="overflow-x-auto rounded-lg bg-background-tertiary p-4 font-mono text-sm">
-            {`class LegalAgent {
-  private mcp: MCPClient
-  private sessionToken: string | null = null
-
-  constructor(mcpClient: MCPClient) {
-    this.mcp = mcpClient
-  }
-
-  async start(apiKey: string): Promise<void> {
-    const result = await this.mcp.callTool('start_session', { api_key: apiKey })
-    this.sessionToken = result.session_token
-  }
-
-  async requestConsultation(matterId: string, question: string): Promise<{
-    consultationId: string
-    response: string
-    attorneyReviewed: boolean
-  }> {
-    // 1. Submit consultation
-    const submitResult = await this.mcp.callTool('request_consultation', {
-      session_token: this.sessionToken,
-      matter_id: matterId,
-      question,
-      priority: 'standard'
-    })
-
-    const consultationId = submitResult.consultation_id
-    console.log(\`Consultation submitted: \${consultationId}\`)
-
-    // 2. Poll until complete
-    while (true) {
-      const status = await this.mcp.callTool('get_consultation_result', {
-        session_token: this.sessionToken,
-        consultation_id: consultationId
-      })
-
-      if (status.status === 'completed') {
-        return {
-          consultationId,
-          response: status.response,
-          attorneyReviewed: status.attorney_reviewed
-        }
-      }
-
-      console.log(\`Status: \${status.status}, waiting...\`)
-      await new Promise(resolve => setTimeout(resolve, 60000))
-    }
-  }
-}
-
-// Usage
-const agent = new LegalAgent(mcpClient)
-await agent.start('be_your_api_key_here')
-
-const result = await agent.requestConsultation(
-  'MTR-ABC123',
-  'What are the legal requirements for forming an LLC in Delaware?'
-)
-console.log(\`Response: \${result.response}\`)`}
-          </pre>
-        </div>
-
-        <div className="rounded-lg border border-border-default bg-background-secondary p-4">
-          <h4 className="font-medium text-text-primary">Polling Best Practices</h4>
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-text-secondary">
-            <li>Poll no more frequently than once per minute to avoid rate limits</li>
-            <li>
-              Use the{' '}
-              <code className="rounded bg-background-tertiary px-1 py-0.5 font-mono text-xs">
-                estimated_wait_minutes
-              </code>{' '}
-              field to optimize polling frequency
-            </li>
-            <li>Implement exponential backoff for long-running consultations</li>
-            <li>Store consultation IDs persistently if your agent may restart</li>
-            <li>Consider webhooks for production systems to reduce latency and API calls</li>
-          </ul>
         </div>
       </div>
     </div>

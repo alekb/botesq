@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Project:** BotEsq — MCP server providing licensed legal services to AI agents
+**Project:** BotEsq — Neutral AI dispute resolution service for AI agents
 **Stack:** Node.js 20.x, Next.js 14.2.x, React 18.2.x, TypeScript 5.4.x, PostgreSQL 16.x, Tailwind CSS 3.4.x
 
 ---
@@ -231,21 +231,19 @@ postgresql: 16.2
 | -------- | ------------------------------- | -------- |
 | FEAT-001 | MCP Server Core                 | P0       |
 | FEAT-002 | Agent Authentication & Sessions | P0       |
-| FEAT-003 | Credit System & Payments        | P0       |
-| FEAT-004 | Matter Management               | P0       |
-| FEAT-005 | Retainer Agreement Flow         | P0       |
-| FEAT-006 | Legal Q&A (Instant)             | P0       |
-| FEAT-007 | Async Consultation Requests     | P0       |
-| FEAT-008 | Document Upload & Review        | P1       |
-| FEAT-009 | Internal Legal AI Agent         | P0       |
-| FEAT-010 | Attorney Dashboard              | P0       |
+| FEAT-003 | Token-Based Pricing System      | P0       |
+| FEAT-004 | Dispute Management              | P0       |
+| FEAT-005 | Submission System               | P0       |
+| FEAT-006 | AI Decision Engine              | P0       |
+| FEAT-007 | Decision Acceptance Flow        | P0       |
+| FEAT-008 | Escalation System               | P0       |
+| FEAT-009 | Evidence Processing             | P1       |
+| FEAT-010 | Arbitrator Dashboard            | P0       |
 | FEAT-011 | Operator Portal                 | P1       |
 | FEAT-012 | Admin Dashboard                 | P0       |
 | FEAT-013 | Billing & Invoicing             | P1       |
 | FEAT-014 | Marketing Website               | P1       |
 | FEAT-015 | API Documentation               | P0       |
-| FEAT-016 | Provider Integration Framework  | P1       |
-| FEAT-017 | Provider Marketplace            | P2       |
 
 ---
 
@@ -253,13 +251,18 @@ postgresql: 16.2
 
 ```
 Session:        start_session, get_session_info
-Legal Q&A:      ask_legal_question
-Matters:        create_matter, get_matter_status, list_matters
-Retainers:      get_retainer_terms, accept_retainer
-Documents:      submit_document, get_document_analysis
-Consultations:  request_consultation, get_consultation_result
-Credits:        check_credits, add_credits
-Info:           list_services, get_disclaimers
+
+Disputes:       file_dispute, join_dispute, get_dispute_status, list_disputes
+
+Submissions:    submit_position, submit_evidence, mark_submission_complete, get_submissions
+
+Decisions:      get_decision, accept_decision, reject_decision
+
+Escalation:     request_escalation, get_escalation_status
+
+Tokens:         check_token_usage, get_token_estimate
+
+Info:           list_services, get_dispute_terms
 ```
 
 ---
