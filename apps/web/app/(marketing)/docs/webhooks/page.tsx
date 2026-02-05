@@ -261,99 +261,12 @@ def handle_webhook():
           Complete webhook handler examples in popular languages. Each example includes signature
           verification and basic event handling.
         </p>
-        <Tabs defaultValue="python" className="w-full">
+        <Tabs defaultValue="typescript" className="w-full">
           <TabsList>
+            <TabsTrigger value="typescript">TypeScript</TabsTrigger>
             <TabsTrigger value="python">Python</TabsTrigger>
-            <TabsTrigger value="nodejs">Node.js</TabsTrigger>
-            <TabsTrigger value="go">Go</TabsTrigger>
           </TabsList>
-          <TabsContent value="python" className="mt-4">
-            <CodeBlock
-              language="python"
-              code={`import hmac
-import hashlib
-import time
-import json
-from flask import Flask, request, abort
-
-app = Flask(__name__)
-WEBHOOK_SECRET = "your_webhook_secret_here"
-
-def verify_signature(payload: bytes, signature: str, timestamp: str) -> bool:
-    """Verify the webhook signature from BotEsq."""
-    # Check timestamp to prevent replay attacks (5 minute window)
-    webhook_time = int(timestamp)
-    current_time = int(time.time())
-    if abs(current_time - webhook_time) > 300:
-        return False
-
-    # Compute expected signature
-    signed_payload = f"{timestamp}.{payload.decode('utf-8')}"
-    expected_signature = hmac.new(
-        WEBHOOK_SECRET.encode('utf-8'),
-        signed_payload.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-
-    # Constant-time comparison
-    return hmac.compare_digest(signature, f"sha256={expected_signature}")
-
-@app.route('/webhooks/botesq', methods=['POST'])
-def handle_webhook():
-    # Get headers
-    signature = request.headers.get('X-BotEsq-Signature', '')
-    timestamp = request.headers.get('X-BotEsq-Timestamp', '')
-    webhook_id = request.headers.get('X-BotEsq-Webhook-ID', '')
-
-    # Verify signature
-    if not verify_signature(request.data, signature, timestamp):
-        abort(401, 'Invalid signature')
-
-    # Parse event
-    event = json.loads(request.data)
-    event_type = event.get('event')
-
-    # Handle different event types
-    if event_type == 'consultation.completed':
-        handle_consultation_completed(event['data'])
-    elif event_type == 'document.analyzed':
-        handle_document_analyzed(event['data'])
-    elif event_type == 'matter.status_changed':
-        handle_matter_status_changed(event['data'])
-    elif event_type == 'credits.low':
-        handle_credits_low(event['data'])
-    elif event_type == 'retainer.expiring':
-        handle_retainer_expiring(event['data'])
-    else:
-        print(f"Unhandled event type: {event_type}")
-
-    return 'OK', 200
-
-def handle_consultation_completed(data: dict):
-    print(f"Consultation {data['consultation_id']} completed")
-    # Add your business logic here
-
-def handle_document_analyzed(data: dict):
-    print(f"Document {data['document_id']} analyzed ({data['page_count']} pages)")
-    # Add your business logic here
-
-def handle_matter_status_changed(data: dict):
-    print(f"Matter {data['matter_id']}: {data['previous_status']} -> {data['new_status']}")
-    # Add your business logic here
-
-def handle_credits_low(data: dict):
-    print(f"Low credits warning: {data['credits_remaining']} remaining")
-    # Add your business logic here
-
-def handle_retainer_expiring(data: dict):
-    print(f"Retainer {data['retainer_id']} expiring at {data['expires_at']}")
-    # Add your business logic here
-
-if __name__ == '__main__':
-    app.run(port=3000)`}
-            />
-          </TabsContent>
-          <TabsContent value="nodejs" className="mt-4">
+          <TabsContent value="typescript" className="mt-4">
             <CodeBlock
               language="typescript"
               code={`import express from 'express';
@@ -457,139 +370,90 @@ app.listen(3000, () => {
 });`}
             />
           </TabsContent>
-          <TabsContent value="go" className="mt-4">
+          <TabsContent value="python" className="mt-4">
             <CodeBlock
-              language="go"
-              code={`package main
+              language="python"
+              code={`import hmac
+import hashlib
+import time
+import json
+from flask import Flask, request, abort
 
-import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
-	"io"
-	"log"
-	"math"
-	"net/http"
-	"strconv"
-	"time"
-)
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret_here"
 
-var webhookSecret = "your_webhook_secret_here"
+def verify_signature(payload: bytes, signature: str, timestamp: str) -> bool:
+    """Verify the webhook signature from BotEsq."""
+    # Check timestamp to prevent replay attacks (5 minute window)
+    webhook_time = int(timestamp)
+    current_time = int(time.time())
+    if abs(current_time - webhook_time) > 300:
+        return False
 
-type WebhookEvent struct {
-	Event     string                 \`json:"event"\`
-	Timestamp string                 \`json:"timestamp"\`
-	WebhookID string                 \`json:"webhook_id"\`
-	Data      map[string]interface{} \`json:"data"\`
-}
+    # Compute expected signature
+    signed_payload = f"{timestamp}.{payload.decode('utf-8')}"
+    expected_signature = hmac.new(
+        WEBHOOK_SECRET.encode('utf-8'),
+        signed_payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
 
-func verifySignature(payload []byte, signature, timestamp string) bool {
-	// Check timestamp to prevent replay attacks (5 minute window)
-	webhookTime, err := strconv.ParseInt(timestamp, 10, 64)
-	if err != nil {
-		return false
-	}
-	currentTime := time.Now().Unix()
-	if math.Abs(float64(currentTime-webhookTime)) > 300 {
-		return false
-	}
+    # Constant-time comparison
+    return hmac.compare_digest(signature, f"sha256={expected_signature}")
 
-	// Compute expected signature
-	signedPayload := fmt.Sprintf("%s.%s", timestamp, string(payload))
-	mac := hmac.New(sha256.New, []byte(webhookSecret))
-	mac.Write([]byte(signedPayload))
-	expectedSignature := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+@app.route('/webhooks/botesq', methods=['POST'])
+def handle_webhook():
+    # Get headers
+    signature = request.headers.get('X-BotEsq-Signature', '')
+    timestamp = request.headers.get('X-BotEsq-Timestamp', '')
+    webhook_id = request.headers.get('X-BotEsq-Webhook-ID', '')
 
-	// Constant-time comparison
-	return hmac.Equal([]byte(signature), []byte(expectedSignature))
-}
+    # Verify signature
+    if not verify_signature(request.data, signature, timestamp):
+        abort(401, 'Invalid signature')
 
-func webhookHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+    # Parse event
+    event = json.loads(request.data)
+    event_type = event.get('event')
 
-	// Get headers
-	signature := r.Header.Get("X-BotEsq-Signature")
-	timestamp := r.Header.Get("X-BotEsq-Timestamp")
-	webhookID := r.Header.Get("X-BotEsq-Webhook-ID")
+    # Handle different event types
+    if event_type == 'consultation.completed':
+        handle_consultation_completed(event['data'])
+    elif event_type == 'document.analyzed':
+        handle_document_analyzed(event['data'])
+    elif event_type == 'matter.status_changed':
+        handle_matter_status_changed(event['data'])
+    elif event_type == 'credits.low':
+        handle_credits_low(event['data'])
+    elif event_type == 'retainer.expiring':
+        handle_retainer_expiring(event['data'])
+    else:
+        print(f"Unhandled event type: {event_type}")
 
-	// Read body
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Failed to read body", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
+    return 'OK', 200
 
-	// Verify signature
-	if !verifySignature(body, signature, timestamp) {
-		http.Error(w, "Invalid signature", http.StatusUnauthorized)
-		return
-	}
+def handle_consultation_completed(data: dict):
+    print(f"Consultation {data['consultation_id']} completed")
+    # Add your business logic here
 
-	// Parse event
-	var event WebhookEvent
-	if err := json.Unmarshal(body, &event); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
+def handle_document_analyzed(data: dict):
+    print(f"Document {data['document_id']} analyzed ({data['page_count']} pages)")
+    # Add your business logic here
 
-	log.Printf("Received webhook %s: %s", webhookID, event.Event)
+def handle_matter_status_changed(data: dict):
+    print(f"Matter {data['matter_id']}: {data['previous_status']} -> {data['new_status']}")
+    # Add your business logic here
 
-	// Handle different event types
-	switch event.Event {
-	case "consultation.completed":
-		handleConsultationCompleted(event.Data)
-	case "document.analyzed":
-		handleDocumentAnalyzed(event.Data)
-	case "matter.status_changed":
-		handleMatterStatusChanged(event.Data)
-	case "credits.low":
-		handleCreditsLow(event.Data)
-	case "retainer.expiring":
-		handleRetainerExpiring(event.Data)
-	default:
-		log.Printf("Unhandled event type: %s", event.Event)
-	}
+def handle_credits_low(data: dict):
+    print(f"Low credits warning: {data['credits_remaining']} remaining")
+    # Add your business logic here
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
-}
+def handle_retainer_expiring(data: dict):
+    print(f"Retainer {data['retainer_id']} expiring at {data['expires_at']}")
+    # Add your business logic here
 
-func handleConsultationCompleted(data map[string]interface{}) {
-	log.Printf("Consultation %s completed", data["consultation_id"])
-	// Add your business logic here
-}
-
-func handleDocumentAnalyzed(data map[string]interface{}) {
-	log.Printf("Document %s analyzed (%v pages)", data["document_id"], data["page_count"])
-	// Add your business logic here
-}
-
-func handleMatterStatusChanged(data map[string]interface{}) {
-	log.Printf("Matter %s: %s -> %s", data["matter_id"], data["previous_status"], data["new_status"])
-	// Add your business logic here
-}
-
-func handleCreditsLow(data map[string]interface{}) {
-	log.Printf("Low credits warning: %v remaining", data["credits_remaining"])
-	// Add your business logic here
-}
-
-func handleRetainerExpiring(data map[string]interface{}) {
-	log.Printf("Retainer %s expiring at %s", data["retainer_id"], data["expires_at"])
-	// Add your business logic here
-}
-
-func main() {
-	http.HandleFunc("/webhooks/botesq", webhookHandler)
-	log.Println("Webhook server listening on port 3000")
-	log.Fatal(http.ListenAndServe(":3000", nil))
-}`}
+if __name__ == '__main__':
+    app.run(port=3000)`}
             />
           </TabsContent>
         </Tabs>
