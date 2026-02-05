@@ -63,6 +63,222 @@ The architecture supports these future extensions:
 
 ---
 
+## SDK Examples
+
+### Python Client SDK
+
+Install the BotEsq client (or use httpx directly):
+
+```bash
+pip install botesq  # Future package
+# Or use httpx for direct API access
+pip install httpx pydantic
+```
+
+**Quick Start:**
+
+```python
+import asyncio
+from botesq import BotEsqClient
+
+async def main():
+    # Initialize client
+    client = BotEsqClient(api_key="botesq_live_xxxxx")
+
+    # Start session
+    session = await client.start_session(agent_identifier="my-agent-v1")
+    print(f"Session started, credits: {session['credits']['balance']}")
+
+    # Ask a legal question
+    answer = await client.ask_legal_question(
+        question="What are the requirements for forming an LLC in Delaware?",
+        jurisdiction="Delaware"
+    )
+    print(f"Answer: {answer['answer']}")
+    print(f"Confidence: {answer['confidence_score']}")
+    print(f"Credits used: {answer['credits_used']}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+**Direct httpx Usage:**
+
+```python
+import httpx
+import asyncio
+
+BOTESQ_API_URL = "https://api.botesq.com/mcp"
+
+async def start_session(api_key: str) -> dict:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{BOTESQ_API_URL}/start_session",
+            json={"api_key": api_key}
+        )
+        response.raise_for_status()
+        return response.json()["data"]
+
+async def ask_legal_question(session_token: str, question: str) -> dict:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{BOTESQ_API_URL}/ask_legal_question",
+            json={
+                "session_token": session_token,
+                "question": question
+            }
+        )
+        response.raise_for_status()
+        return response.json()["data"]
+```
+
+### TypeScript Client SDK
+
+```typescript
+import { BotEsqClient } from '@botesq/sdk' // Future package
+
+const client = new BotEsqClient({ apiKey: 'botesq_live_xxxxx' })
+
+// Start session
+const session = await client.startSession({ agentIdentifier: 'my-agent-v1' })
+console.log(`Credits: ${session.credits.balance}`)
+
+// Ask a legal question
+const answer = await client.askLegalQuestion({
+  question: 'What are the requirements for forming an LLC in Delaware?',
+  jurisdiction: 'Delaware',
+})
+console.log(`Answer: ${answer.answer}`)
+console.log(`Confidence: ${answer.confidenceScore}`)
+```
+
+### Provider SDK (Python)
+
+For third-party providers implementing the BotEsq provider interface:
+
+```python
+"""
+BotEsq Provider SDK - Python implementation example.
+Providers implement this to receive and process legal service requests.
+"""
+
+import hmac
+import hashlib
+import time
+from fastapi import FastAPI, Request, HTTPException
+from pydantic import BaseModel
+from typing import Optional, List
+from enum import Enum
+
+app = FastAPI()
+
+# Configuration
+WEBHOOK_SECRET = "your_provider_webhook_secret"
+BOTESQ_CALLBACK_URL = "https://api.botesq.com/webhooks/provider/{provider_id}"
+
+class ServiceType(Enum):
+    LEGAL_QA = "LEGAL_QA"
+    DOCUMENT_REVIEW = "DOCUMENT_REVIEW"
+    CONSULTATION = "CONSULTATION"
+    CONTRACT_DRAFTING = "CONTRACT_DRAFTING"
+
+class ServiceRequest(BaseModel):
+    request_id: str
+    service_type: ServiceType
+    jurisdiction: Optional[str] = None
+    question: Optional[str] = None
+    document_url: Optional[str] = None
+    context: Optional[dict] = None
+    urgency: str = "standard"
+    sla_deadline: str
+
+class ServiceResponse(BaseModel):
+    request_id: str
+    status: str  # "completed" | "pending" | "failed"
+    response: Optional[str] = None
+    confidence_score: Optional[float] = None
+    citations: Optional[List[dict]] = None
+    error: Optional[str] = None
+
+def verify_botesq_signature(payload: str, signature: str, timestamp: str) -> bool:
+    """Verify incoming webhook from BotEsq."""
+    if abs(time.time() - int(timestamp)) > 300:
+        return False
+
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        f"{timestamp}.{payload}".encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected)
+
+@app.post("/botesq/webhook")
+async def handle_botesq_request(request: Request):
+    """Receive service requests from BotEsq."""
+    signature = request.headers.get("X-BotEsq-Signature")
+    timestamp = request.headers.get("X-BotEsq-Timestamp")
+    payload = await request.body()
+
+    if not verify_botesq_signature(payload.decode(), signature, timestamp):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    data = await request.json()
+    service_request = ServiceRequest(**data)
+
+    # Process based on service type
+    if service_request.service_type == ServiceType.LEGAL_QA:
+        # Process synchronously for simple questions
+        response = await process_legal_qa(service_request)
+        return response.dict()
+
+    elif service_request.service_type == ServiceType.DOCUMENT_REVIEW:
+        # Queue for async processing
+        await queue_document_review(service_request)
+        return {"status": "accepted", "request_id": service_request.request_id}
+
+    # Return 202 Accepted for async processing
+    return {"status": "accepted", "request_id": service_request.request_id}
+
+async def process_legal_qa(request: ServiceRequest) -> ServiceResponse:
+    """Process a legal Q&A request."""
+    # Your legal AI/attorney workflow here
+    answer = await your_legal_ai.process(request.question, request.jurisdiction)
+
+    return ServiceResponse(
+        request_id=request.request_id,
+        status="completed",
+        response=answer.text,
+        confidence_score=answer.confidence,
+        citations=answer.citations
+    )
+
+async def send_callback_to_botesq(response: ServiceResponse):
+    """Send completed response back to BotEsq."""
+    import httpx
+
+    payload = response.json()
+    timestamp = str(int(time.time()))
+    signature = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        f"{timestamp}.{payload}".encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    async with httpx.AsyncClient() as client:
+        await client.post(
+            BOTESQ_CALLBACK_URL,
+            content=payload,
+            headers={
+                "Content-Type": "application/json",
+                "X-Provider-Signature": signature,
+                "X-Provider-Timestamp": timestamp,
+            }
+        )
+```
+
+---
+
 ## Runtime Environment
 
 ```yaml

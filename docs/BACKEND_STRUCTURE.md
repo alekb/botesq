@@ -826,6 +826,8 @@ model OperatorProviderPreference {
 
 All MCP tools follow this request/response pattern:
 
+**TypeScript:**
+
 ```typescript
 // Tool Input Schema
 interface ToolInput {
@@ -843,6 +845,30 @@ interface ToolOutput {
     details?: any
   }
 }
+```
+
+**Python:**
+
+```python
+from dataclasses import dataclass
+from typing import Any, Optional
+
+@dataclass
+class ToolInput:
+    session_token: Optional[str] = None  # Required for authenticated tools
+    # ... tool-specific parameters
+
+@dataclass
+class ToolError:
+    code: str
+    message: str
+    details: Optional[Any] = None
+
+@dataclass
+class ToolOutput:
+    success: bool
+    data: Optional[Any] = None
+    error: Optional[ToolError] = None
 ```
 
 #### Tool Specifications
@@ -1185,6 +1211,490 @@ interface GetDisclaimersOutput {
   version: string
   last_updated: string
 }
+```
+
+#### Python SDK Examples
+
+Complete Python examples for all MCP tools:
+
+```python
+"""
+BotEsq Python SDK Examples
+Complete reference for integrating with BotEsq MCP tools.
+"""
+
+import httpx
+import asyncio
+import base64
+from dataclasses import dataclass
+from typing import Optional, List, Any
+from enum import Enum
+
+# ==============================================
+# Configuration
+# ==============================================
+
+BOTESQ_API_URL = "https://api.botesq.com/mcp"
+
+class MatterType(Enum):
+    CONTRACT_REVIEW = "CONTRACT_REVIEW"
+    ENTITY_FORMATION = "ENTITY_FORMATION"
+    COMPLIANCE = "COMPLIANCE"
+    IP_TRADEMARK = "IP_TRADEMARK"
+    IP_COPYRIGHT = "IP_COPYRIGHT"
+    GENERAL_CONSULTATION = "GENERAL_CONSULTATION"
+    LITIGATION_CONSULTATION = "LITIGATION_CONSULTATION"
+
+class MatterUrgency(Enum):
+    LOW = "low"
+    STANDARD = "standard"
+    HIGH = "high"
+    URGENT = "urgent"
+
+# ==============================================
+# Client Class
+# ==============================================
+
+class BotEsqClient:
+    """Async client for BotEsq MCP API."""
+
+    def __init__(self, api_key: str = None, session_token: str = None):
+        self.api_key = api_key
+        self.session_token = session_token
+        self.base_url = BOTESQ_API_URL
+
+    async def _call(self, tool: str, params: dict) -> dict:
+        """Make an MCP tool call."""
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"{self.base_url}/{tool}",
+                json=params
+            )
+            response.raise_for_status()
+            result = response.json()
+            if not result.get("success"):
+                error = result.get("error", {})
+                raise BotEsqError(
+                    error.get("code", "UNKNOWN"),
+                    error.get("message", "Unknown error")
+                )
+            return result
+
+    # ------------------------------------------
+    # SESSION MANAGEMENT
+    # ------------------------------------------
+
+    async def start_session(self, agent_identifier: str = None) -> dict:
+        """
+        Start a new session with API key.
+
+        Returns:
+            {
+                "session_token": "sess_xxx",
+                "expires_at": "2026-02-06T...",
+                "operator": {"id": "...", "name": "..."},
+                "credits": {"balance": 10000, "currency": "credits"},
+                "rate_limits": {"requests_per_minute": 10, ...}
+            }
+        """
+        result = await self._call("start_session", {
+            "api_key": self.api_key,
+            "agent_identifier": agent_identifier
+        })
+        self.session_token = result["data"]["session_token"]
+        return result["data"]
+
+    async def get_session_info(self) -> dict:
+        """Get current session information."""
+        result = await self._call("get_session_info", {
+            "session_token": self.session_token
+        })
+        return result["data"]
+
+    # ------------------------------------------
+    # LEGAL Q&A
+    # ------------------------------------------
+
+    async def ask_legal_question(
+        self,
+        question: str,
+        jurisdiction: str = None,
+        context: str = None
+    ) -> dict:
+        """
+        Ask a legal question.
+
+        Args:
+            question: The legal question to ask
+            jurisdiction: Optional jurisdiction (e.g., "California", "Delaware")
+            context: Optional additional context
+
+        Returns:
+            {
+                "answer_id": "...",
+                "status": "instant" | "queued",
+                "answer": "...",
+                "confidence_score": 0.85,
+                "complexity": "simple" | "moderate" | "complex",
+                "citations": [...],
+                "disclaimers": [...],
+                "credits_used": 200,
+                "credits_remaining": 9800
+            }
+        """
+        return (await self._call("ask_legal_question", {
+            "session_token": self.session_token,
+            "question": question,
+            "jurisdiction": jurisdiction,
+            "context": context
+        }))["data"]
+
+    # ------------------------------------------
+    # MATTER MANAGEMENT
+    # ------------------------------------------
+
+    async def create_matter(
+        self,
+        matter_type: MatterType,
+        title: str,
+        description: str = None,
+        urgency: MatterUrgency = MatterUrgency.STANDARD
+    ) -> dict:
+        """
+        Create a new legal matter.
+
+        Returns:
+            {
+                "matter_id": "MATTER-XXXXXX",
+                "status": "PENDING_RETAINER",
+                "type": "CONTRACT_REVIEW",
+                "retainer_required": true,
+                "retainer": {"id": "...", "status": "PENDING"},
+                "next_steps": ["Accept retainer agreement", ...],
+                "credits_used": 10000
+            }
+        """
+        return (await self._call("create_matter", {
+            "session_token": self.session_token,
+            "matter_type": matter_type.value if isinstance(matter_type, MatterType) else matter_type,
+            "title": title,
+            "description": description,
+            "urgency": urgency.value if isinstance(urgency, MatterUrgency) else urgency
+        }))["data"]
+
+    async def get_matter_status(self, matter_id: str) -> dict:
+        """Get status of a specific matter."""
+        return (await self._call("get_matter_status", {
+            "session_token": self.session_token,
+            "matter_id": matter_id
+        }))["data"]
+
+    async def list_matters(
+        self,
+        status: str = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> dict:
+        """List all matters for the operator."""
+        return (await self._call("list_matters", {
+            "session_token": self.session_token,
+            "status": status,
+            "limit": limit,
+            "offset": offset
+        }))["data"]
+
+    # ------------------------------------------
+    # RETAINERS
+    # ------------------------------------------
+
+    async def get_retainer_terms(self, matter_id: str) -> dict:
+        """Get retainer agreement terms for a matter."""
+        return (await self._call("get_retainer_terms", {
+            "session_token": self.session_token,
+            "matter_id": matter_id
+        }))["data"]
+
+    async def accept_retainer(
+        self,
+        retainer_id: str,
+        pre_auth_token: str = None
+    ) -> dict:
+        """
+        Accept a retainer agreement.
+
+        Args:
+            retainer_id: The retainer ID from get_retainer_terms
+            pre_auth_token: Pre-authorization token if operator has enabled it
+        """
+        return (await self._call("accept_retainer", {
+            "session_token": self.session_token,
+            "retainer_id": retainer_id,
+            "pre_auth_token": pre_auth_token
+        }))["data"]
+
+    # ------------------------------------------
+    # DOCUMENTS
+    # ------------------------------------------
+
+    async def submit_document(
+        self,
+        filename: str,
+        content: bytes,
+        matter_id: str = None,
+        document_type: str = None,
+        notes: str = None
+    ) -> dict:
+        """
+        Submit a document for analysis.
+
+        Args:
+            filename: Original filename (e.g., "contract.pdf")
+            content: File content as bytes
+            matter_id: Optional matter to associate with
+            document_type: Optional type hint (e.g., "contract", "agreement")
+            notes: Optional notes about the document
+        """
+        content_base64 = base64.b64encode(content).decode()
+        return (await self._call("submit_document", {
+            "session_token": self.session_token,
+            "matter_id": matter_id,
+            "filename": filename,
+            "content_base64": content_base64,
+            "document_type": document_type,
+            "notes": notes
+        }))["data"]
+
+    async def get_document_analysis(self, document_id: str) -> dict:
+        """
+        Get analysis results for a document.
+
+        Returns:
+            {
+                "document_id": "DOC-XXXXXX",
+                "status": "completed",
+                "analysis": {
+                    "summary": "...",
+                    "document_type": "Service Agreement",
+                    "parties": [{"role": "Provider", "name": "Acme Inc"}],
+                    "key_terms": [...],
+                    "identified_risks": [...],
+                    "recommendations": [...]
+                },
+                "confidence_score": 0.92,
+                "attorney_review_recommended": false
+            }
+        """
+        return (await self._call("get_document_analysis", {
+            "session_token": self.session_token,
+            "document_id": document_id
+        }))["data"]
+
+    # ------------------------------------------
+    # CONSULTATIONS
+    # ------------------------------------------
+
+    async def request_consultation(
+        self,
+        question: str,
+        matter_id: str = None,
+        context: str = None,
+        jurisdiction: str = None,
+        urgency: str = "standard"
+    ) -> dict:
+        """
+        Request an async attorney consultation.
+
+        Returns:
+            {
+                "consultation_id": "CONS-XXXXXX",
+                "status": "queued",
+                "estimated_wait_minutes": 60,
+                "sla_deadline": "2026-02-05T14:00:00Z",
+                "credits_used": 5000
+            }
+        """
+        return (await self._call("request_consultation", {
+            "session_token": self.session_token,
+            "matter_id": matter_id,
+            "question": question,
+            "context": context,
+            "jurisdiction": jurisdiction,
+            "urgency": urgency
+        }))["data"]
+
+    async def get_consultation_result(self, consultation_id: str) -> dict:
+        """Poll for consultation result."""
+        return (await self._call("get_consultation_result", {
+            "session_token": self.session_token,
+            "consultation_id": consultation_id
+        }))["data"]
+
+    async def wait_for_consultation(
+        self,
+        consultation_id: str,
+        poll_interval: int = 30,
+        timeout: int = 3600
+    ) -> dict:
+        """
+        Wait for a consultation to complete (polling).
+
+        Args:
+            consultation_id: The consultation ID
+            poll_interval: Seconds between polls (default 30)
+            timeout: Maximum seconds to wait (default 3600)
+        """
+        import time
+        start = time.time()
+        while time.time() - start < timeout:
+            result = await self.get_consultation_result(consultation_id)
+            if result["status"] == "completed":
+                return result
+            if result["status"] == "failed":
+                raise BotEsqError("CONSULTATION_FAILED", "Consultation failed")
+            await asyncio.sleep(poll_interval)
+        raise BotEsqError("TIMEOUT", "Consultation timed out")
+
+    # ------------------------------------------
+    # CREDITS
+    # ------------------------------------------
+
+    async def check_credits(self) -> dict:
+        """Check credit balance and usage."""
+        return (await self._call("check_credits", {
+            "session_token": self.session_token
+        }))["data"]
+
+    async def add_credits(self, amount_usd: int) -> dict:
+        """
+        Get a payment URL to add credits.
+
+        Args:
+            amount_usd: Amount in USD cents (e.g., 5000 = $50)
+        """
+        return (await self._call("add_credits", {
+            "session_token": self.session_token,
+            "amount_usd": amount_usd
+        }))["data"]
+
+    # ------------------------------------------
+    # SERVICES & INFO
+    # ------------------------------------------
+
+    async def list_services(self) -> dict:
+        """List available services and pricing."""
+        return (await self._call("list_services", {
+            "session_token": self.session_token
+        }))["data"]
+
+    async def get_disclaimers(self) -> dict:
+        """Get legal disclaimers."""
+        return (await self._call("get_disclaimers", {}))["data"]
+
+
+class BotEsqError(Exception):
+    """BotEsq API error."""
+    def __init__(self, code: str, message: str):
+        self.code = code
+        self.message = message
+        super().__init__(f"{code}: {message}")
+
+
+# ==============================================
+# Usage Examples
+# ==============================================
+
+async def example_legal_qa():
+    """Example: Ask a simple legal question."""
+    client = BotEsqClient(api_key="botesq_live_xxxxx")
+    await client.start_session(agent_identifier="my-agent-v1")
+
+    answer = await client.ask_legal_question(
+        question="What are the key differences between an LLC and a Corporation?",
+        jurisdiction="Delaware"
+    )
+
+    print(f"Answer: {answer['answer']}")
+    print(f"Confidence: {answer['confidence_score']}")
+    print(f"Credits used: {answer['credits_used']}")
+
+
+async def example_document_review():
+    """Example: Submit a document for review."""
+    client = BotEsqClient(api_key="botesq_live_xxxxx")
+    await client.start_session()
+
+    # Read document
+    with open("contract.pdf", "rb") as f:
+        content = f.read()
+
+    # Submit for analysis
+    doc = await client.submit_document(
+        filename="contract.pdf",
+        content=content,
+        document_type="contract",
+        notes="NDA with potential vendor"
+    )
+    print(f"Document submitted: {doc['document_id']}")
+    print(f"Estimated analysis time: {doc['estimated_analysis_minutes']} minutes")
+
+    # Poll for results
+    import asyncio
+    while True:
+        analysis = await client.get_document_analysis(doc["document_id"])
+        if analysis["status"] == "completed":
+            print(f"Summary: {analysis['analysis']['summary']}")
+            print(f"Risks: {analysis['analysis']['identified_risks']}")
+            break
+        await asyncio.sleep(30)
+
+
+async def example_full_matter_workflow():
+    """Example: Complete matter workflow with retainer."""
+    client = BotEsqClient(api_key="botesq_live_xxxxx")
+    session = await client.start_session()
+    print(f"Credits available: {session['credits']['balance']}")
+
+    # Create matter
+    matter = await client.create_matter(
+        matter_type=MatterType.CONTRACT_REVIEW,
+        title="SaaS Agreement Review",
+        description="Review vendor SaaS agreement for data security terms",
+        urgency=MatterUrgency.STANDARD
+    )
+    print(f"Matter created: {matter['matter_id']}")
+
+    # Get and accept retainer (if pre-auth is configured)
+    if matter["retainer_required"]:
+        terms = await client.get_retainer_terms(matter["matter_id"])
+        print(f"Retainer scope: {terms['terms']['scope']}")
+        print(f"Estimated fee: {terms['terms']['estimated_fee']} credits")
+
+        # Accept with pre-auth token (configured by operator)
+        acceptance = await client.accept_retainer(
+            retainer_id=terms["retainer_id"],
+            pre_auth_token="preauth_xxxxx"  # From operator settings
+        )
+        print(f"Retainer status: {acceptance['status']}")
+
+    # Request consultation
+    consultation = await client.request_consultation(
+        matter_id=matter["matter_id"],
+        question="Are the data security provisions adequate for SOC 2 compliance?",
+        context="We need to ensure the vendor meets our security requirements"
+    )
+    print(f"Consultation requested: {consultation['consultation_id']}")
+    print(f"SLA deadline: {consultation['sla_deadline']}")
+
+    # Wait for result (or use webhooks)
+    result = await client.wait_for_consultation(
+        consultation["consultation_id"],
+        poll_interval=60
+    )
+    print(f"Attorney response: {result['response']}")
+
+
+if __name__ == "__main__":
+    asyncio.run(example_legal_qa())
 ```
 
 ---
@@ -2267,6 +2777,8 @@ Operators configure webhooks via:
 
 Webhooks are signed using HMAC-SHA256. Verify signatures to ensure authenticity:
 
+**TypeScript (Node.js/Express):**
+
 ```typescript
 import crypto from 'crypto'
 
@@ -2314,6 +2826,101 @@ app.post('/webhook', (req, res) => {
 })
 ```
 
+**Python (Flask):**
+
+```python
+import hmac
+import hashlib
+import time
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret"
+
+def verify_webhook_signature(
+    payload: str,
+    signature: str,
+    timestamp: str,
+    secret: str
+) -> bool:
+    # Reject old timestamps (> 5 minutes)
+    timestamp_age = time.time() - int(timestamp)
+    if timestamp_age > 300:
+        return False
+
+    # Verify signature
+    signature_payload = f"{timestamp}.{payload}"
+    expected_signature = hmac.new(
+        secret.encode(),
+        signature_payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected_signature)
+
+@app.post("/webhook")
+def handle_webhook():
+    signature = request.headers.get("X-BotEsq-Signature")
+    timestamp = request.headers.get("X-BotEsq-Timestamp")
+    payload = request.get_data(as_text=True)
+
+    if not verify_webhook_signature(payload, signature, timestamp, WEBHOOK_SECRET):
+        return jsonify({"error": "Invalid signature"}), 401
+
+    event = request.json
+    if event["event"] == "consultation.completed":
+        # Notify agent that response is ready
+        notify_agent(event["data"]["consultation_id"], event["data"]["response"])
+
+    return jsonify({"received": True})
+```
+
+**Python (FastAPI):**
+
+```python
+import hmac
+import hashlib
+import time
+from fastapi import FastAPI, Request, HTTPException
+
+app = FastAPI()
+WEBHOOK_SECRET = "your_webhook_secret"
+
+def verify_webhook_signature(
+    payload: str,
+    signature: str,
+    timestamp: str,
+    secret: str
+) -> bool:
+    timestamp_age = time.time() - int(timestamp)
+    if timestamp_age > 300:
+        return False
+
+    signature_payload = f"{timestamp}.{payload}"
+    expected_signature = hmac.new(
+        secret.encode(),
+        signature_payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected_signature)
+
+@app.post("/webhook")
+async def handle_webhook(request: Request):
+    signature = request.headers.get("X-BotEsq-Signature")
+    timestamp = request.headers.get("X-BotEsq-Timestamp")
+    payload = await request.body()
+
+    if not verify_webhook_signature(payload.decode(), signature, timestamp, WEBHOOK_SECRET):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    event = await request.json()
+    if event["event"] == "consultation.completed":
+        await notify_agent(event["data"]["consultation_id"], event["data"]["response"])
+
+    return {"received": True}
+```
+
 ### Webhook Headers
 
 | Header               | Description                                   |
@@ -2338,6 +2945,8 @@ app.post('/webhook', (req, res) => {
 
 ### Agent Integration Example
 
+**TypeScript:**
+
 ```typescript
 // Agent polls for consultation result OR receives webhook
 async function handleConsultation(consultationId: string) {
@@ -2355,4 +2964,124 @@ async function handleConsultation(consultationId: string) {
   // Your system receives POST to configured webhook URL
   // when consultation.completed event fires
 }
+```
+
+**Python:**
+
+```python
+import asyncio
+from botesq import BotEsqClient  # or use httpx directly
+
+async def handle_consultation(consultation_id: str, session_token: str) -> str:
+    """Poll for consultation result or wait for webhook."""
+    client = BotEsqClient(session_token=session_token)
+
+    # Option 1: Poll (fallback)
+    while True:
+        result = await client.call(
+            "get_consultation_result",
+            {"consultation_id": consultation_id}
+        )
+
+        if result["data"]["status"] == "completed":
+            return result["data"]["response"]
+
+        if result["data"]["status"] == "failed":
+            raise Exception(f"Consultation failed: {result}")
+
+        # Wait before polling again
+        await asyncio.sleep(30)
+
+    # Option 2: Wait for webhook notification
+    # Your system receives POST to configured webhook URL
+    # when consultation.completed event fires
+```
+
+**Python (using httpx directly):**
+
+```python
+import httpx
+import asyncio
+
+BOTESQ_API_URL = "https://api.botesq.com/mcp"
+
+async def start_session(api_key: str) -> dict:
+    """Start a new BotEsq session."""
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{BOTESQ_API_URL}/start_session",
+            json={"api_key": api_key}
+        )
+        response.raise_for_status()
+        return response.json()
+
+async def ask_legal_question(
+    session_token: str,
+    question: str,
+    jurisdiction: str = None,
+    context: str = None
+) -> dict:
+    """Ask a legal question via BotEsq."""
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{BOTESQ_API_URL}/ask_legal_question",
+            json={
+                "session_token": session_token,
+                "question": question,
+                "jurisdiction": jurisdiction,
+                "context": context,
+            }
+        )
+        response.raise_for_status()
+        return response.json()
+
+async def create_matter(
+    session_token: str,
+    matter_type: str,
+    title: str,
+    description: str = None,
+    urgency: str = "standard"
+) -> dict:
+    """Create a new legal matter."""
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{BOTESQ_API_URL}/create_matter",
+            json={
+                "session_token": session_token,
+                "matter_type": matter_type,
+                "title": title,
+                "description": description,
+                "urgency": urgency,
+            }
+        )
+        response.raise_for_status()
+        return response.json()
+
+# Example usage
+async def main():
+    # Start session
+    session = await start_session("botesq_live_xxxxx")
+    token = session["data"]["session_token"]
+    print(f"Session started, credits: {session['data']['credits']['balance']}")
+
+    # Ask a legal question
+    answer = await ask_legal_question(
+        token,
+        question="What are the requirements for forming an LLC in Delaware?",
+        jurisdiction="Delaware"
+    )
+    print(f"Answer: {answer['data']['answer']}")
+    print(f"Confidence: {answer['data']['confidence_score']}")
+
+    # Create a matter for ongoing work
+    matter = await create_matter(
+        token,
+        matter_type="ENTITY_FORMATION",
+        title="Delaware LLC Formation",
+        description="Form a new Delaware LLC for tech startup"
+    )
+    print(f"Matter created: {matter['data']['matter_id']}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
