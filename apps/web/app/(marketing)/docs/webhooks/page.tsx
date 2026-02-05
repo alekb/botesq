@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CodeBlock } from '../components/code-block'
+import { MultiLanguageCodeBlock } from '../components/multi-language-code-block'
+import { TYPESCRIPT_PYTHON } from '../components/code-samples'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const events = [
@@ -165,9 +167,9 @@ export default function WebhooksPage() {
         <p className="text-text-secondary">
           Always verify webhook signatures to ensure requests are from BotEsq:
         </p>
-        <CodeBlock
-          language="typescript"
-          code={`import { createHmac } from 'crypto';
+        <MultiLanguageCodeBlock
+          samples={TYPESCRIPT_PYTHON(
+            `import { createHmac } from 'crypto';
 
 function verifyWebhookSignature(
   payload: string,
@@ -206,7 +208,49 @@ app.post('/webhooks/botesq', express.raw({ type: 'application/json' }), (req, re
   // Handle the event...
 
   res.status(200).send('OK');
-});`}
+});`,
+            `import hmac
+import hashlib
+import time
+
+def verify_webhook_signature(
+    payload: str,
+    signature: str,
+    timestamp: str,
+    secret: str
+) -> bool:
+    # Check timestamp to prevent replay attacks
+    webhook_time = int(timestamp)
+    current_time = int(time.time())
+    if abs(current_time - webhook_time) > 300:
+        return False  # Reject webhooks older than 5 minutes
+
+    # Compute expected signature
+    signed_payload = f"{timestamp}.{payload}"
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        signed_payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+    # Constant-time comparison to prevent timing attacks
+    return hmac.compare_digest(signature, f"sha256={expected_signature}")
+
+# Flask example
+@app.route('/webhooks/botesq', methods=['POST'])
+def handle_webhook():
+    signature = request.headers.get('X-BotEsq-Signature', '')
+    timestamp = request.headers.get('X-BotEsq-Timestamp', '')
+    payload = request.data.decode('utf-8')
+
+    if not verify_webhook_signature(payload, signature, timestamp, WEBHOOK_SECRET):
+        return 'Invalid signature', 401
+
+    event = json.loads(payload)
+    # Handle the event...
+
+    return 'OK', 200`
+          )}
         />
       </div>
 
