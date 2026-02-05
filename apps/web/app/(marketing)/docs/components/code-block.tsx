@@ -2,12 +2,31 @@
 
 import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
+import { Highlight, themes, type Language } from 'prism-react-renderer'
 
 interface CodeBlockProps {
   code: string
   language?: string
   filename?: string
   showLineNumbers?: boolean
+}
+
+// Map common language names to Prism language identifiers
+const languageMap: Record<string, Language> = {
+  typescript: 'typescript',
+  ts: 'typescript',
+  javascript: 'javascript',
+  js: 'javascript',
+  python: 'python',
+  py: 'python',
+  json: 'json',
+  bash: 'bash',
+  shell: 'bash',
+  sh: 'bash',
+  go: 'go',
+  golang: 'go',
+  text: 'markdown',
+  plain: 'markdown',
 }
 
 export function CodeBlock({
@@ -24,7 +43,7 @@ export function CodeBlock({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const lines = code.split('\n')
+  const prismLanguage = languageMap[language.toLowerCase()] || 'typescript'
 
   return (
     <div className="group relative overflow-hidden rounded-lg border border-border-default bg-background-tertiary">
@@ -45,23 +64,32 @@ export function CodeBlock({
         </button>
       </div>
 
-      {/* Code content */}
-      <div className="overflow-x-auto p-4">
-        <pre className="font-mono text-sm">
-          <code>
-            {lines.map((line, i) => (
-              <div key={i} className="flex">
-                {showLineNumbers && (
-                  <span className="mr-4 inline-block w-8 select-none text-right text-text-tertiary">
-                    {i + 1}
+      {/* Code content with syntax highlighting */}
+      <Highlight theme={themes.nightOwl} code={code.trim()} language={prismLanguage}>
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <div className="overflow-x-auto p-4">
+            <pre
+              className={`font-mono text-sm ${className}`}
+              style={{ ...style, background: 'transparent', margin: 0 }}
+            >
+              {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })} className="flex">
+                  {showLineNumbers && (
+                    <span className="mr-4 inline-block w-8 select-none text-right text-text-tertiary">
+                      {i + 1}
+                    </span>
+                  )}
+                  <span>
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token })} />
+                    ))}
                   </span>
-                )}
-                <span className="text-text-primary">{line || ' '}</span>
-              </div>
-            ))}
-          </code>
-        </pre>
-      </div>
+                </div>
+              ))}
+            </pre>
+          </div>
+        )}
+      </Highlight>
     </div>
   )
 }

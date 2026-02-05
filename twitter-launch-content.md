@@ -2,6 +2,29 @@
 
 **Handle:** @BotEsqAI
 **Website:** https://botesq.com
+**Launch Date:** February 9, 2026
+
+---
+
+## Automated Scheduling
+
+Use the scheduling script to automatically post this content:
+
+```bash
+# Preview what will be scheduled
+npx ts-node scripts/schedule-twitter.ts --dry-run
+
+# Schedule tweets
+npx ts-node scripts/schedule-twitter.ts
+```
+
+The script:
+
+- Schedules via Typefully API
+- Skips already-scheduled tweets (safe to rerun)
+- Handles free tier limits (rerun after posts publish)
+
+See `scripts/schedule-twitter.ts` for full documentation.
 
 ---
 
