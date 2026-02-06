@@ -29,10 +29,11 @@ These documents are law. Reference them for all decisions.
 At the start of every session, read these files in this order:
 
 1. **CLAUDE.md** (this file) — Your rules and constraints
-2. **PROGRESS.md** — Current state, active tasks, what's next
-3. **IMPLEMENTATION_PLAN.md** — Which phase/step to work on
-4. **LESSONS.md** — Mistakes to avoid, patterns discovered
-5. **Verify plan with user** — Get approval before executing
+2. **prompts/coding-agent-prompt.md** — Generic coding agent operating instructions (integrate these patterns into how you operate for all coding tasks)
+3. **PROGRESS.md** — Current state, active tasks, what's next
+4. **IMPLEMENTATION_PLAN.md** — Which phase/step to work on
+5. **LESSONS.md** — Mistakes to avoid, patterns discovered
+6. **Verify plan with user** — Get approval before executing
 
 ---
 
