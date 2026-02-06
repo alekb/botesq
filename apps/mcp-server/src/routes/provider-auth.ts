@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '@botesq/database'
 import { hashPassword, verifyPassword } from '../services/auth.service.js'
-import { generateShortToken } from '../utils/id.js'
+import { generateToken } from '../utils/secure-id.js'
 import { logger } from '../lib/logger.js'
 import { AuthError, ApiError } from '../types.js'
 
@@ -62,7 +62,7 @@ async function createProviderSession(
   ipAddress?: string,
   userAgent?: string
 ): Promise<ProviderSession> {
-  const token = generateShortToken()
+  const token = generateToken()
   const expiresAt = new Date(Date.now() + SESSION_EXPIRY_MS)
 
   await prisma.providerSession.create({

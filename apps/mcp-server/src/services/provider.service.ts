@@ -12,7 +12,7 @@ import type {
   PriceModel,
 } from '@botesq/database'
 import { hashPassword, verifyPassword } from './auth.service'
-import { generateId } from '../utils/id'
+import { generateProviderId } from '../utils/secure-id.js'
 import { generateWebhookSecret } from '../utils/webhook'
 import { logger } from '../lib/logger'
 
@@ -39,7 +39,7 @@ export async function createProvider(input: CreateProviderInput): Promise<Provid
   }
 
   const passwordHash = await hashPassword(input.password)
-  const externalId = generateId('PRV')
+  const externalId = generateProviderId()
   const webhookSecret = generateWebhookSecret()
 
   const provider = await prisma.provider.create({

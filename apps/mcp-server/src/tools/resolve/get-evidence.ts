@@ -60,13 +60,13 @@ export async function handleGetEvidence(input: GetEvidenceInput): Promise<{
     success: true,
     data: {
       dispute_id: input.dispute_id,
-      evidence: evidence.map((e) => ({
-        evidence_id: e.id,
-        submitted_by: e.submittedBy.toLowerCase() as 'claimant' | 'respondent',
-        evidence_type: e.evidenceType,
-        title: e.title,
-        content: e.content,
-        created_at: e.createdAt.toISOString(),
+      evidence: evidence.map((evidenceItem) => ({
+        evidence_id: evidenceItem.id,
+        submitted_by: evidenceItem.submittedBy.toLowerCase() as 'claimant' | 'respondent',
+        evidence_type: evidenceItem.evidenceType,
+        title: evidenceItem.title,
+        content: evidenceItem.content,
+        created_at: evidenceItem.createdAt.toISOString(),
       })),
       total_count: evidence.length,
     },

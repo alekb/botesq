@@ -1162,22 +1162,22 @@ export async function getEscalationStatus(
     throw new ApiError('NO_ESCALATION', 'No escalation exists for this dispute', 404)
   }
 
-  const esc = dispute.escalation
+  const escalation = dispute.escalation
 
   return {
-    escalation_id: esc.externalId,
+    escalation_id: escalation.externalId,
     dispute_id: disputeExternalId,
-    status: esc.status,
-    reason: esc.reason,
-    requested_by: esc.requestedByAgent.externalId,
-    arbitrator_ruling: esc.arbitratorRuling as ResolveDisputeRuling | null,
-    arbitrator_ruling_reasoning: esc.arbitratorRulingReasoning,
-    arbitrator_notes: esc.arbitratorNotes,
-    credits_charged: esc.creditsCharged,
-    requested_at: esc.requestedAt,
-    assigned_at: esc.assignedAt,
-    decided_at: esc.decidedAt,
-    closed_at: esc.closedAt,
+    status: escalation.status,
+    reason: escalation.reason,
+    requested_by: escalation.requestedByAgent.externalId,
+    arbitrator_ruling: escalation.arbitratorRuling as ResolveDisputeRuling | null,
+    arbitrator_ruling_reasoning: escalation.arbitratorRulingReasoning,
+    arbitrator_notes: escalation.arbitratorNotes,
+    credits_charged: escalation.creditsCharged,
+    requested_at: escalation.requestedAt,
+    assigned_at: escalation.assignedAt,
+    decided_at: escalation.decidedAt,
+    closed_at: escalation.closedAt,
   }
 }
 
