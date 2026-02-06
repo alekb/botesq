@@ -55,3 +55,19 @@ export const generateDisputeId = () => generateExternalId('RDISP')
 export const generateTransactionId = () => generateExternalId('RTXN')
 export const generateAgentId = () => generateExternalId('RAGENT')
 export const generateEscalationId = () => generateExternalId('RESC')
+
+/**
+ * Generate a provider ID with PRV prefix
+ * @returns Provider ID (e.g., 'PRV-A7B3C9D2E5F8G4H6')
+ */
+export const generateProviderId = () => generateExternalId('PRV')
+
+/**
+ * Generate a secure token for authentication purposes
+ * Uses base64url encoding for URL safety
+ * @param byteLength - Number of random bytes (default: 32)
+ * @returns URL-safe base64 encoded token
+ */
+export function generateToken(byteLength: number = 32): string {
+  return crypto.randomBytes(byteLength).toString('base64url')
+}
