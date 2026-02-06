@@ -30,9 +30,10 @@ vi.mock('../services/storage.service.js', () => ({
   isStorageConfigured: vi.fn(),
 }))
 
-// Mock nanoid
-vi.mock('nanoid', () => ({
-  nanoid: vi.fn().mockReturnValue('ABCD1234'),
+// Mock secure-id
+vi.mock('../utils/secure-id.js', () => ({
+  generateDocumentId: vi.fn().mockReturnValue('DOC-ABCD1234'),
+  generateExternalId: vi.fn().mockImplementation((prefix: string) => `${prefix}-ABCD1234`),
 }))
 
 import { prisma } from '@botesq/database'

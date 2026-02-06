@@ -18,9 +18,10 @@ vi.mock('@botesq/database', async () => {
   }
 })
 
-// Mock nanoid
-vi.mock('nanoid', () => ({
-  nanoid: vi.fn().mockReturnValue('ABC123'),
+// Mock secure-id
+vi.mock('../utils/secure-id.js', () => ({
+  generateMatterId: vi.fn().mockReturnValue('MTR-ABC123'),
+  generateExternalId: vi.fn().mockImplementation((prefix: string) => `${prefix}-ABC123`),
 }))
 
 import { prisma } from '@botesq/database'
@@ -636,9 +637,8 @@ describe('matter.service', () => {
 
 describe('matter ID generation', () => {
   it('should generate unique matter IDs', async () => {
-    // This is implicitly tested through createMatter, but we verify the format
-    const { nanoid } = await import('nanoid')
-    vi.mocked(nanoid).mockReturnValueOnce('aaa111').mockReturnValueOnce('bbb222')
+    const { generateMatterId } = await import('../utils/secure-id.js')
+    vi.mocked(generateMatterId).mockReturnValueOnce('MTR-AAA111').mockReturnValueOnce('MTR-BBB222')
 
     vi.mocked(prisma.matter.create).mockImplementation((async ({
       data,
@@ -672,7 +672,7 @@ describe('matter ID generation', () => {
     })
 
     // Each should have unique external ID
-    expect(result1.matter.externalId).toBe('MATTER-AAA111')
-    expect(result2.matter.externalId).toBe('MATTER-BBB222')
+    expect(result1.matter.externalId).toBe('MTR-AAA111')
+    expect(result2.matter.externalId).toBe('MTR-BBB222')
   })
 })
