@@ -81,6 +81,7 @@ describe('MCP Tool Handlers', () => {
     it('should export all required tools', () => {
       const toolNames = tools.map((t) => t.name)
 
+      // Core tools
       expect(toolNames).toContain('start_session')
       expect(toolNames).toContain('get_session_info')
       expect(toolNames).toContain('list_services')
@@ -97,6 +98,39 @@ describe('MCP Tool Handlers', () => {
       expect(toolNames).toContain('get_document_analysis')
       expect(toolNames).toContain('request_consultation')
       expect(toolNames).toContain('get_consultation_result')
+
+      // Resolve tools - agents & transactions
+      expect(toolNames).toContain('register_resolve_agent')
+      expect(toolNames).toContain('get_agent_trust')
+      expect(toolNames).toContain('propose_transaction')
+      expect(toolNames).toContain('respond_to_transaction')
+      expect(toolNames).toContain('complete_transaction')
+
+      // Resolve tools - disputes
+      expect(toolNames).toContain('file_dispute')
+      expect(toolNames).toContain('respond_to_dispute')
+      expect(toolNames).toContain('get_dispute')
+      expect(toolNames).toContain('list_disputes')
+      expect(toolNames).toContain('submit_evidence')
+      expect(toolNames).toContain('get_evidence')
+
+      // Resolve tools - decisions
+      expect(toolNames).toContain('accept_decision')
+      expect(toolNames).toContain('reject_decision')
+      expect(toolNames).toContain('get_decision')
+
+      // Resolve tools - escalation
+      expect(toolNames).toContain('request_escalation')
+      expect(toolNames).toContain('get_escalation_status')
+
+      // Resolve tools - escrow
+      expect(toolNames).toContain('fund_escrow')
+      expect(toolNames).toContain('release_escrow')
+      expect(toolNames).toContain('get_escrow_status')
+    })
+
+    it('should export exactly 35 tools', () => {
+      expect(tools).toHaveLength(35)
     })
 
     it('should have handler functions for all tools', () => {

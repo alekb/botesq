@@ -50,7 +50,7 @@ export async function handleRegisterAgent(input: RegisterAgentInput): Promise<{
       agentId: agent.externalId,
       agentIdentifier: input.agent_identifier,
     },
-    'Agent registered in Resolve system'
+    'Agent registered'
   )
 
   return {

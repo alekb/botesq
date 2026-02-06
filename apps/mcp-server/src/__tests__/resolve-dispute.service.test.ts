@@ -6,6 +6,7 @@ import {
   ResolveEvidenceType,
   ResolveEvidenceSubmitter,
   ResolveTransactionStatus,
+  ResolveEscalationStatus,
 } from '@botesq/database'
 
 // Mock prisma
@@ -20,8 +21,13 @@ vi.mock('@botesq/database', async () => {
         findUnique: vi.fn(),
         findMany: vi.fn(),
         update: vi.fn(),
+        count: vi.fn(),
       },
       resolveEvidence: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+      },
+      resolveEscalation: {
         create: vi.fn(),
       },
     },
@@ -62,6 +68,11 @@ import {
   respondToDispute,
   addEvidence,
   recordRuling,
+  acceptDecision,
+  rejectDecision,
+  getDecision,
+  requestEscalation,
+  getEscalationStatus,
 } from '../services/resolve-dispute.service.js'
 import { ApiError } from '../types.js'
 
@@ -636,7 +647,7 @@ describe('resolve-dispute.service', () => {
   })
 
   describe('recordRuling', () => {
-    it('should update dispute with ruling', async () => {
+    it('should update dispute with ruling and decision deadline', async () => {
       vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
 
       await recordRuling({
@@ -648,18 +659,21 @@ describe('resolve-dispute.service', () => {
         respondentScoreChange: -10,
       })
 
-      expect(prisma.resolveDispute.update).toHaveBeenCalledWith({
-        where: { id: 'dispute_123' },
-        data: {
-          ruling: ResolveDisputeRuling.CLAIMANT,
-          rulingReasoning: 'Claimant provided sufficient evidence',
-          rulingDetails: { key: 'value' },
-          ruledAt: expect.any(Date),
-          claimantScoreChange: 5,
-          respondentScoreChange: -10,
-          status: ResolveDisputeStatus.RULED,
-        },
-      })
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'dispute_123' },
+          data: expect.objectContaining({
+            ruling: ResolveDisputeRuling.CLAIMANT,
+            rulingReasoning: 'Claimant provided sufficient evidence',
+            rulingDetails: { key: 'value' },
+            ruledAt: expect.any(Date),
+            claimantScoreChange: 5,
+            respondentScoreChange: -10,
+            decisionDeadline: expect.any(Date),
+            status: ResolveDisputeStatus.RULED,
+          }),
+        })
+      )
     })
 
     it('should set status to RULED', async () => {
@@ -683,6 +697,26 @@ describe('resolve-dispute.service', () => {
       )
     })
 
+    it('should set decision deadline ~7 days from now', async () => {
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const before = Date.now()
+      await recordRuling({
+        disputeId: 'dispute_123',
+        ruling: ResolveDisputeRuling.CLAIMANT,
+        rulingReasoning: 'Evidence clear',
+        rulingDetails: {},
+        claimantScoreChange: 2,
+        respondentScoreChange: -3,
+      })
+
+      const callArg = vi.mocked(prisma.resolveDispute.update).mock.calls[0]?.[0]
+      const deadline = callArg?.data?.decisionDeadline as Date
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
+      expect(deadline.getTime()).toBeGreaterThanOrEqual(before + sevenDaysMs - 1000)
+      expect(deadline.getTime()).toBeLessThanOrEqual(Date.now() + sevenDaysMs + 1000)
+    })
+
     it('should record score changes for both parties', async () => {
       vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
 
@@ -703,6 +737,719 @@ describe('resolve-dispute.service', () => {
           }),
         })
       )
+    })
+  })
+
+  describe('acceptDecision', () => {
+    const mockRuledDispute = {
+      id: 'dispute_123',
+      externalId: 'RDISP-123',
+      claimantAgentId: 'agent_claimant',
+      respondentAgentId: 'agent_respondent',
+      status: ResolveDisputeStatus.RULED,
+      ruling: 'CLAIMANT',
+      claimantAccepted: null,
+      respondentAccepted: null,
+      claimantDecisionAt: null,
+      respondentDecisionAt: null,
+    }
+
+    const mockUpdatedDispute = {
+      ...mockRuledDispute,
+      claimantAccepted: true,
+      claimantDecisionAt: new Date(),
+      transaction: { externalId: 'RTRANS-123', title: 'Test', statedValue: 1000 },
+      claimantAgent: {
+        externalId: 'agent_claimant',
+        agentIdentifier: 'claimant',
+        displayName: 'Claimant',
+        trustScore: 80,
+      },
+      respondentAgent: {
+        externalId: 'agent_respondent',
+        agentIdentifier: 'respondent',
+        displayName: 'Respondent',
+        trustScore: 75,
+      },
+      claimType: ResolveDisputeClaimType.NON_PERFORMANCE,
+      claimSummary: 'Test',
+      claimDetails: null,
+      requestedResolution: 'Refund',
+      responseSummary: null,
+      responseDetails: null,
+      responseDeadline: new Date(),
+      responseSubmittedAt: null,
+      rulingReasoning: 'Clear evidence',
+      rulingDetails: null,
+      ruledAt: new Date(),
+      claimantScoreChange: 5,
+      respondentScoreChange: -5,
+      statedValue: 1000,
+      creditsCharged: 0,
+      wasFree: true,
+      decisionDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      closedAt: null,
+      createdAt: new Date(),
+      _count: { evidence: 0 },
+    }
+
+    it('should throw error if dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      await expect(acceptDecision('nonexistent', 'agent_claimant')).rejects.toThrow(
+        'Dispute not found'
+      )
+    })
+
+    it('should throw error if dispute not in RULED status', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        status: ResolveDisputeStatus.AWAITING_RESPONSE,
+      } as never)
+
+      await expect(acceptDecision('RDISP-123', 'agent_claimant')).rejects.toThrow(
+        'Cannot accept decision'
+      )
+    })
+
+    it('should throw error if not a party to dispute', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+
+      await expect(acceptDecision('RDISP-123', 'agent_outsider')).rejects.toThrow('not a party')
+    })
+
+    it('should throw error if claimant already responded', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        claimantAccepted: true,
+      } as never)
+
+      await expect(acceptDecision('RDISP-123', 'agent_claimant')).rejects.toThrow(
+        'already responded'
+      )
+    })
+
+    it('should throw error if respondent already responded', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        respondentAccepted: false,
+      } as never)
+
+      await expect(acceptDecision('RDISP-123', 'agent_respondent')).rejects.toThrow(
+        'already responded'
+      )
+    })
+
+    it('should set claimantAccepted=true for claimant', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue(mockUpdatedDispute as never)
+
+      await acceptDecision('RDISP-123', 'agent_claimant')
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            claimantAccepted: true,
+            claimantDecisionAt: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should set respondentAccepted=true for respondent', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({
+        ...mockUpdatedDispute,
+        respondentAccepted: true,
+        respondentDecisionAt: new Date(),
+      } as never)
+
+      await acceptDecision('RDISP-123', 'agent_respondent')
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            respondentAccepted: true,
+            respondentDecisionAt: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should close dispute when both parties accept', async () => {
+      // Respondent already accepted, claimant now accepts
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        respondentAccepted: true,
+        respondentDecisionAt: new Date(),
+      } as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({
+        ...mockUpdatedDispute,
+        status: ResolveDisputeStatus.CLOSED,
+        closedAt: new Date(),
+      } as never)
+
+      await acceptDecision('RDISP-123', 'agent_claimant')
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: ResolveDisputeStatus.CLOSED,
+            closedAt: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should NOT close dispute when only one party accepts', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue(mockUpdatedDispute as never)
+
+      await acceptDecision('RDISP-123', 'agent_claimant')
+
+      const callData = vi.mocked(prisma.resolveDispute.update).mock.calls[0]?.[0]?.data as Record<
+        string,
+        unknown
+      >
+      expect(callData.status).toBeUndefined()
+      expect(callData.closedAt).toBeUndefined()
+    })
+  })
+
+  describe('rejectDecision', () => {
+    const mockRuledDispute = {
+      id: 'dispute_123',
+      externalId: 'RDISP-123',
+      claimantAgentId: 'agent_claimant',
+      respondentAgentId: 'agent_respondent',
+      status: ResolveDisputeStatus.RULED,
+      ruling: 'CLAIMANT',
+      claimantAccepted: null,
+      respondentAccepted: null,
+    }
+
+    const mockUpdatedDispute = {
+      ...mockRuledDispute,
+      claimantAccepted: false,
+      claimantDecisionAt: new Date(),
+      transaction: { externalId: 'RTRANS-123', title: 'Test', statedValue: 1000 },
+      claimantAgent: {
+        externalId: 'agent_claimant',
+        agentIdentifier: 'claimant',
+        displayName: 'Claimant',
+        trustScore: 80,
+      },
+      respondentAgent: {
+        externalId: 'agent_respondent',
+        agentIdentifier: 'respondent',
+        displayName: 'Respondent',
+        trustScore: 75,
+      },
+      claimType: ResolveDisputeClaimType.NON_PERFORMANCE,
+      claimSummary: 'Test',
+      claimDetails: null,
+      requestedResolution: 'Refund',
+      responseSummary: null,
+      responseDetails: null,
+      responseDeadline: new Date(),
+      responseSubmittedAt: null,
+      rulingReasoning: 'Clear evidence',
+      rulingDetails: null,
+      ruledAt: new Date(),
+      claimantScoreChange: 5,
+      respondentScoreChange: -5,
+      statedValue: 1000,
+      creditsCharged: 0,
+      wasFree: true,
+      respondentDecisionAt: null,
+      decisionDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      closedAt: null,
+      createdAt: new Date(),
+      _count: { evidence: 0 },
+    }
+
+    it('should throw error if dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      await expect(rejectDecision('nonexistent', 'agent_claimant')).rejects.toThrow(
+        'Dispute not found'
+      )
+    })
+
+    it('should throw error if dispute not in RULED status', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        status: ResolveDisputeStatus.IN_ARBITRATION,
+      } as never)
+
+      await expect(rejectDecision('RDISP-123', 'agent_claimant')).rejects.toThrow(
+        'Cannot reject decision'
+      )
+    })
+
+    it('should throw error if not a party', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+
+      await expect(rejectDecision('RDISP-123', 'agent_outsider')).rejects.toThrow('not a party')
+    })
+
+    it('should throw error if already responded', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        claimantAccepted: true,
+      } as never)
+
+      await expect(rejectDecision('RDISP-123', 'agent_claimant')).rejects.toThrow(
+        'already responded'
+      )
+    })
+
+    it('should set claimantAccepted=false for claimant', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue(mockUpdatedDispute as never)
+
+      await rejectDecision('RDISP-123', 'agent_claimant')
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            claimantAccepted: false,
+            claimantDecisionAt: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should set respondentAccepted=false for respondent', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({
+        ...mockUpdatedDispute,
+        respondentAccepted: false,
+        respondentDecisionAt: new Date(),
+      } as never)
+
+      await rejectDecision('RDISP-123', 'agent_respondent')
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            respondentAccepted: false,
+            respondentDecisionAt: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should NOT close dispute on rejection', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue(mockUpdatedDispute as never)
+
+      await rejectDecision('RDISP-123', 'agent_claimant')
+
+      const callData = vi.mocked(prisma.resolveDispute.update).mock.calls[0]?.[0]?.data as Record<
+        string,
+        unknown
+      >
+      expect(callData.status).toBeUndefined()
+      expect(callData.closedAt).toBeUndefined()
+    })
+  })
+
+  describe('getDecision', () => {
+    const mockRuledDispute = {
+      id: 'dispute_123',
+      externalId: 'RDISP-123',
+      claimantAgentId: 'agent_claimant',
+      respondentAgentId: 'agent_respondent',
+      status: ResolveDisputeStatus.RULED,
+      ruling: 'CLAIMANT',
+      rulingReasoning: 'Evidence supports claimant',
+      rulingDetails: { key: 'value' },
+      ruledAt: new Date(),
+      claimantScoreChange: 5,
+      respondentScoreChange: -5,
+      claimantAccepted: null,
+      respondentAccepted: null,
+      claimantDecisionAt: null,
+      respondentDecisionAt: null,
+      decisionDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      escalation: null,
+    }
+
+    it('should throw error if dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      await expect(getDecision('nonexistent', 'agent_claimant')).rejects.toThrow(
+        'Dispute not found'
+      )
+    })
+
+    it('should throw error if not a party', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+
+      await expect(getDecision('RDISP-123', 'agent_outsider')).rejects.toThrow('not a party')
+    })
+
+    it('should throw error if no ruling yet', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        ruling: null,
+      } as never)
+
+      await expect(getDecision('RDISP-123', 'agent_claimant')).rejects.toThrow(
+        'not been ruled on yet'
+      )
+    })
+
+    it('should return ruling details', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+
+      const result = await getDecision('RDISP-123', 'agent_claimant')
+
+      expect(result.dispute_id).toBe('RDISP-123')
+      expect(result.ruling).toBe('CLAIMANT')
+      expect(result.ruling_reasoning).toBe('Evidence supports claimant')
+      expect(result.claimant_score_change).toBe(5)
+      expect(result.respondent_score_change).toBe(-5)
+    })
+
+    it('should return can_escalate=false when agent has not rejected', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+
+      const result = await getDecision('RDISP-123', 'agent_claimant')
+
+      expect(result.can_escalate).toBe(false)
+    })
+
+    it('should return can_escalate=true when agent rejected and no escalation exists', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        respondentAccepted: false,
+      } as never)
+
+      const result = await getDecision('RDISP-123', 'agent_respondent')
+
+      expect(result.can_escalate).toBe(true)
+    })
+
+    it('should return can_escalate=false when escalation already exists', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        respondentAccepted: false,
+        escalation: { id: 'esc_123' },
+      } as never)
+
+      const result = await getDecision('RDISP-123', 'agent_respondent')
+
+      expect(result.can_escalate).toBe(false)
+    })
+
+    it('should return can_escalate=false when status is not RULED', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        status: ResolveDisputeStatus.ESCALATED,
+        respondentAccepted: false,
+      } as never)
+
+      const result = await getDecision('RDISP-123', 'agent_respondent')
+
+      expect(result.can_escalate).toBe(false)
+    })
+  })
+
+  describe('requestEscalation', () => {
+    const mockRuledDispute = {
+      id: 'dispute_123',
+      externalId: 'RDISP-123',
+      claimantAgentId: 'agent_claimant',
+      respondentAgentId: 'agent_respondent',
+      status: ResolveDisputeStatus.RULED,
+      claimantAccepted: null,
+      respondentAccepted: false, // respondent rejected
+      escalation: null,
+    }
+
+    const mockEscalation = {
+      id: 'esc_123',
+      externalId: 'RESC-ABCD1234',
+      disputeId: 'dispute_123',
+      requestedByAgentId: 'agent_respondent',
+      reason: 'AI ruling was unfair',
+      status: ResolveEscalationStatus.REQUESTED,
+      creditsCharged: 2000,
+      requestedAt: new Date(),
+    }
+
+    it('should throw error if dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      await expect(
+        requestEscalation({
+          disputeExternalId: 'nonexistent',
+          agentId: 'agent_respondent',
+          reason: 'Unfair ruling',
+          operatorId: 'op_123',
+        })
+      ).rejects.toThrow('Dispute not found')
+    })
+
+    it('should throw error if dispute not in RULED status', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        status: ResolveDisputeStatus.CLOSED,
+      } as never)
+
+      await expect(
+        requestEscalation({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_respondent',
+          reason: 'Unfair ruling',
+          operatorId: 'op_123',
+        })
+      ).rejects.toThrow('Cannot escalate dispute')
+    })
+
+    it('should throw error if not a party', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+
+      await expect(
+        requestEscalation({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_outsider',
+          reason: 'Unfair ruling',
+          operatorId: 'op_123',
+        })
+      ).rejects.toThrow('not a party')
+    })
+
+    it('should throw error if agent has not rejected first', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        respondentAccepted: null, // hasn't responded yet
+      } as never)
+
+      await expect(
+        requestEscalation({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_respondent',
+          reason: 'Unfair ruling',
+          operatorId: 'op_123',
+        })
+      ).rejects.toThrow('must reject')
+    })
+
+    it('should throw error if agent accepted (not rejected)', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        respondentAccepted: true,
+      } as never)
+
+      await expect(
+        requestEscalation({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_respondent',
+          reason: 'Changed my mind',
+          operatorId: 'op_123',
+        })
+      ).rejects.toThrow('must reject')
+    })
+
+    it('should throw error if already escalated', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockRuledDispute,
+        escalation: { id: 'esc_existing' },
+      } as never)
+
+      await expect(
+        requestEscalation({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_respondent',
+          reason: 'Try again',
+          operatorId: 'op_123',
+        })
+      ).rejects.toThrow('already been escalated')
+    })
+
+    it('should charge escalation credits (2000)', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveEscalation.create).mockResolvedValue(mockEscalation as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      await requestEscalation({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_respondent',
+        reason: 'AI ruling was unfair',
+        operatorId: 'op_123',
+      })
+
+      expect(deductCredits).toHaveBeenCalledWith(
+        'op_123',
+        2000,
+        expect.stringContaining('Escalation fee'),
+        'escalation',
+        undefined
+      )
+    })
+
+    it('should create escalation record', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveEscalation.create).mockResolvedValue(mockEscalation as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      await requestEscalation({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_respondent',
+        reason: 'AI ruling was unfair',
+        operatorId: 'op_123',
+      })
+
+      expect(prisma.resolveEscalation.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          disputeId: 'dispute_123',
+          requestedByAgentId: 'agent_respondent',
+          reason: 'AI ruling was unfair',
+          creditsCharged: 2000,
+        }),
+      })
+    })
+
+    it('should update dispute status to ESCALATED', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveEscalation.create).mockResolvedValue(mockEscalation as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      await requestEscalation({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_respondent',
+        reason: 'AI ruling was unfair',
+        operatorId: 'op_123',
+      })
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith({
+        where: { id: 'dispute_123' },
+        data: { status: ResolveDisputeStatus.ESCALATED },
+      })
+    })
+
+    it('should return escalation details', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockRuledDispute as never)
+      vi.mocked(prisma.resolveEscalation.create).mockResolvedValue(mockEscalation as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await requestEscalation({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_respondent',
+        reason: 'AI ruling was unfair',
+        operatorId: 'op_123',
+      })
+
+      expect(result.escalation_id).toBe('RESC-ABCD1234')
+      expect(result.dispute_id).toBe('RDISP-123')
+      expect(result.status).toBe(ResolveEscalationStatus.REQUESTED)
+      expect(result.credits_charged).toBe(2000)
+    })
+  })
+
+  describe('getEscalationStatus', () => {
+    const mockDisputeWithEscalation = {
+      id: 'dispute_123',
+      externalId: 'RDISP-123',
+      claimantAgentId: 'agent_claimant',
+      respondentAgentId: 'agent_respondent',
+      escalation: {
+        externalId: 'RESC-ABCD1234',
+        status: ResolveEscalationStatus.REQUESTED,
+        reason: 'Unfair ruling',
+        requestedByAgent: { externalId: 'agent_respondent' },
+        arbitratorRuling: null,
+        arbitratorRulingReasoning: null,
+        arbitratorNotes: null,
+        creditsCharged: 2000,
+        requestedAt: new Date(),
+        assignedAt: null,
+        decidedAt: null,
+        closedAt: null,
+      },
+    }
+
+    it('should throw error if dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      await expect(getEscalationStatus('nonexistent', 'agent_claimant')).rejects.toThrow(
+        'Dispute not found'
+      )
+    })
+
+    it('should throw error if not a party', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(
+        mockDisputeWithEscalation as never
+      )
+
+      await expect(getEscalationStatus('RDISP-123', 'agent_outsider')).rejects.toThrow(
+        'not a party'
+      )
+    })
+
+    it('should throw error if no escalation exists', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDisputeWithEscalation,
+        escalation: null,
+      } as never)
+
+      await expect(getEscalationStatus('RDISP-123', 'agent_claimant')).rejects.toThrow(
+        'No escalation exists'
+      )
+    })
+
+    it('should return escalation details', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(
+        mockDisputeWithEscalation as never
+      )
+
+      const result = await getEscalationStatus('RDISP-123', 'agent_claimant')
+
+      expect(result.escalation_id).toBe('RESC-ABCD1234')
+      expect(result.dispute_id).toBe('RDISP-123')
+      expect(result.status).toBe(ResolveEscalationStatus.REQUESTED)
+      expect(result.reason).toBe('Unfair ruling')
+      expect(result.requested_by).toBe('agent_respondent')
+      expect(result.credits_charged).toBe(2000)
+    })
+
+    it('should return null arbitrator fields when not yet decided', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(
+        mockDisputeWithEscalation as never
+      )
+
+      const result = await getEscalationStatus('RDISP-123', 'agent_claimant')
+
+      expect(result.arbitrator_ruling).toBeNull()
+      expect(result.arbitrator_ruling_reasoning).toBeNull()
+      expect(result.arbitrator_notes).toBeNull()
+      expect(result.assigned_at).toBeNull()
+      expect(result.decided_at).toBeNull()
+    })
+
+    it('should return arbitrator decision when decided', async () => {
+      const decidedAt = new Date()
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDisputeWithEscalation,
+        escalation: {
+          ...mockDisputeWithEscalation.escalation,
+          status: ResolveEscalationStatus.DECIDED,
+          arbitratorRuling: 'RESPONDENT',
+          arbitratorRulingReasoning: 'Human review found respondent correct',
+          arbitratorNotes: 'Overturned AI decision',
+          decidedAt,
+        },
+      } as never)
+
+      const result = await getEscalationStatus('RDISP-123', 'agent_respondent')
+
+      expect(result.arbitrator_ruling).toBe('RESPONDENT')
+      expect(result.arbitrator_ruling_reasoning).toBe('Human review found respondent correct')
+      expect(result.arbitrator_notes).toBe('Overturned AI decision')
+      expect(result.decided_at).toBe(decidedAt)
     })
   })
 })

@@ -33,8 +33,8 @@ export function Footer() {
               <Logo className="h-8 w-auto" />
             </Link>
             <p className="mt-4 text-sm text-text-secondary">
-              Licensed legal services for AI agents. MCP-native integration for seamless legal
-              operations.
+              Trust infrastructure for AI agents. Dispute resolution and legal services through
+              MCP-native integration.
             </p>
           </div>
 
@@ -97,9 +97,8 @@ export function Footer() {
               &copy; {new Date().getFullYear()} BotEsq. All rights reserved.
             </p>
             <p className="text-xs text-text-tertiary max-w-xl text-center md:text-right">
-              BotEsq provides legal information and document preparation services. This is not a law
-              firm and does not provide legal advice. For specific legal advice, consult with a
-              licensed attorney.
+              BotEsq provides dispute resolution and legal services for AI agents. Legal services
+              are provided under the supervision of licensed attorneys. This is not a law firm.
             </p>
           </div>
         </div>

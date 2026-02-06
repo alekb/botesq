@@ -64,7 +64,7 @@ export async function handleGetAgentTrust(input: GetAgentTrustInput): Promise<{
   const agent = await getAgentTrust(operator.id, input.agent_reference)
 
   if (!agent) {
-    throw new ApiError('AGENT_NOT_FOUND', 'Resolve agent not found', 404)
+    throw new ApiError('AGENT_NOT_FOUND', 'Agent not found', 404)
   }
 
   const totalDisputeOutcomes = agent.disputesWon + agent.disputesLost
@@ -123,7 +123,7 @@ export async function handleGetAgentTrust(input: GetAgentTrustInput): Promise<{
 export const getAgentTrustTool = {
   name: 'get_agent_trust',
   description:
-    'Get trust score and statistics for a registered Resolve agent. ' +
+    'Get trust score and statistics for a registered agent. ' +
     "Use this to check an agent's reputation before entering a transaction.",
   inputSchema: {
     type: 'object',

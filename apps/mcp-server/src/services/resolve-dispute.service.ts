@@ -15,7 +15,7 @@ import {
   getTransactionByExternalId,
   markTransactionDisputed,
 } from './resolve-transaction.service.js'
-import { generateDisputeId } from '../utils/secure-id.js'
+import { generateDisputeId, generateEscalationId } from '../utils/secure-id.js'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
@@ -77,6 +77,12 @@ export interface DisputeInfo {
   statedValue: number | null
   creditsCharged: number
   wasFree: boolean
+  claimantAccepted: boolean | null
+  respondentAccepted: boolean | null
+  claimantDecisionAt: Date | null
+  respondentDecisionAt: Date | null
+  decisionDeadline: Date | null
+  closedAt: Date | null
   createdAt: Date
   evidenceCount: number
 }
@@ -596,6 +602,45 @@ export async function addEvidence(params: {
 }
 
 /**
+ * Get evidence for a dispute
+ */
+export async function getEvidenceForDispute(
+  disputeExternalId: string,
+  viewerAgentId: string
+): Promise<
+  Array<{
+    id: string
+    submittedBy: ResolveEvidenceSubmitter
+    submittedByAgentId: string
+    evidenceType: ResolveEvidenceType
+    title: string
+    content: string
+    createdAt: Date
+  }>
+> {
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  // Verify viewer is a party
+  const isParty =
+    dispute.claimantAgentId === viewerAgentId || dispute.respondentAgentId === viewerAgentId
+
+  if (!isParty) {
+    throw new ApiError('NOT_PARTY', 'Only dispute parties can view evidence', 403)
+  }
+
+  return await prisma.resolveEvidence.findMany({
+    where: { disputeId: dispute.id },
+    orderBy: { createdAt: 'asc' },
+  })
+}
+
+/**
  * Update dispute with ruling
  */
 export async function recordRuling(params: {
@@ -615,6 +660,9 @@ export async function recordRuling(params: {
     respondentScoreChange,
   } = params
 
+  const decisionDeadline = new Date()
+  decisionDeadline.setDate(decisionDeadline.getDate() + DECISION_DEADLINE_DAYS)
+
   await prisma.resolveDispute.update({
     where: { id: disputeId },
     data: {
@@ -624,9 +672,94 @@ export async function recordRuling(params: {
       ruledAt: new Date(),
       claimantScoreChange,
       respondentScoreChange,
+      decisionDeadline,
       status: ResolveDisputeStatus.RULED,
     },
   })
+}
+
+/**
+ * List disputes for an agent
+ */
+export async function listDisputesForAgent(
+  agentId: string,
+  options?: {
+    status?: ResolveDisputeStatus
+    role?: 'claimant' | 'respondent' | 'any'
+    limit?: number
+    offset?: number
+  }
+): Promise<{
+  disputes: DisputeInfo[]
+  total: number
+  limit: number
+  offset: number
+}> {
+  const { status, role = 'any', limit = 20, offset = 0 } = options ?? {}
+
+  const where: {
+    status?: ResolveDisputeStatus
+    claimantAgentId?: string
+    respondentAgentId?: string
+    OR?: Array<{ claimantAgentId: string } | { respondentAgentId: string }>
+  } = {}
+
+  if (status) {
+    where.status = status
+  }
+
+  if (role === 'claimant') {
+    where.claimantAgentId = agentId
+  } else if (role === 'respondent') {
+    where.respondentAgentId = agentId
+  } else {
+    where.OR = [{ claimantAgentId: agentId }, { respondentAgentId: agentId }]
+  }
+
+  const [disputes, total] = await Promise.all([
+    prisma.resolveDispute.findMany({
+      where,
+      include: {
+        transaction: {
+          select: {
+            externalId: true,
+            title: true,
+            statedValue: true,
+          },
+        },
+        claimantAgent: {
+          select: {
+            externalId: true,
+            agentIdentifier: true,
+            displayName: true,
+            trustScore: true,
+          },
+        },
+        respondentAgent: {
+          select: {
+            externalId: true,
+            agentIdentifier: true,
+            displayName: true,
+            trustScore: true,
+          },
+        },
+        _count: {
+          select: { evidence: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.resolveDispute.count({ where }),
+  ])
+
+  return {
+    disputes: disputes.map(mapToDisputeInfo),
+    total,
+    limit,
+    offset,
+  }
 }
 
 /**
@@ -661,6 +794,391 @@ export async function listDisputesPendingArbitration(): Promise<
       status: true,
     },
   })
+}
+
+// Decision acceptance deadline: 7 days from ruling
+const DECISION_DEADLINE_DAYS = 7
+
+// Escalation cost: 2000 credits
+const ESCALATION_COST = 2000
+
+/**
+ * Accept the AI ruling on a dispute
+ */
+export async function acceptDecision(
+  disputeExternalId: string,
+  agentId: string
+): Promise<DisputeInfo> {
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  if (dispute.status !== ResolveDisputeStatus.RULED) {
+    throw new ApiError(
+      'INVALID_STATUS',
+      `Cannot accept decision for dispute in ${dispute.status} status`,
+      400
+    )
+  }
+
+  // Determine party role
+  const isClaimant = dispute.claimantAgentId === agentId
+  const isRespondent = dispute.respondentAgentId === agentId
+
+  if (!isClaimant && !isRespondent) {
+    throw new ApiError('NOT_PARTY', 'You are not a party to this dispute', 403)
+  }
+
+  // Check if already responded
+  if (isClaimant && dispute.claimantAccepted !== null) {
+    throw new ApiError('ALREADY_RESPONDED', 'You have already responded to this decision', 400)
+  }
+  if (isRespondent && dispute.respondentAccepted !== null) {
+    throw new ApiError('ALREADY_RESPONDED', 'You have already responded to this decision', 400)
+  }
+
+  const updateData: Record<string, unknown> = {}
+  if (isClaimant) {
+    updateData.claimantAccepted = true
+    updateData.claimantDecisionAt = new Date()
+  } else {
+    updateData.respondentAccepted = true
+    updateData.respondentDecisionAt = new Date()
+  }
+
+  // Check if both parties have now accepted
+  const otherAccepted = isClaimant ? dispute.respondentAccepted : dispute.claimantAccepted
+  if (otherAccepted === true) {
+    updateData.status = ResolveDisputeStatus.CLOSED
+    updateData.closedAt = new Date()
+  }
+
+  const updated = await prisma.resolveDispute.update({
+    where: { id: dispute.id },
+    data: updateData,
+    include: {
+      transaction: {
+        select: { externalId: true, title: true, statedValue: true },
+      },
+      claimantAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      respondentAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      _count: { select: { evidence: true } },
+    },
+  })
+
+  logger.info({ disputeId: disputeExternalId, agentId, action: 'accept' }, 'Decision accepted')
+
+  return mapToDisputeInfo(updated)
+}
+
+/**
+ * Reject the AI ruling on a dispute
+ */
+export async function rejectDecision(
+  disputeExternalId: string,
+  agentId: string
+): Promise<DisputeInfo> {
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  if (dispute.status !== ResolveDisputeStatus.RULED) {
+    throw new ApiError(
+      'INVALID_STATUS',
+      `Cannot reject decision for dispute in ${dispute.status} status`,
+      400
+    )
+  }
+
+  const isClaimant = dispute.claimantAgentId === agentId
+  const isRespondent = dispute.respondentAgentId === agentId
+
+  if (!isClaimant && !isRespondent) {
+    throw new ApiError('NOT_PARTY', 'You are not a party to this dispute', 403)
+  }
+
+  if (isClaimant && dispute.claimantAccepted !== null) {
+    throw new ApiError('ALREADY_RESPONDED', 'You have already responded to this decision', 400)
+  }
+  if (isRespondent && dispute.respondentAccepted !== null) {
+    throw new ApiError('ALREADY_RESPONDED', 'You have already responded to this decision', 400)
+  }
+
+  const updateData: Record<string, unknown> = {}
+  if (isClaimant) {
+    updateData.claimantAccepted = false
+    updateData.claimantDecisionAt = new Date()
+  } else {
+    updateData.respondentAccepted = false
+    updateData.respondentDecisionAt = new Date()
+  }
+
+  const updated = await prisma.resolveDispute.update({
+    where: { id: dispute.id },
+    data: updateData,
+    include: {
+      transaction: {
+        select: { externalId: true, title: true, statedValue: true },
+      },
+      claimantAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      respondentAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      _count: { select: { evidence: true } },
+    },
+  })
+
+  logger.info({ disputeId: disputeExternalId, agentId, action: 'reject' }, 'Decision rejected')
+
+  return mapToDisputeInfo(updated)
+}
+
+/**
+ * Get decision details for a dispute
+ */
+export async function getDecision(
+  disputeExternalId: string,
+  agentId: string
+): Promise<{
+  dispute_id: string
+  status: string
+  ruling: ResolveDisputeRuling | null
+  ruling_reasoning: string | null
+  ruling_details: Record<string, unknown> | null
+  ruled_at: Date | null
+  claimant_score_change: number | null
+  respondent_score_change: number | null
+  claimant_accepted: boolean | null
+  respondent_accepted: boolean | null
+  claimant_decision_at: Date | null
+  respondent_decision_at: Date | null
+  decision_deadline: Date | null
+  can_escalate: boolean
+}> {
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+    include: {
+      escalation: true,
+    },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  const isParty = dispute.claimantAgentId === agentId || dispute.respondentAgentId === agentId
+  if (!isParty) {
+    throw new ApiError('NOT_PARTY', 'You are not a party to this dispute', 403)
+  }
+
+  if (!dispute.ruling) {
+    throw new ApiError('NO_RULING', 'This dispute has not been ruled on yet', 400)
+  }
+
+  // Can escalate if: status is RULED, the agent rejected the decision, and no escalation exists yet
+  const isClaimant = dispute.claimantAgentId === agentId
+  const agentRejected = isClaimant
+    ? dispute.claimantAccepted === false
+    : dispute.respondentAccepted === false
+  const canEscalate =
+    dispute.status === ResolveDisputeStatus.RULED && agentRejected && !dispute.escalation
+
+  return {
+    dispute_id: dispute.externalId,
+    status: dispute.status,
+    ruling: dispute.ruling as ResolveDisputeRuling,
+    ruling_reasoning: dispute.rulingReasoning,
+    ruling_details: dispute.rulingDetails as Record<string, unknown> | null,
+    ruled_at: dispute.ruledAt,
+    claimant_score_change: dispute.claimantScoreChange,
+    respondent_score_change: dispute.respondentScoreChange,
+    claimant_accepted: dispute.claimantAccepted,
+    respondent_accepted: dispute.respondentAccepted,
+    claimant_decision_at: dispute.claimantDecisionAt,
+    respondent_decision_at: dispute.respondentDecisionAt,
+    decision_deadline: dispute.decisionDeadline,
+    can_escalate: canEscalate,
+  }
+}
+
+/**
+ * Request escalation to a human arbitrator
+ */
+export async function requestEscalation(params: {
+  disputeExternalId: string
+  agentId: string
+  reason: string
+  operatorId: string
+}): Promise<{
+  escalation_id: string
+  dispute_id: string
+  status: string
+  reason: string
+  credits_charged: number
+  requested_at: Date
+}> {
+  const { disputeExternalId, agentId, reason, operatorId } = params
+
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+    include: { escalation: true },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  if (dispute.status !== ResolveDisputeStatus.RULED) {
+    throw new ApiError('INVALID_STATUS', `Cannot escalate dispute in ${dispute.status} status`, 400)
+  }
+
+  // Verify agent is a party and has rejected
+  const isClaimant = dispute.claimantAgentId === agentId
+  const isRespondent = dispute.respondentAgentId === agentId
+
+  if (!isClaimant && !isRespondent) {
+    throw new ApiError('NOT_PARTY', 'You are not a party to this dispute', 403)
+  }
+
+  const agentRejected = isClaimant
+    ? dispute.claimantAccepted === false
+    : dispute.respondentAccepted === false
+
+  if (!agentRejected) {
+    throw new ApiError(
+      'MUST_REJECT_FIRST',
+      'You must reject the AI decision before requesting escalation',
+      400
+    )
+  }
+
+  if (dispute.escalation) {
+    throw new ApiError('ALREADY_ESCALATED', 'This dispute has already been escalated', 400)
+  }
+
+  // Charge escalation fee
+  await deductCredits(
+    operatorId,
+    ESCALATION_COST,
+    `Escalation fee for dispute ${disputeExternalId}`,
+    'escalation',
+    undefined
+  )
+
+  // Create escalation and update dispute status
+  const escalation = await prisma.resolveEscalation.create({
+    data: {
+      externalId: generateEscalationId(),
+      disputeId: dispute.id,
+      requestedByAgentId: agentId,
+      reason,
+      creditsCharged: ESCALATION_COST,
+    },
+  })
+
+  await prisma.resolveDispute.update({
+    where: { id: dispute.id },
+    data: { status: ResolveDisputeStatus.ESCALATED },
+  })
+
+  logger.info(
+    {
+      escalationId: escalation.externalId,
+      disputeId: disputeExternalId,
+      agentId,
+      creditsCharged: ESCALATION_COST,
+    },
+    'Escalation requested'
+  )
+
+  return {
+    escalation_id: escalation.externalId,
+    dispute_id: disputeExternalId,
+    status: escalation.status,
+    reason: escalation.reason,
+    credits_charged: ESCALATION_COST,
+    requested_at: escalation.requestedAt,
+  }
+}
+
+/**
+ * Get escalation status for a dispute
+ */
+export async function getEscalationStatus(
+  disputeExternalId: string,
+  agentId: string
+): Promise<{
+  escalation_id: string
+  dispute_id: string
+  status: string
+  reason: string
+  requested_by: string
+  arbitrator_ruling: ResolveDisputeRuling | null
+  arbitrator_ruling_reasoning: string | null
+  arbitrator_notes: string | null
+  credits_charged: number
+  requested_at: Date
+  assigned_at: Date | null
+  decided_at: Date | null
+  closed_at: Date | null
+}> {
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+    include: {
+      escalation: {
+        include: {
+          requestedByAgent: {
+            select: { externalId: true },
+          },
+        },
+      },
+    },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  const isParty = dispute.claimantAgentId === agentId || dispute.respondentAgentId === agentId
+  if (!isParty) {
+    throw new ApiError('NOT_PARTY', 'You are not a party to this dispute', 403)
+  }
+
+  if (!dispute.escalation) {
+    throw new ApiError('NO_ESCALATION', 'No escalation exists for this dispute', 404)
+  }
+
+  const esc = dispute.escalation
+
+  return {
+    escalation_id: esc.externalId,
+    dispute_id: disputeExternalId,
+    status: esc.status,
+    reason: esc.reason,
+    requested_by: esc.requestedByAgent.externalId,
+    arbitrator_ruling: esc.arbitratorRuling as ResolveDisputeRuling | null,
+    arbitrator_ruling_reasoning: esc.arbitratorRulingReasoning,
+    arbitrator_notes: esc.arbitratorNotes,
+    credits_charged: esc.creditsCharged,
+    requested_at: esc.requestedAt,
+    assigned_at: esc.assignedAt,
+    decided_at: esc.decidedAt,
+    closed_at: esc.closedAt,
+  }
 }
 
 /**
@@ -704,6 +1222,12 @@ function mapToDisputeInfo(dispute: {
   statedValue: number | null
   creditsCharged: number
   wasFree: boolean
+  claimantAccepted: boolean | null
+  respondentAccepted: boolean | null
+  claimantDecisionAt: Date | null
+  respondentDecisionAt: Date | null
+  decisionDeadline: Date | null
+  closedAt: Date | null
   createdAt: Date
   _count: { evidence: number }
 }): DisputeInfo {
@@ -731,6 +1255,12 @@ function mapToDisputeInfo(dispute: {
     statedValue: dispute.statedValue,
     creditsCharged: dispute.creditsCharged,
     wasFree: dispute.wasFree,
+    claimantAccepted: dispute.claimantAccepted,
+    respondentAccepted: dispute.respondentAccepted,
+    claimantDecisionAt: dispute.claimantDecisionAt,
+    respondentDecisionAt: dispute.respondentDecisionAt,
+    decisionDeadline: dispute.decisionDeadline,
+    closedAt: dispute.closedAt,
     createdAt: dispute.createdAt,
     evidenceCount: dispute._count.evidence,
   }

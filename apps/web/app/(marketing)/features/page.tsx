@@ -1,5 +1,18 @@
 import { Metadata } from 'next'
-import { Scale, FileText, Zap, CheckCircle, Users, Shield, Clock, ArrowUpRight } from 'lucide-react'
+import {
+  Scale,
+  FileText,
+  Zap,
+  CheckCircle,
+  Users,
+  Shield,
+  Clock,
+  ArrowUpRight,
+  MessageSquare,
+  Gavel,
+  BookOpen,
+  Briefcase,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CTASection } from '@/components/marketing'
@@ -7,7 +20,7 @@ import { CTASection } from '@/components/marketing'
 export const metadata: Metadata = {
   title: 'Features | BotEsq',
   description:
-    'Neutral AI dispute resolution for AI agents. Fast, fair, and transparent decision-making.',
+    'Dispute resolution and legal services for AI agents. Fast, fair, and transparent decision-making.',
 }
 
 const disputeFeatures: Array<{
@@ -72,6 +85,72 @@ const disputeFeatures: Array<{
       'Full decision transparency',
       'Option to reject and escalate',
       'Clear resolution status tracking',
+    ],
+  },
+]
+
+const legalFeatures: Array<{
+  name: string
+  description: string
+  icon: React.ComponentType<{ className?: string }>
+  badge: string
+  color: 'primary' | 'success' | 'warning' | 'error'
+  details: string[]
+}> = [
+  {
+    name: 'Legal Q&A',
+    description:
+      'Ask legal questions and get AI-powered answers with confidence scoring and optional attorney review for complex queries.',
+    icon: MessageSquare,
+    badge: 'Core',
+    color: 'success',
+    details: [
+      'Natural language legal questions',
+      'AI-powered analysis with citations',
+      'Confidence scoring for answers',
+      'Attorney escalation for complex issues',
+    ],
+  },
+  {
+    name: 'Document Review',
+    description:
+      'Submit contracts, terms of service, and other legal documents for AI analysis with optional attorney review.',
+    icon: BookOpen,
+    badge: 'Core',
+    color: 'primary',
+    details: [
+      'Contract analysis and risk assessment',
+      'Clause-by-clause review',
+      'Issue identification and flagging',
+      'Attorney review for critical documents',
+    ],
+  },
+  {
+    name: 'Attorney Consultations',
+    description:
+      'Request consultations with licensed attorneys for complex legal matters beyond AI capability.',
+    icon: Gavel,
+    badge: 'Premium',
+    color: 'warning',
+    details: [
+      'Written consultations with attorneys',
+      'Expert opinions on complex matters',
+      'Multiple practice areas available',
+      'SLA-based response times',
+    ],
+  },
+  {
+    name: 'Retainer Agreements',
+    description:
+      'Establish ongoing relationships with attorneys for consistent legal support and predictable pricing.',
+    icon: Briefcase,
+    badge: 'Enterprise',
+    color: 'primary',
+    details: [
+      'Monthly retainer arrangements',
+      'Dedicated attorney assignment',
+      'Priority response times',
+      'Custom engagement terms',
     ],
   },
 ]
@@ -151,8 +230,9 @@ const platformFeatures: Array<{
     ],
   },
   {
-    name: 'Token-Based Pricing',
-    description: 'Pay per token used. Transparent, predictable pricing with no hidden fees.',
+    name: 'Flexible Pricing',
+    description:
+      'Token-based for dispute resolution, custom pricing for legal services. No hidden fees.',
     icon: Zap,
     badge: 'Platform',
     color: 'warning',
@@ -255,11 +335,12 @@ export default function FeaturesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl">
-              Neutral Dispute Resolution for AI Agents
+              Trust Infrastructure for AI Agents
             </h1>
             <p className="mt-6 text-lg leading-8 text-text-secondary">
-              When AI agents disagree, BotEsq provides fast, fair, and transparent resolution.
-              Submit disputes, provide evidence, and receive neutral AI-powered decisions.
+              Dispute resolution and legal services for the agentic economy. Submit disputes,
+              provide evidence, get legal answers, and access licensed attorneys—all through one MCP
+              server.
             </p>
           </div>
         </div>
@@ -270,7 +351,7 @@ export default function FeaturesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
             <h2 className="text-2xl font-bold text-text-primary">Dispute Resolution</h2>
-            <Badge variant="secondary">Core Features</Badge>
+            <Badge variant="secondary">Token-Based Pricing</Badge>
           </div>
           <p className="text-lg text-text-secondary max-w-2xl mb-12">
             Complete dispute resolution workflow from filing to decision. Fast, fair, and
@@ -284,12 +365,31 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Escalation Features */}
+      {/* Legal Services Features */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-2xl font-bold text-text-primary">Legal Services</h2>
+            <Badge variant="primary">Custom Pricing</Badge>
+          </div>
+          <p className="text-lg text-text-secondary max-w-2xl mb-12">
+            AI-powered legal support with licensed attorney oversight. Get answers to legal
+            questions, document review, and expert consultations.
+          </p>
+          <div className="grid gap-8 md:grid-cols-2">
+            {legalFeatures.map((feature) => (
+              <FeatureCard key={feature.name} feature={feature} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Escalation Features */}
+      <section className="py-16 bg-background-secondary">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 mb-4">
             <h2 className="text-2xl font-bold text-text-primary">Human Escalation</h2>
-            <Badge variant="primary">When AI Isn&apos;t Enough</Badge>
+            <Badge variant="secondary">When AI Isn&apos;t Enough</Badge>
           </div>
           <p className="text-lg text-text-secondary max-w-2xl mb-12">
             Complex disputes can escalate to human arbitrators when automated resolution is
@@ -304,12 +404,12 @@ export default function FeaturesPage() {
       </section>
 
       {/* Platform Features */}
-      <section className="py-16 bg-background-secondary">
+      <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-text-primary mb-4">Platform</h2>
           <p className="text-lg text-text-secondary max-w-2xl mb-12">
-            Built for AI agents with MCP-native integration, enterprise security, and transparent
-            token-based pricing.
+            Built for AI agents with MCP-native integration, enterprise security, and flexible
+            pricing.
           </p>
           <div className="grid gap-8 md:grid-cols-2">
             {platformFeatures.map((feature) => (

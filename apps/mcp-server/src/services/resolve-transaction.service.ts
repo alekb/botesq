@@ -1,4 +1,4 @@
-import { prisma, ResolveTransactionStatus } from '@botesq/database'
+import { prisma, ResolveTransactionStatus, ResolveEscrowStatus } from '@botesq/database'
 import pino from 'pino'
 import { ApiError } from '../types.js'
 import {
@@ -51,6 +51,14 @@ export interface TransactionInfo {
   completedAt: Date | null
   expiresAt: Date
   hasDisputes: boolean
+  escrow: {
+    amount: number | null
+    currency: string
+    status: ResolveEscrowStatus
+    funded_at: Date | null
+    released_at: Date | null
+    released_to: string | null
+  }
 }
 
 /**
@@ -531,6 +539,190 @@ export async function getTransactionByExternalId(externalId: string): Promise<{
 }
 
 /**
+ * Fund escrow for a transaction
+ */
+export async function fundEscrow(
+  transactionExternalId: string,
+  agentId: string,
+  amount: number,
+  currency: string = 'USD'
+): Promise<TransactionInfo> {
+  const transaction = await prisma.resolveTransaction.findUnique({
+    where: { externalId: transactionExternalId },
+    include: { proposerAgent: true, receiverAgent: true },
+  })
+
+  if (!transaction) {
+    throw new ApiError('TRANSACTION_NOT_FOUND', 'Transaction not found', 404)
+  }
+
+  const isParty = transaction.proposerAgentId === agentId || transaction.receiverAgentId === agentId
+  if (!isParty) {
+    throw new ApiError('NOT_PARTY', 'Only transaction parties can fund escrow', 403)
+  }
+
+  // Escrow can only be funded for ACCEPTED or IN_PROGRESS transactions
+  if (
+    transaction.status !== ResolveTransactionStatus.ACCEPTED &&
+    transaction.status !== ResolveTransactionStatus.IN_PROGRESS
+  ) {
+    throw new ApiError(
+      'INVALID_STATUS',
+      `Cannot fund escrow for transaction in ${transaction.status} status`,
+      400
+    )
+  }
+
+  if (transaction.escrowStatus !== ResolveEscrowStatus.NONE) {
+    throw new ApiError(
+      'ESCROW_ALREADY_EXISTS',
+      `Escrow is already in ${transaction.escrowStatus} status`,
+      400
+    )
+  }
+
+  if (amount <= 0) {
+    throw new ApiError('INVALID_AMOUNT', 'Escrow amount must be positive', 400)
+  }
+
+  const updated = await prisma.resolveTransaction.update({
+    where: { id: transaction.id },
+    data: {
+      escrowAmount: amount,
+      escrowCurrency: currency,
+      escrowStatus: ResolveEscrowStatus.FUNDED,
+      escrowFundedAt: new Date(),
+      status: ResolveTransactionStatus.IN_PROGRESS,
+    },
+    include: {
+      proposerAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      receiverAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      _count: { select: { disputes: true } },
+    },
+  })
+
+  logger.info(
+    {
+      transactionId: transactionExternalId,
+      amount,
+      currency,
+      fundedBy: agentId,
+    },
+    'Escrow funded'
+  )
+
+  return mapToTransactionInfo(updated)
+}
+
+/**
+ * Release escrow funds to the other party
+ */
+export async function releaseEscrow(
+  transactionExternalId: string,
+  agentId: string
+): Promise<TransactionInfo> {
+  const transaction = await prisma.resolveTransaction.findUnique({
+    where: { externalId: transactionExternalId },
+    include: { proposerAgent: true, receiverAgent: true },
+  })
+
+  if (!transaction) {
+    throw new ApiError('TRANSACTION_NOT_FOUND', 'Transaction not found', 404)
+  }
+
+  const isParty = transaction.proposerAgentId === agentId || transaction.receiverAgentId === agentId
+  if (!isParty) {
+    throw new ApiError('NOT_PARTY', 'Only transaction parties can release escrow', 403)
+  }
+
+  if (transaction.escrowStatus !== ResolveEscrowStatus.FUNDED) {
+    throw new ApiError(
+      'ESCROW_NOT_FUNDED',
+      `Cannot release escrow in ${transaction.escrowStatus} status`,
+      400
+    )
+  }
+
+  // Determine recipient (the other party)
+  const releasedTo =
+    transaction.proposerAgentId === agentId
+      ? transaction.receiverAgent.externalId
+      : transaction.proposerAgent.externalId
+
+  const updated = await prisma.resolveTransaction.update({
+    where: { id: transaction.id },
+    data: {
+      escrowStatus: ResolveEscrowStatus.RELEASED,
+      escrowReleasedAt: new Date(),
+      escrowReleasedTo: releasedTo,
+    },
+    include: {
+      proposerAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      receiverAgent: {
+        select: { externalId: true, agentIdentifier: true, displayName: true, trustScore: true },
+      },
+      _count: { select: { disputes: true } },
+    },
+  })
+
+  logger.info(
+    {
+      transactionId: transactionExternalId,
+      releasedBy: agentId,
+      releasedTo,
+    },
+    'Escrow released'
+  )
+
+  return mapToTransactionInfo(updated)
+}
+
+/**
+ * Get escrow status for a transaction
+ */
+export async function getEscrowStatus(
+  transactionExternalId: string,
+  agentId: string
+): Promise<{
+  transaction_id: string
+  escrow_amount: number | null
+  escrow_currency: string
+  escrow_status: string
+  escrow_funded_at: Date | null
+  escrow_released_at: Date | null
+  escrow_released_to: string | null
+}> {
+  const transaction = await prisma.resolveTransaction.findUnique({
+    where: { externalId: transactionExternalId },
+  })
+
+  if (!transaction) {
+    throw new ApiError('TRANSACTION_NOT_FOUND', 'Transaction not found', 404)
+  }
+
+  const isParty = transaction.proposerAgentId === agentId || transaction.receiverAgentId === agentId
+  if (!isParty) {
+    throw new ApiError('NOT_PARTY', 'Only transaction parties can view escrow status', 403)
+  }
+
+  return {
+    transaction_id: transaction.externalId,
+    escrow_amount: transaction.escrowAmount,
+    escrow_currency: transaction.escrowCurrency,
+    escrow_status: transaction.escrowStatus,
+    escrow_funded_at: transaction.escrowFundedAt,
+    escrow_released_at: transaction.escrowReleasedAt,
+    escrow_released_to: transaction.escrowReleasedTo,
+  }
+}
+
+/**
  * Map database model to API response
  */
 function mapToTransactionInfo(transaction: {
@@ -558,6 +750,12 @@ function mapToTransactionInfo(transaction: {
   respondedAt: Date | null
   completedAt: Date | null
   expiresAt: Date
+  escrowAmount: number | null
+  escrowCurrency: string
+  escrowStatus: ResolveEscrowStatus
+  escrowFundedAt: Date | null
+  escrowReleasedAt: Date | null
+  escrowReleasedTo: string | null
   _count: { disputes: number }
 }): TransactionInfo {
   return {
@@ -576,5 +774,13 @@ function mapToTransactionInfo(transaction: {
     completedAt: transaction.completedAt,
     expiresAt: transaction.expiresAt,
     hasDisputes: transaction._count.disputes > 0,
+    escrow: {
+      amount: transaction.escrowAmount,
+      currency: transaction.escrowCurrency,
+      status: transaction.escrowStatus,
+      funded_at: transaction.escrowFundedAt,
+      released_at: transaction.escrowReleasedAt,
+      released_to: transaction.escrowReleasedTo,
+    },
   }
 }

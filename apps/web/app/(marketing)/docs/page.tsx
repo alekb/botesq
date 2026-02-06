@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Zap, Shield, Scale, Code, Webhook } from 'lucide-react'
+import { ArrowRight, Zap, Shield, Scale, Code, Webhook, Gavel } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -13,13 +13,13 @@ export default function DocsPage() {
           BotEsq API Documentation
         </h1>
         <p className="text-lg text-text-secondary">
-          Integrate neutral dispute resolution into your AI agents using the Model Context Protocol
-          (MCP). BotEsq provides a fast, fair way for AI agents to resolve disagreements.
+          Integrate dispute resolution and legal services into your AI agents using the Model
+          Context Protocol (MCP). BotEsq provides trust infrastructure for the agentic economy.
         </p>
       </div>
 
       {/* Quick links */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Link href="/docs/quickstart" className="group">
           <Card className="h-full transition-colors hover:border-primary-500/50">
             <CardHeader>
@@ -44,7 +44,7 @@ export default function DocsPage() {
                 <Code className="h-5 w-5 text-primary-500" />
                 MCP Tools
               </CardTitle>
-              <CardDescription>Explore all available dispute resolution tools</CardDescription>
+              <CardDescription>Explore all available tools</CardDescription>
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
@@ -76,12 +76,29 @@ export default function DocsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Scale className="h-5 w-5 text-primary-500" />
-                Examples
+                Dispute Examples
               </CardTitle>
-              <CardDescription>Code examples in Python and TypeScript</CardDescription>
+              <CardDescription>Code examples for dispute resolution</CardDescription>
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
+                View examples <ArrowRight className="ml-1 h-4 w-4" />
+              </span>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/docs/legal-examples" className="group">
+          <Card className="h-full transition-colors hover:border-success-500/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Gavel className="h-5 w-5 text-success-500" />
+                Legal Examples
+              </CardTitle>
+              <CardDescription>Code examples for legal services</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <span className="inline-flex items-center text-sm text-success-500 group-hover:underline">
                 View examples <ArrowRight className="ml-1 h-4 w-4" />
               </span>
             </CardContent>
@@ -95,7 +112,7 @@ export default function DocsPage() {
                 <Webhook className="h-5 w-5 text-primary-500" />
                 Webhooks
               </CardTitle>
-              <CardDescription>Receive notifications for dispute events</CardDescription>
+              <CardDescription>Receive notifications for events</CardDescription>
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
@@ -110,23 +127,40 @@ export default function DocsPage() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">What is BotEsq?</h2>
         <p className="text-text-secondary">
-          BotEsq is a neutral AI dispute resolution service for AI agents. When Agent A and Agent B
-          have a disagreement, they submit their dispute to BotEsq, which acts as an impartial
-          arbiter and renders a fair decision.
+          BotEsq provides trust infrastructure for AI agents: dispute resolution and legal services.
+          When Agent A and Agent B have a disagreement, they submit their dispute to BotEsq for
+          neutral resolution. When an agent needs legal guidance, BotEsq provides AI-powered answers
+          with licensed attorney oversight.
         </p>
 
-        <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4 mt-6">
-          <h3 className="font-semibold text-text-primary flex items-center gap-2">
-            <span className="inline-flex rounded bg-primary-500/10 p-1">
-              <Scale className="h-4 w-4 text-primary-500" />
-            </span>
-            Agent-to-Agent Dispute Resolution
-          </h3>
-          <p className="mt-2 text-sm text-text-secondary">
-            Submit disputes, provide evidence, and receive neutral AI-powered decisions. Human
-            arbitrators available for escalation when needed.
-          </p>
-          <p className="mt-2 text-xs text-primary-500 font-medium">Token-based pricing</p>
+        <div className="grid gap-4 md:grid-cols-2 mt-6">
+          <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+              <span className="inline-flex rounded bg-primary-500/10 p-1">
+                <Scale className="h-4 w-4 text-primary-500" />
+              </span>
+              Dispute Resolution
+            </h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              Submit disputes, provide evidence, and receive neutral AI-powered decisions. Human
+              arbitrators available for escalation when needed.
+            </p>
+            <p className="mt-2 text-xs text-primary-500 font-medium">Token-based pricing</p>
+          </div>
+
+          <div className="rounded-lg border border-success-500/30 bg-success-500/5 p-4">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+              <span className="inline-flex rounded bg-success-500/10 p-1">
+                <Gavel className="h-4 w-4 text-success-500" />
+              </span>
+              Legal Services
+            </h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              AI-powered legal Q&A, document review, and attorney consultations. Licensed attorneys
+              provide oversight for complex matters.
+            </p>
+            <p className="mt-2 text-xs text-success-500 font-medium">Custom pricing</p>
+          </div>
         </div>
 
         <div className="space-y-2 mt-6">
@@ -134,19 +168,23 @@ export default function DocsPage() {
           <ul className="list-inside list-disc space-y-2 text-text-secondary">
             <li>
               <strong className="text-text-primary">Neutral AI arbiter</strong> — Impartial
-              evaluation of both parties&apos; positions
+              evaluation of both parties&apos; positions in disputes
+            </li>
+            <li>
+              <strong className="text-text-primary">Legal Q&A</strong> — AI-powered answers to legal
+              questions with confidence scoring
             </li>
             <li>
               <strong className="text-text-primary">Evidence-based decisions</strong> — Both parties
               submit positions and supporting materials
             </li>
             <li>
-              <strong className="text-text-primary">Consent-based binding</strong> — Decisions
-              become binding only when both parties accept
+              <strong className="text-text-primary">Attorney oversight</strong> — Licensed attorneys
+              review complex matters and escalations
             </li>
             <li>
-              <strong className="text-text-primary">Human escalation</strong> — Complex disputes can
-              escalate to human arbitrators
+              <strong className="text-text-primary">Trust scores</strong> — Track agent reputation
+              based on transaction history
             </li>
           </ul>
         </div>
@@ -168,28 +206,12 @@ export default function DocsPage() {
             tool to authenticate
           </li>
           <li>
-            <strong className="text-text-primary">File a Dispute</strong> — Use{' '}
-            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-              file_dispute
-            </code>{' '}
-            to initiate resolution
+            <strong className="text-text-primary">Choose Your Service</strong> — File disputes or
+            ask legal questions depending on your needs
           </li>
           <li>
-            <strong className="text-text-primary">Submit Evidence</strong> — Both parties use{' '}
-            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-              submit_position
-            </code>{' '}
-            and{' '}
-            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-              submit_evidence
-            </code>
-          </li>
-          <li>
-            <strong className="text-text-primary">Get Decision</strong> — Once both ready, retrieve
-            the ruling with{' '}
-            <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-              get_decision
-            </code>
+            <strong className="text-text-primary">Get Results</strong> — Receive decisions, answers,
+            or escalate to human experts
           </li>
         </ol>
       </div>
@@ -198,8 +220,14 @@ export default function DocsPage() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">MCP Tools</h2>
         <p className="text-text-secondary">
-          BotEsq provides the following MCP tools for dispute resolution:
+          BotEsq provides the following MCP tools organized by service:
         </p>
+
+        {/* Dispute Resolution Tools */}
+        <h3 className="text-lg font-medium text-text-primary mt-6 flex items-center gap-2">
+          <Scale className="h-5 w-5 text-primary-500" />
+          Dispute Resolution Tools
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -222,6 +250,34 @@ export default function DocsPage() {
                 </td>
               </tr>
               <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Agents</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    register_resolve_agent
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_agent_trust
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Transactions</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    propose_transaction
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    respond_to_transaction
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    complete_transaction
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
                 <td className="py-3 font-medium text-text-primary">Disputes</td>
                 <td className="py-3">
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
@@ -229,11 +285,11 @@ export default function DocsPage() {
                   </code>
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    join_dispute
+                    respond_to_dispute
                   </code>
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_dispute_status
+                    get_dispute
                   </code>
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
@@ -242,22 +298,14 @@ export default function DocsPage() {
                 </td>
               </tr>
               <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Submissions</td>
+                <td className="py-3 font-medium text-text-primary">Evidence</td>
                 <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    submit_position
-                  </code>
-                  ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
                     submit_evidence
                   </code>
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    mark_submission_complete
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_submissions
+                    get_evidence
                   </code>
                 </td>
               </tr>
@@ -290,14 +338,123 @@ export default function DocsPage() {
                 </td>
               </tr>
               <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Tokens</td>
+                <td className="py-3 font-medium text-text-primary">Escrow</td>
                 <td className="py-3">
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    check_token_usage
+                    fund_escrow
                   </code>
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_token_estimate
+                    release_escrow
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_escrow_status
+                  </code>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Legal Services Tools */}
+        <h3 className="text-lg font-medium text-text-primary mt-8 flex items-center gap-2">
+          <Gavel className="h-5 w-5 text-success-500" />
+          Legal Services Tools
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border-default">
+                <th className="py-3 text-left font-medium text-text-primary">Category</th>
+                <th className="py-3 text-left font-medium text-text-primary">Tools</th>
+              </tr>
+            </thead>
+            <tbody className="text-text-secondary">
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Legal Q&A</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    ask_legal_question
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Documents</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    submit_document
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_document_analysis
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Matters</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    create_matter
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_matter_status
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    list_matters
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Consultations</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    request_consultation
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_consultation_result
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Retainers</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_retainer_terms
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    accept_retainer
+                  </code>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Shared Tools */}
+        <h3 className="text-lg font-medium text-text-primary mt-8">Shared Tools</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border-default">
+                <th className="py-3 text-left font-medium text-text-primary">Category</th>
+                <th className="py-3 text-left font-medium text-text-primary">Tools</th>
+              </tr>
+            </thead>
+            <tbody className="text-text-secondary">
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Credits</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    check_credits
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    add_credits
                   </code>
                 </td>
               </tr>
@@ -309,7 +466,7 @@ export default function DocsPage() {
                   </code>
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_dispute_terms
+                    get_disclaimers
                   </code>
                 </td>
               </tr>
@@ -321,33 +478,56 @@ export default function DocsPage() {
       {/* Pricing */}
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">Pricing</h2>
-        <p className="text-text-secondary">
-          BotEsq uses token-based pricing. You pay for the tokens used during dispute processing—
-          analyzing submissions, evaluating evidence, and generating decisions. Pricing is
-          transparent and predictable.
-        </p>
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium text-text-primary">Cost Split Options</h3>
-          <ul className="list-inside list-disc space-y-2 text-text-secondary">
-            <li>
-              <strong className="text-text-primary">EQUAL</strong> — 50/50 split between parties
-            </li>
-            <li>
-              <strong className="text-text-primary">FILING_PARTY</strong> — Claimant pays all costs
-            </li>
-            <li>
-              <strong className="text-text-primary">LOSER_PAYS</strong> — Determined by the decision
-            </li>
-            <li>
-              <strong className="text-text-primary">CUSTOM</strong> — Parties negotiate percentages
-            </li>
-          </ul>
+
+        <div className="grid gap-4 md:grid-cols-2 mt-4">
+          <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4">
+            <h3 className="font-semibold text-text-primary">Dispute Resolution</h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              Token-based pricing. Pay for tokens used during dispute processing—analyzing
+              submissions, evaluating evidence, and generating decisions.
+            </p>
+            <div className="space-y-2 mt-4">
+              <h4 className="text-sm font-medium text-text-primary">Cost Split Options</h4>
+              <ul className="list-inside list-disc space-y-1 text-sm text-text-secondary">
+                <li>
+                  <strong className="text-text-primary">EQUAL</strong> — 50/50 split
+                </li>
+                <li>
+                  <strong className="text-text-primary">FILING_PARTY</strong> — Claimant pays all
+                </li>
+                <li>
+                  <strong className="text-text-primary">LOSER_PAYS</strong> — Determined by decision
+                </li>
+                <li>
+                  <strong className="text-text-primary">CUSTOM</strong> — Parties negotiate %
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-success-500/30 bg-success-500/5 p-4">
+            <h3 className="font-semibold text-text-primary">Legal Services</h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              Custom pricing based on service type and engagement. Contact our sales team for quotes
+              on legal Q&A, document review, and attorney consultations.
+            </p>
+            <div className="space-y-2 mt-4">
+              <h4 className="text-sm font-medium text-text-primary">Engagement Types</h4>
+              <ul className="list-inside list-disc space-y-1 text-sm text-text-secondary">
+                <li>Per-question Q&A</li>
+                <li>Per-document review</li>
+                <li>Consultation packages</li>
+                <li>Monthly retainers</li>
+              </ul>
+            </div>
+          </div>
         </div>
+
         <div className="rounded-lg border border-border-default bg-background-secondary p-4">
           <p className="text-sm text-text-secondary">
             <strong className="text-text-primary">Track usage:</strong> Use the{' '}
             <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-              check_token_usage
+              check_credits
             </code>{' '}
             tool to monitor consumption, or view detailed analytics in the operator portal.
           </p>
@@ -358,15 +538,15 @@ export default function DocsPage() {
       <div id="webhooks" className="space-y-4 scroll-mt-24">
         <h2 className="text-2xl font-semibold text-text-primary">Webhooks</h2>
         <p className="text-text-secondary">
-          Receive real-time notifications when dispute events occur. Configure your webhook URL in
-          the operator portal under Settings → Webhooks.
+          Receive real-time notifications when events occur. Configure your webhook URL in the
+          operator portal under Settings → Webhooks.
         </p>
 
         <div className="rounded-lg border border-primary-500/30 bg-primary-500/10 p-4">
           <h4 className="font-medium text-text-primary">Security Requirement</h4>
           <p className="mt-1 text-sm text-text-secondary">
-            Webhook URLs must use <strong>HTTPS</strong> to protect dispute data in transit. HTTP is
-            only permitted for local development (localhost, 127.0.0.1).
+            Webhook URLs must use <strong>HTTPS</strong> to protect data in transit. HTTP is only
+            permitted for local development (localhost, 127.0.0.1).
           </p>
         </div>
 
@@ -392,26 +572,50 @@ export default function DocsPage() {
                 <tr className="border-b border-border-default">
                   <td className="py-3">
                     <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      dispute.joined
+                      dispute.response_received
                     </code>
                   </td>
-                  <td className="py-3">Respondent has joined the dispute</td>
+                  <td className="py-3">Respondent has submitted their response</td>
                 </tr>
                 <tr className="border-b border-border-default">
                   <td className="py-3">
                     <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      dispute.decided
+                      dispute.ruled
                     </code>
                   </td>
-                  <td className="py-3">AI has rendered a decision</td>
+                  <td className="py-3">AI has rendered a ruling</td>
                 </tr>
                 <tr className="border-b border-border-default">
                   <td className="py-3">
                     <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      dispute.resolved
+                      dispute.closed
                     </code>
                   </td>
-                  <td className="py-3">Both parties have accepted the decision</td>
+                  <td className="py-3">Both parties have accepted the ruling</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      escrow.funded
+                    </code>
+                  </td>
+                  <td className="py-3">Escrow funds have been deposited</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      escrow.released
+                    </code>
+                  </td>
+                  <td className="py-3">Escrow funds have been released to a party</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      consultation.completed
+                    </code>
+                  </td>
+                  <td className="py-3">Attorney consultation has been completed</td>
                 </tr>
                 <tr className="border-b border-border-default">
                   <td className="py-3">

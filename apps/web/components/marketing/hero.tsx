@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Zap, Shield, Scale, Users, FileText, CheckCircle } from 'lucide-react'
+import { ArrowRight, Zap, Shield, Scale, Gavel, FileText, CheckCircle, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { HeroGraphic } from '@/components/illustrations'
@@ -25,13 +25,13 @@ export function Hero() {
 
             {/* Headline */}
             <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
-              Neutral Dispute Resolution <span className="text-primary-500">for AI Agents</span>
+              Trust Infrastructure <span className="text-primary-500">for AI Agents</span>
             </h1>
 
             {/* Subheadline */}
             <p className="mt-6 text-lg leading-8 text-text-secondary sm:text-xl">
-              When AI agents disagree, BotEsq resolves it. Submit disputes, provide evidence, and
-              receive neutral AI-powered decisions. Human arbitrators available for escalation.
+              Dispute resolution and legal services for the agentic economy. Escrow, trust scores,
+              AI arbitration, and licensed attorney support—all through one MCP server.
             </p>
 
             {/* CTAs */}
@@ -54,8 +54,71 @@ export function Hero() {
           </div>
         </div>
 
+        {/* Two Products */}
+        <div className="mt-20 grid gap-6 lg:grid-cols-2 max-w-5xl mx-auto">
+          {/* Dispute Resolution */}
+          <Card className="border-primary-500/30 bg-gradient-to-br from-primary-500/5 to-transparent">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex rounded-lg bg-primary-500/10 p-3">
+                  <Scale className="h-6 w-6 text-primary-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-text-primary">Dispute Resolution</h3>
+              </div>
+              <p className="text-sm text-text-secondary mb-4">
+                When AI agents disagree, BotEsq resolves it. File disputes, submit evidence, and
+                receive neutral AI-powered decisions. Human arbitrators available for escalation.
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  Agent-to-agent transaction escrow
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  Trust scores based on history
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  Consent-based binding decisions
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Legal Services */}
+          <Card className="border-success-500/30 bg-gradient-to-br from-success-500/5 to-transparent">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex rounded-lg bg-success-500/10 p-3">
+                  <Gavel className="h-6 w-6 text-success-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-text-primary">Legal Services</h3>
+              </div>
+              <p className="text-sm text-text-secondary mb-4">
+                AI-powered legal Q&A with licensed attorney oversight. Get answers to legal
+                questions, document review, and expert consultations when your agent needs help.
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-success-500 flex-shrink-0" />
+                  AI-powered legal Q&A
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-success-500 flex-shrink-0" />
+                  Document review and analysis
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-success-500 flex-shrink-0" />
+                  Licensed attorney consultations
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Feature highlights */}
-        <div className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
           <Card className="border-primary-500/30 bg-gradient-to-br from-primary-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="inline-flex rounded-lg bg-primary-500/10 p-3">
@@ -83,11 +146,11 @@ export function Hero() {
           <Card className="border-warning-500/30 bg-gradient-to-br from-warning-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="inline-flex rounded-lg bg-warning-500/10 p-3">
-                <CheckCircle className="h-6 w-6 text-warning-500" />
+                <Shield className="h-6 w-6 text-warning-500" />
               </div>
-              <h3 className="mt-4 font-semibold text-text-primary">Consent-Based</h3>
+              <h3 className="mt-4 font-semibold text-text-primary">Attorney Backed</h3>
               <p className="mt-2 text-sm text-text-secondary">
-                Decisions become binding only when both parties accept the ruling.
+                Licensed attorneys review complex cases and provide expert oversight.
               </p>
             </CardContent>
           </Card>
@@ -112,8 +175,8 @@ export function Hero() {
             <span className="text-sm">Neutral AI Arbiter</span>
           </div>
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-success-500" />
-            <span className="text-sm">Secure & Private</span>
+            <Gavel className="h-5 w-5 text-success-500" />
+            <span className="text-sm">Licensed Attorneys</span>
           </div>
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-warning-500" />

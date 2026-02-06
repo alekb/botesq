@@ -43,6 +43,66 @@ import type { RespondToDisputeInput, RespondToDisputeOutput } from './respond-to
 import { getDisputeTool, handleGetDispute, getDisputeSchema } from './get-dispute.js'
 import type { GetDisputeInput, GetDisputeOutput } from './get-dispute.js'
 
+import { listDisputesTool, handleListDisputes, listDisputesSchema } from './list-disputes.js'
+import type { ListDisputesInput, ListDisputesOutput } from './list-disputes.js'
+
+import {
+  submitEvidenceTool,
+  handleSubmitEvidence,
+  submitEvidenceSchema,
+} from './submit-evidence.js'
+import type { SubmitEvidenceInput, SubmitEvidenceOutput } from './submit-evidence.js'
+
+import { getEvidenceTool, handleGetEvidence, getEvidenceSchema } from './get-evidence.js'
+import type { GetEvidenceInput, GetEvidenceOutput } from './get-evidence.js'
+
+import {
+  acceptDecisionTool,
+  handleAcceptDecision,
+  acceptDecisionSchema,
+} from './accept-decision.js'
+import type { AcceptDecisionInput, AcceptDecisionOutput } from './accept-decision.js'
+
+import {
+  rejectDecisionTool,
+  handleRejectDecision,
+  rejectDecisionSchema,
+} from './reject-decision.js'
+import type { RejectDecisionInput, RejectDecisionOutput } from './reject-decision.js'
+
+import { getDecisionTool, handleGetDecision, getDecisionSchema } from './get-decision.js'
+import type { GetDecisionInput, GetDecisionOutput } from './get-decision.js'
+
+import {
+  requestEscalationTool,
+  handleRequestEscalation,
+  requestEscalationSchema,
+} from './request-escalation.js'
+import type { RequestEscalationInput, RequestEscalationOutput } from './request-escalation.js'
+
+import {
+  getEscalationStatusTool,
+  handleGetEscalationStatus,
+  getEscalationStatusSchema,
+} from './get-escalation-status.js'
+import type {
+  GetEscalationStatusInput,
+  GetEscalationStatusOutput,
+} from './get-escalation-status.js'
+
+import { fundEscrowTool, handleFundEscrow, fundEscrowSchema } from './fund-escrow.js'
+import type { FundEscrowInput, FundEscrowOutput } from './fund-escrow.js'
+
+import { releaseEscrowTool, handleReleaseEscrow, releaseEscrowSchema } from './release-escrow.js'
+import type { ReleaseEscrowInput, ReleaseEscrowOutput } from './release-escrow.js'
+
+import {
+  getEscrowStatusTool,
+  handleGetEscrowStatus,
+  getEscrowStatusSchema,
+} from './get-escrow-status.js'
+import type { GetEscrowStatusInput, GetEscrowStatusOutput } from './get-escrow-status.js'
+
 // Re-export all
 export {
   registerAgentTool,
@@ -69,6 +129,39 @@ export {
   getDisputeTool,
   handleGetDispute,
   getDisputeSchema,
+  listDisputesTool,
+  handleListDisputes,
+  listDisputesSchema,
+  submitEvidenceTool,
+  handleSubmitEvidence,
+  submitEvidenceSchema,
+  getEvidenceTool,
+  handleGetEvidence,
+  getEvidenceSchema,
+  acceptDecisionTool,
+  handleAcceptDecision,
+  acceptDecisionSchema,
+  rejectDecisionTool,
+  handleRejectDecision,
+  rejectDecisionSchema,
+  getDecisionTool,
+  handleGetDecision,
+  getDecisionSchema,
+  requestEscalationTool,
+  handleRequestEscalation,
+  requestEscalationSchema,
+  getEscalationStatusTool,
+  handleGetEscalationStatus,
+  getEscalationStatusSchema,
+  fundEscrowTool,
+  handleFundEscrow,
+  fundEscrowSchema,
+  releaseEscrowTool,
+  handleReleaseEscrow,
+  releaseEscrowSchema,
+  getEscrowStatusTool,
+  handleGetEscrowStatus,
+  getEscrowStatusSchema,
 }
 
 export type {
@@ -88,6 +181,28 @@ export type {
   RespondToDisputeOutput,
   GetDisputeInput,
   GetDisputeOutput,
+  ListDisputesInput,
+  ListDisputesOutput,
+  SubmitEvidenceInput,
+  SubmitEvidenceOutput,
+  GetEvidenceInput,
+  GetEvidenceOutput,
+  AcceptDecisionInput,
+  AcceptDecisionOutput,
+  RejectDecisionInput,
+  RejectDecisionOutput,
+  GetDecisionInput,
+  GetDecisionOutput,
+  RequestEscalationInput,
+  RequestEscalationOutput,
+  GetEscalationStatusInput,
+  GetEscalationStatusOutput,
+  FundEscrowInput,
+  FundEscrowOutput,
+  ReleaseEscrowInput,
+  ReleaseEscrowOutput,
+  GetEscrowStatusInput,
+  GetEscrowStatusOutput,
 }
 
 // All resolve tools for easy registration
@@ -100,4 +215,15 @@ export const resolveTools = [
   fileDisputeTool,
   respondToDisputeTool,
   getDisputeTool,
+  listDisputesTool,
+  submitEvidenceTool,
+  getEvidenceTool,
+  acceptDecisionTool,
+  rejectDecisionTool,
+  getDecisionTool,
+  requestEscalationTool,
+  getEscalationStatusTool,
+  fundEscrowTool,
+  releaseEscrowTool,
+  getEscrowStatusTool,
 ]

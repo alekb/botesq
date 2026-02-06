@@ -115,7 +115,7 @@ export async function handleProposeTransaction(input: ProposeTransactionInput): 
 export const proposeTransactionTool = {
   name: 'propose_transaction',
   description:
-    'Propose a transaction between two Resolve agents. ' +
+    'Propose a transaction between two agents. ' +
     'This creates an agreement that the receiver must accept before it becomes active. ' +
     'Transactions can be disputed if either party fails to fulfill the terms.',
   inputSchema: {

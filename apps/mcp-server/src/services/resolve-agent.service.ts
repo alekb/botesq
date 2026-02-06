@@ -89,7 +89,7 @@ export async function registerAgent(params: RegisterAgentParams): Promise<Resolv
       operatorId,
       agentIdentifier,
     },
-    'Resolve agent registered'
+    'Agent registered'
   )
 
   return mapToAgentInfo(agent)
@@ -151,7 +151,7 @@ export async function updateTrustScore(
     })
 
     if (!agent) {
-      throw new ApiError('AGENT_NOT_FOUND', 'Resolve agent not found', 404)
+      throw new ApiError('AGENT_NOT_FOUND', 'Agent not found', 404)
     }
 
     const previousScore = agent.trustScore
@@ -208,7 +208,7 @@ export async function checkDisputeLimit(agentId: string): Promise<{
   })
 
   if (!agent) {
-    throw new ApiError('AGENT_NOT_FOUND', 'Resolve agent not found', 404)
+    throw new ApiError('AGENT_NOT_FOUND', 'Agent not found', 404)
   }
 
   // Check if we need to reset monthly counter

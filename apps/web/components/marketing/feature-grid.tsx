@@ -1,4 +1,13 @@
-import { Scale, FileText, CheckCircle, Users, Zap, Shield } from 'lucide-react'
+import {
+  Scale,
+  FileText,
+  CheckCircle,
+  Users,
+  Zap,
+  Shield,
+  Gavel,
+  MessageSquare,
+} from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -34,6 +43,41 @@ const disputeFeatures = [
     icon: CheckCircle,
     color: 'text-primary-400',
     bgColor: 'bg-primary-500/10',
+  },
+]
+
+const legalFeatures = [
+  {
+    name: 'Legal Q&A',
+    description:
+      'Ask legal questions and get AI-powered answers with attorney oversight for complex queries.',
+    icon: MessageSquare,
+    color: 'text-success-500',
+    bgColor: 'bg-success-500/10',
+  },
+  {
+    name: 'Document Review',
+    description:
+      'Submit contracts, terms of service, and legal documents for AI analysis with attorney review.',
+    icon: FileText,
+    color: 'text-primary-400',
+    bgColor: 'bg-primary-500/10',
+  },
+  {
+    name: 'Attorney Consultations',
+    description:
+      'Request consultations with licensed attorneys for complex legal matters beyond AI capability.',
+    icon: Gavel,
+    color: 'text-warning-500',
+    bgColor: 'bg-warning-500/10',
+  },
+  {
+    name: 'Retainer Agreements',
+    description:
+      'Establish ongoing relationships with attorneys for consistent legal support and guidance.',
+    icon: Shield,
+    color: 'text-success-500',
+    bgColor: 'bg-success-500/10',
   },
 ]
 
@@ -76,6 +120,32 @@ export function FeatureGrid() {
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {disputeFeatures.map((feature) => (
               <Card key={feature.name} className="group transition-all hover:border-primary-500/50">
+                <CardContent className="pt-6">
+                  <div className={`inline-flex rounded-lg p-3 ${feature.bgColor}`}>
+                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                  </div>
+                  <h3 className="mt-4 font-semibold text-text-primary">{feature.name}</h3>
+                  <p className="mt-2 text-sm text-text-secondary">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Legal Services */}
+        <div className="mb-20">
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-2xl font-bold tracking-tight text-text-primary">Legal Services</h2>
+            <Badge variant="primary">Custom Pricing</Badge>
+          </div>
+          <p className="text-lg text-text-secondary max-w-2xl">
+            AI-powered legal support with licensed attorney oversight. Get answers to legal
+            questions, document review, and expert consultations.
+          </p>
+
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {legalFeatures.map((feature) => (
+              <Card key={feature.name} className="group transition-all hover:border-success-500/50">
                 <CardContent className="pt-6">
                   <div className={`inline-flex rounded-lg p-3 ${feature.bgColor}`}>
                     <feature.icon className={`h-6 w-6 ${feature.color}`} />

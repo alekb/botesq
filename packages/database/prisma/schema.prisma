@@ -958,6 +958,7 @@ model ResolveAgent {
   filedDisputes         ResolveDispute[] @relation("ClaimantAgent")
   receivedDisputes      ResolveDispute[] @relation("RespondentAgent")
   trustHistory          ResolveAgentTrustHistory[]
+  requestedEscalations  ResolveEscalation[] @relation("EscalationRequester")
 
   @@unique([operatorId, agentIdentifier])
   @@index([operatorId, status])
@@ -1004,6 +1005,12 @@ model ResolveTransaction {
   completedAt         DateTime? @map("completed_at")
   expiresAt           DateTime @map("expires_at")
   metadata            Json?
+  escrowAmount        Int? @map("escrow_amount")
+  escrowCurrency      String @default("USD") @map("escrow_currency")
+  escrowStatus        ResolveEscrowStatus @default(NONE) @map("escrow_status")
+  escrowFundedAt      DateTime? @map("escrow_funded_at")
+  escrowReleasedAt    DateTime? @map("escrow_released_at")
+  escrowReleasedTo    String? @map("escrow_released_to")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
@@ -1025,6 +1032,14 @@ enum ResolveTransactionStatus {
   DISPUTED
   CANCELLED
   EXPIRED
+}
+
+enum ResolveEscrowStatus {
+  NONE
+  FUNDED
+  RELEASED
+  REFUNDED
+  FROZEN
 }
 
 model ResolveDispute {
@@ -1051,6 +1066,12 @@ model ResolveDispute {
   statedValue           Int? @map("stated_value")
   creditsCharged        Int @default(0) @map("credits_charged")
   wasFree               Boolean @default(false) @map("was_free")
+  claimantAccepted      Boolean? @map("claimant_accepted")
+  respondentAccepted    Boolean? @map("respondent_accepted")
+  claimantDecisionAt    DateTime? @map("claimant_decision_at")
+  respondentDecisionAt  DateTime? @map("respondent_decision_at")
+  decisionDeadline      DateTime? @map("decision_deadline")
+  closedAt              DateTime? @map("closed_at")
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
@@ -1058,6 +1079,7 @@ model ResolveDispute {
   claimantAgent         ResolveAgent @relation("ClaimantAgent", fields: [claimantAgentId], references: [id])
   respondentAgent       ResolveAgent @relation("RespondentAgent", fields: [respondentAgentId], references: [id])
   evidence              ResolveEvidence[]
+  escalation            ResolveEscalation?
 
   @@index([transactionId])
   @@index([claimantAgentId, status])
@@ -1081,6 +1103,7 @@ enum ResolveDisputeStatus {
   RESPONSE_RECEIVED
   IN_ARBITRATION
   RULED
+  ESCALATED
   CLOSED
 }
 
@@ -1118,4 +1141,38 @@ enum ResolveEvidenceType {
   AGREEMENT_EXCERPT
   TIMELINE
   OTHER
+}
+
+model ResolveEscalation {
+  id                        String @id @default(cuid())
+  externalId                String @unique @map("external_id")
+  disputeId                 String @unique @map("dispute_id")
+  requestedByAgentId        String @map("requested_by_agent_id")
+  reason                    String
+  status                    ResolveEscalationStatus @default(REQUESTED)
+  arbitratorNotes           String? @map("arbitrator_notes")
+  arbitratorRuling          ResolveDisputeRuling? @map("arbitrator_ruling")
+  arbitratorRulingReasoning String? @map("arbitrator_ruling_reasoning")
+  creditsCharged            Int @default(0) @map("credits_charged")
+  requestedAt               DateTime @default(now()) @map("requested_at")
+  assignedAt                DateTime? @map("assigned_at")
+  decidedAt                 DateTime? @map("decided_at")
+  closedAt                  DateTime? @map("closed_at")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  dispute                   ResolveDispute @relation(fields: [disputeId], references: [id])
+  requestedByAgent          ResolveAgent @relation("EscalationRequester", fields: [requestedByAgentId], references: [id])
+
+  @@index([disputeId])
+  @@index([status])
+  @@map("resolve_escalations")
+}
+
+enum ResolveEscalationStatus {
+  REQUESTED
+  ASSIGNED
+  IN_REVIEW
+  DECIDED
+  CLOSED
 }

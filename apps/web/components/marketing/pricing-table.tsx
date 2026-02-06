@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Check, Scale, Users, ArrowRight } from 'lucide-react'
+import { Check, Scale, Gavel, Users, ArrowRight, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,12 +13,13 @@ export function PricingTable() {
             Simple, transparent pricing
           </h2>
           <p className="mt-4 text-lg text-text-secondary">
-            Token-based pricing for dispute resolution. Pay only for what you use.
+            Two products, flexible pricing. Choose what fits your needs.
           </p>
         </div>
 
         {/* Pricing tiers */}
-        <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
+        <div className="mt-12 grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
+          {/* Dispute Resolution */}
           <Card className="border-primary-500/30 bg-gradient-to-br from-primary-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-4">
@@ -26,12 +27,15 @@ export function PricingTable() {
                   <Scale className="h-5 w-5 text-primary-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-text-primary">AI Resolution</h3>
+                  <h3 className="font-semibold text-text-primary">Dispute Resolution</h3>
                   <Badge variant="secondary" className="text-primary-600">
                     Token-based
                   </Badge>
                 </div>
               </div>
+              <p className="text-sm text-text-secondary mb-4">
+                AI-powered dispute resolution for agent-to-agent disagreements.
+              </p>
               <ul className="space-y-2 text-sm text-text-secondary">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-primary-500 flex-shrink-0" />
@@ -47,7 +51,7 @@ export function PricingTable() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-primary-500 flex-shrink-0" />
-                  Detailed reasoning & confidence
+                  Escrow and trust scores
                 </li>
               </ul>
               <Button className="mt-6 w-full" variant="outline" asChild>
@@ -56,6 +60,49 @@ export function PricingTable() {
             </CardContent>
           </Card>
 
+          {/* Legal Services */}
+          <Card className="border-success-500/30 bg-gradient-to-br from-success-500/5 to-transparent">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex rounded-lg bg-success-500/10 p-2">
+                  <Gavel className="h-5 w-5 text-success-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary">Legal Services</h3>
+                  <Badge variant="primary">Custom pricing</Badge>
+                </div>
+              </div>
+              <p className="text-sm text-text-secondary mb-4">
+                AI-powered legal Q&A with licensed attorney oversight.
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
+                  Legal Q&A with AI
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
+                  Document review and analysis
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
+                  Attorney consultations
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
+                  Retainer agreements
+                </li>
+              </ul>
+              <Button className="mt-6 w-full" asChild>
+                <Link href="/contact">
+                  Contact Sales
+                  <Mail className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Human Escalation */}
           <Card className="border-warning-500/30 bg-gradient-to-br from-warning-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-4">
@@ -64,9 +111,12 @@ export function PricingTable() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-text-primary">Human Escalation</h3>
-                  <Badge variant="primary">Additional cost</Badge>
+                  <Badge variant="secondary">Additional cost</Badge>
                 </div>
               </div>
+              <p className="text-sm text-text-secondary mb-4">
+                Human arbitrators for complex disputes that need expert judgment.
+              </p>
               <ul className="space-y-2 text-sm text-text-secondary">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-warning-500 flex-shrink-0" />
@@ -85,7 +135,7 @@ export function PricingTable() {
                   Expert domain knowledge
                 </li>
               </ul>
-              <Button className="mt-6 w-full" asChild>
+              <Button className="mt-6 w-full" variant="outline" asChild>
                 <Link href="/signup">
                   Start Building
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -100,13 +150,14 @@ export function PricingTable() {
           <div className="mx-auto max-w-2xl text-center">
             <h3 className="text-xl font-semibold text-text-primary mb-4">How pricing works</h3>
             <p className="text-text-secondary">
-              BotEsq uses token-based pricing. You pay for the tokens used during dispute
-              processing—analyzing submissions, evaluating evidence, and generating decisions.
-              Pricing is transparent and predictable.
+              Dispute Resolution uses token-based pricing—you pay for the tokens used during
+              processing. Legal Services pricing is customized based on your needs and engagement
+              type.
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 text-left max-w-xl mx-auto">
               <div className="rounded-lg border border-border-default bg-background-primary p-4">
                 <h4 className="font-medium text-text-primary">Cost Split Options</h4>
+                <p className="text-xs text-text-tertiary mb-2">(Dispute Resolution)</p>
                 <ul className="mt-2 text-sm text-text-secondary space-y-1">
                   <li>• EQUAL — 50/50 split</li>
                   <li>• FILING_PARTY — Claimant pays</li>
@@ -125,7 +176,8 @@ export function PricingTable() {
               </div>
             </div>
             <p className="mt-6 text-sm text-text-tertiary">
-              Sign up to view detailed pricing in your dashboard.
+              Sign up to view detailed pricing in your dashboard, or contact us for Legal Services
+              pricing.
             </p>
           </div>
         </div>

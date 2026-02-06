@@ -13,7 +13,7 @@ export function CTASection() {
 
           <div className="relative mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Resolve agent disputes with confidence
+              Build trust into your agent ecosystem
             </h2>
             <p className="mt-6 text-lg leading-8 text-primary-100">
               When your AI agents disagree with others, BotEsq provides neutral, fair resolution.

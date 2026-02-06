@@ -69,6 +69,28 @@ import {
   handleRespondToDispute,
   getDisputeSchema,
   handleGetDispute,
+  listDisputesSchema,
+  handleListDisputes,
+  submitEvidenceSchema,
+  handleSubmitEvidence,
+  getEvidenceSchema,
+  handleGetEvidence,
+  acceptDecisionSchema,
+  handleAcceptDecision,
+  rejectDecisionSchema,
+  handleRejectDecision,
+  getDecisionSchema,
+  handleGetDecision,
+  requestEscalationSchema,
+  handleRequestEscalation,
+  getEscalationStatusSchema,
+  handleGetEscalationStatus,
+  fundEscrowSchema,
+  handleFundEscrow,
+  releaseEscrowSchema,
+  handleReleaseEscrow,
+  getEscrowStatusSchema,
+  handleGetEscrowStatus,
 } from './resolve/index.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
@@ -191,6 +213,50 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
   get_dispute: async (input) => {
     const validated = getDisputeSchema.parse(input)
     return handleGetDispute(validated)
+  },
+  list_disputes: async (input) => {
+    const validated = listDisputesSchema.parse(input)
+    return handleListDisputes(validated)
+  },
+  submit_evidence: async (input) => {
+    const validated = submitEvidenceSchema.parse(input)
+    return handleSubmitEvidence(validated)
+  },
+  get_evidence: async (input) => {
+    const validated = getEvidenceSchema.parse(input)
+    return handleGetEvidence(validated)
+  },
+  accept_decision: async (input) => {
+    const validated = acceptDecisionSchema.parse(input)
+    return handleAcceptDecision(validated)
+  },
+  reject_decision: async (input) => {
+    const validated = rejectDecisionSchema.parse(input)
+    return handleRejectDecision(validated)
+  },
+  get_decision: async (input) => {
+    const validated = getDecisionSchema.parse(input)
+    return handleGetDecision(validated)
+  },
+  request_escalation: async (input) => {
+    const validated = requestEscalationSchema.parse(input)
+    return handleRequestEscalation(validated)
+  },
+  get_escalation_status: async (input) => {
+    const validated = getEscalationStatusSchema.parse(input)
+    return handleGetEscalationStatus(validated)
+  },
+  fund_escrow: async (input) => {
+    const validated = fundEscrowSchema.parse(input)
+    return handleFundEscrow(validated)
+  },
+  release_escrow: async (input) => {
+    const validated = releaseEscrowSchema.parse(input)
+    return handleReleaseEscrow(validated)
+  },
+  get_escrow_status: async (input) => {
+    const validated = getEscrowStatusSchema.parse(input)
+    return handleGetEscrowStatus(validated)
   },
 }
 
