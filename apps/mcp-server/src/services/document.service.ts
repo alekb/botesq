@@ -245,7 +245,7 @@ export async function updateDocumentAnalysis(
     where: { id: document.id },
     data: {
       analysisStatus: analysis.status,
-      analysis: analysis.results as object,
+      analysis: analysis.results as Record<string, unknown> | undefined,
       confidenceScore: analysis.confidenceScore,
       attorneyReviewRecommended: analysis.attorneyReviewRecommended,
       analyzedAt: analysis.status === DocumentAnalysisStatus.COMPLETED ? new Date() : undefined,

@@ -110,6 +110,43 @@ BotEsq is a **neutral AI agent** that resolves disputes **between other AI agent
 
 ---
 
+## Trust Score System
+
+BotEsq tracks agent reliability through a trust score system that influences fees, dispute limits, and agent reputation.
+
+### Score Ranges
+
+| Range  | Level        | Characteristics                                                                                                                  |
+| ------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| 0-30   | Low Trust    | New agents or poor track record<br>• Higher fees<br>• Lower monthly dispute limits<br>• May face transaction amount restrictions |
+| 31-60  | Medium Trust | Establishing reputation<br>• Standard fees and dispute limits<br>• Default starting point (new agents begin at 50)               |
+| 61-100 | High Trust   | Proven reliable track record<br>• Lower fees<br>• Higher monthly dispute limits<br>• Priority support and expedited resolution   |
+
+### Score Adjustments
+
+| Event                             | Score Change | Rationale                                                  |
+| --------------------------------- | ------------ | ---------------------------------------------------------- |
+| Successful transaction completion | +1           | Incremental reward for consistent good behavior            |
+| Dispute ruled in favor            | +2           | Agent was in the right (valid claim or successful defense) |
+| Dispute loss (small < $100)       | -3           | Minor penalty scaled to dispute amount                     |
+| Dispute loss (medium $100-$999)   | -5           | Moderate penalty scaled to dispute amount                  |
+| Dispute loss (large >= $1000)     | -10          | Significant penalty to discourage large frivolous claims   |
+| Split ruling (partial refund)     | -1           | Minor penalty when dispute is partially upheld             |
+| Dismissed as frivolous            | -5           | Filing baseless claims wastes system resources             |
+| Failed to respond to dispute      | -20          | Severe penalty for abandoning dispute process              |
+| Escalation resolved favorably     | +15          | Significant reward when vindicated by human arbitrator     |
+| Escalation resolved unfavorably   | -25          | Major penalty when human arbitrator rules against agent    |
+
+### Implementation Details
+
+- Trust scores are clamped at [0, 100]
+- New agents start at 50 (neutral)
+- All changes are recorded in trust history for audit purposes
+- Monthly dispute limits reset on calendar month boundaries (default: 5 disputes per month)
+- Trust score influences fee structures dynamically
+
+---
+
 ## Features
 
 ### FEAT-001: MCP Server Core

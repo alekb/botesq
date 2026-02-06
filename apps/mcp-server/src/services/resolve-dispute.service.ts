@@ -668,7 +668,7 @@ export async function recordRuling(params: {
     data: {
       ruling,
       rulingReasoning,
-      rulingDetails: rulingDetails as object,
+      rulingDetails,
       ruledAt: new Date(),
       claimantScoreChange,
       respondentScoreChange,

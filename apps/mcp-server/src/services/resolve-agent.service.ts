@@ -6,20 +6,64 @@ import { generateAgentId } from '../utils/secure-id.js'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
-// Trust score constants
-const INITIAL_TRUST_SCORE = 50
-const MIN_TRUST_SCORE = 0
-const MAX_TRUST_SCORE = 100
-const MONTHLY_DISPUTE_LIMIT = 5
+/**
+ * Trust Score System
+ *
+ * The trust score system tracks agent reliability and behavior in the Resolve dispute resolution system.
+ * Scores influence fee structures, dispute limits, and agent reputation.
+ *
+ * Score Ranges:
+ * - 0-30: Low trust (new agents or poor track record)
+ *   - Higher fees, lower monthly dispute limits
+ *   - May face restrictions on transaction amounts
+ * - 31-60: Medium trust (establishing reputation)
+ *   - Standard fees and dispute limits
+ *   - Default starting point for new agents (50)
+ * - 61-100: High trust (proven reliable track record)
+ *   - Lower fees, higher monthly dispute limits
+ *   - Priority support and expedited dispute resolution
+ *
+ * Score Adjustments:
+ * - Successful transaction completion: +1
+ *   - Incremental reward for consistent good behavior
+ * - Dispute ruled in favor (as claimant or respondent): +2
+ *   - Agent was in the right, reward for valid claim or successful defense
+ * - Dispute loss (as claimant or respondent):
+ *   - Small amount (<$100): -3
+ *   - Medium amount ($100-$999): -5
+ *   - Large amount (>=$1000): -10
+ *   - Penalty scales with dispute amount to discourage large frivolous claims
+ * - Split ruling (partial refund): -1
+ *   - Minor penalty when dispute is partially upheld
+ * - Dismissed as frivolous: -5
+ *   - Filing baseless claims wastes system resources
+ * - Failed to respond to dispute: -20 (implemented in dispute service)
+ *   - Severe penalty for abandoning dispute process
+ * - Escalation resolved favorably: +15 (implemented in dispute service)
+ *   - Significant reward for being vindicated at arbitration level
+ * - Escalation resolved unfavorably: -25 (implemented in dispute service)
+ *   - Major penalty when human arbitrator rules against agent
+ *
+ * Trust score is clamped at [0, 100] and changes are recorded in trust history
+ * for audit purposes and dispute resolution insights.
+ */
+
+// Trust score bounds
+const INITIAL_TRUST_SCORE = 50 // Neutral starting point for new agents
+const MIN_TRUST_SCORE = 0 // High-risk agents, may face restrictions
+const MAX_TRUST_SCORE = 100 // Proven track record, preferred status
+
+// Monthly limits
+const MONTHLY_DISPUTE_LIMIT = 5 // Prevents abuse, resets on calendar month boundary
 
 // Trust score changes
-const TRUST_CHANGE_TRANSACTION_COMPLETE = 1
-const TRUST_CHANGE_DISPUTE_WIN = 2
-const TRUST_CHANGE_DISPUTE_LOSS_SMALL = -3 // < $100
-const TRUST_CHANGE_DISPUTE_LOSS_MEDIUM = -5 // $100-999
-const TRUST_CHANGE_DISPUTE_LOSS_LARGE = -10 // >= $1000
-const TRUST_CHANGE_SPLIT_RULING = -1
-const TRUST_CHANGE_DISMISSED = -5 // Frivolous claim
+const TRUST_CHANGE_TRANSACTION_COMPLETE = 1 // Small incremental reward
+const TRUST_CHANGE_DISPUTE_WIN = 2 // Validated claim or successful defense
+const TRUST_CHANGE_DISPUTE_LOSS_SMALL = -3 // Minor dispute loss (<$100)
+const TRUST_CHANGE_DISPUTE_LOSS_MEDIUM = -5 // Medium dispute loss ($100-999)
+const TRUST_CHANGE_DISPUTE_LOSS_LARGE = -10 // Large dispute loss (>=$1000)
+const TRUST_CHANGE_SPLIT_RULING = -1 // Partial refund/split decision
+const TRUST_CHANGE_DISMISSED = -5 // Frivolous or baseless claim
 
 export interface RegisterAgentParams {
   operatorId: string
@@ -77,7 +121,7 @@ export async function registerAgent(params: RegisterAgentParams): Promise<Resolv
       agentIdentifier,
       displayName,
       description,
-      metadata: metadata as object | undefined,
+      metadata,
       trustScore: INITIAL_TRUST_SCORE,
       monthlyDisputeResetAt: new Date(),
     },
