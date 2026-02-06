@@ -1,6 +1,19 @@
 import { resend, EMAIL_FROM, getBaseUrl } from './client'
 import { VerificationEmail, getVerificationEmailText } from './templates/verification'
 import { PasswordResetEmail, getPasswordResetEmailText } from './templates/password-reset'
+import {
+  ContactNotificationEmail,
+  getContactNotificationEmailText,
+} from './templates/contact-notification'
+
+type InquiryType = 'sales' | 'support' | 'legal' | 'general'
+
+const INQUIRY_RECIPIENTS: Record<InquiryType, string> = {
+  sales: 'sales@botesq.com',
+  support: 'support@botesq.com',
+  legal: 'legal@botesq.com',
+  general: 'hello@botesq.com',
+}
 
 /**
  * Send verification email to new operator
@@ -50,5 +63,31 @@ export async function sendPasswordResetEmail(
   } catch (error) {
     console.error('Failed to send password reset email:', error)
     // Don't throw - we don't want to reveal email existence via timing
+  }
+}
+
+/**
+ * Send contact form notification to the appropriate team
+ */
+export async function sendContactEmail(
+  name: string,
+  email: string,
+  inquiryType: InquiryType,
+  message: string
+): Promise<void> {
+  const to = INQUIRY_RECIPIENTS[inquiryType]
+
+  try {
+    await resend.emails.send({
+      from: EMAIL_FROM,
+      to,
+      replyTo: email,
+      subject: `Contact Form: ${name}`,
+      react: ContactNotificationEmail({ name, email, inquiryType, message }),
+      text: getContactNotificationEmailText(name, email, inquiryType, message),
+    })
+  } catch (error) {
+    console.error('Failed to send contact email:', error)
+    // Don't throw - we show a generic success to the user regardless
   }
 }
