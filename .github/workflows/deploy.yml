@@ -118,6 +118,10 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            # Clear build caches to force clean rebuild
+            rm -rf node_modules/.cache/turbo 2>/dev/null || true
+            rm -rf apps/web/.next 2>/dev/null || true
+
             # Install dependencies
             pnpm install --frozen-lockfile
 
@@ -184,8 +188,9 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            # Clear turbo cache to force rebuild
+            # Clear build caches to force clean rebuild
             rm -rf node_modules/.cache/turbo 2>/dev/null || true
+            rm -rf apps/web/.next 2>/dev/null || true
 
             # Clean up any stray files that shouldn't be in the repo
             rm -f apps/web/create-admin.ts 2>/dev/null || true
