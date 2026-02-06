@@ -162,6 +162,8 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/botesq_build
 
   test:
     name: Test
@@ -208,7 +210,7 @@ jobs:
         run: pnpm db:migrate
 
       - name: Run tests with coverage
-        run: pnpm test -- --coverage
+        run: pnpm test -- -- --coverage
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v5
