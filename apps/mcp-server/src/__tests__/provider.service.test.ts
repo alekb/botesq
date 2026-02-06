@@ -59,8 +59,8 @@ vi.mock('../services/auth.service.js', () => ({
 }))
 
 // Mock utils
-vi.mock('../utils/id', () => ({
-  generateId: vi.fn().mockReturnValue('PRV-ABC123'),
+vi.mock('../utils/secure-id.js', () => ({
+  generateProviderId: vi.fn().mockReturnValue('PRV-ABC123'),
 }))
 
 vi.mock('../utils/webhook', () => ({

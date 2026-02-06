@@ -169,11 +169,13 @@ describe('retainer.service', () => {
     })
 
     it('should create retainer with 30-day expiration', async () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2025-01-15T12:00:00Z'))
+
       vi.mocked(prisma.matter.findFirst).mockResolvedValue(mockMatter as never)
       vi.mocked(prisma.retainer.create).mockResolvedValue(mockRetainer as never)
       vi.mocked(prisma.retainer.findUnique).mockResolvedValue(mockRetainer as never)
 
-      const beforeCreate = Date.now()
       await createRetainer({
         operatorId: 'op_123',
         matterId: 'matter_123',
@@ -190,8 +192,10 @@ describe('retainer.service', () => {
 
       const callArg = vi.mocked(prisma.retainer.create).mock.calls[0]?.[0]
       const expiry = callArg?.data?.expiresAt as Date
-      const expected30Days = beforeCreate + 30 * 24 * 60 * 60 * 1000
-      expect(expiry.getTime()).toBeGreaterThanOrEqual(expected30Days - 1000)
+      const expected = new Date('2025-02-14T12:00:00Z')
+      expect(expiry.getTime()).toBe(expected.getTime())
+
+      vi.useRealTimers()
     })
 
     it('should create retainer with PENDING status', async () => {
