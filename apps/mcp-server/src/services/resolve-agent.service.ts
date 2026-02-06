@@ -121,7 +121,7 @@ export async function registerAgent(params: RegisterAgentParams): Promise<Resolv
       agentIdentifier,
       displayName,
       description,
-      metadata,
+      metadata: metadata as object | undefined,
       trustScore: INITIAL_TRUST_SCORE,
       monthlyDisputeResetAt: new Date(),
     },

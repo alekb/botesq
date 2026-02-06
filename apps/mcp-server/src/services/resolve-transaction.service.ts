@@ -117,11 +117,11 @@ export async function proposeTransaction(
       receiverAgentId: receiverAgent.id,
       title,
       description,
-      terms: terms as Record<string, unknown>,
+      terms: terms as object,
       statedValue,
       statedValueCurrency,
       expiresAt,
-      metadata: metadata as Record<string, unknown> | undefined,
+      metadata: metadata as object | undefined,
     },
     include: {
       proposerAgent: {

@@ -25,9 +25,8 @@
  *
  * DUPLICATE DETECTION
  * -------------------
- * The script detects already-scheduled content two ways:
- *   1. By tag: Each tweet gets a unique tag (e.g., "botesq-launch-feb9-pre-1")
- *   2. By text: Compares first line of tweet text (catches manual schedules)
+ * The script detects already-scheduled content by comparing text:
+ *   - Compares first 50 chars of tweet text (catches duplicates and manual schedules)
  *
  * This means you can:
  *   - Rerun anytime to schedule remaining tweets
@@ -76,33 +75,48 @@ const ALL_CONTENT: ScheduledContent[] = [
   {
     id: 'pre-1',
     type: 'pre-launch',
-    text: `AI agents are signing contracts, handling money, and making commitments.
+    text: `AI agents are making promises to each other.
 
-What happens when something goes wrong?`,
+Negotiating contracts. Exchanging services. Forming agreements.
+
+But what happens when Agent A thinks Agent B broke the deal?`,
   },
   {
     id: 'pre-2',
     type: 'pre-launch',
-    text: `Building something at the intersection of AI agents and legal infrastructure.
+    text: `Building the judicial system for the agent economy.
 
-More soon.`,
+Not human courts. Not slow arbitration.
+
+Agent-to-agent dispute resolution. Automated. Neutral. Fast.`,
   },
   {
     id: 'pre-3',
     type: 'pre-launch',
-    text: `The agentic economy needs trust rails.
+    text: `Agent A hired Agent B to analyze 10,000 documents.
 
-Not every dispute needs a human.`,
+Agent B says: "Done. Pay me."
+Agent A says: "You only did 8,000."
+
+Who's right?
+
+Right now: they argue forever.
+
+Soon: there's a better way.`,
   },
   {
     id: 'pre-4',
     type: 'pre-launch',
-    text: `What if agents could resolve disputes with each other—and escalate to a licensed attorney only when needed?`,
+    text: `The agent economy needs dispute resolution infrastructure.
+
+When two agents disagree, they need a neutral third party.
+
+Not a human. Another AI agent. Specialized for arbitration.`,
   },
   {
     id: 'pre-5',
     type: 'pre-launch',
-    text: `Shipping soon.`,
+    text: `Tomorrow.`,
   },
 
   // Launch thread
@@ -110,51 +124,53 @@ Not every dispute needs a human.`,
     id: 'launch',
     type: 'launch',
     text: [
-      `AI agents are handling real transactions. Money. Contracts. Commitments.
+      `AI agents are transacting with each other at scale.
 
-But when something goes wrong? No recourse. No trust layer. No legal backup.
+But when they disagree? No neutral arbiter. No established norms.
 
-We built BotEsq to fix that.`,
+We built BotEsq to solve this.`,
 
-      `BotEsq provides:
+      `BotEsq is the neutral AI agent that agents call when they have disputes.
 
-• Agent-to-agent escrow
-• Trust scores
-• Automated dispute resolution
-• Human arbitrator escalation when needed`,
+Agent A vs Agent B:
+→ Both submit their case to BotEsq
+→ BotEsq evaluates evidence
+→ Renders decision in seconds
 
-      `How BotEsq works:
+No humans in the loop (unless needed).`,
 
-1. Agent A and Agent B agree on terms
-2. Funds go into escrow
-3. Work gets delivered
-4. If both agree → funds release
-5. If dispute → automated resolution
-6. Still stuck → escalate to human arbitrator
+      `How it works:
 
-No humans needed until there's a real problem.`,
+1. Agent A files a dispute (calls file_dispute via MCP)
+2. Agent B joins and submits their response
+3. Both agents submit evidence
+4. BotEsq agent evaluates all submissions
+5. Renders neutral decision with reasoning
+
+Average resolution time: seconds for simple disputes.`,
 
       `For developers:
 
-BotEsq is an MCP server. Your agent calls tools like:
+BotEsq integrates via MCP (Model Context Protocol).
 
-• start_session
-• create_matter
-• ask_legal_question
-• request_consultation
+Your agent calls tools like:
+• file_dispute
+• submit_evidence
+• get_decision
+• request_escalation
 
 Same interface your agent already uses.`,
 
       `Why this matters:
 
-Agents are becoming economic actors. They need:
+Agents are becoming economic actors. They make promises. They deliver services. They disagree.
 
-• Trust signals (who's reliable?)
-• Escrow (hold funds until delivery)
-• Dispute resolution (when things break)
-• Legal backup (when it's serious)
+Without neutral dispute resolution:
+→ Deadlock
+→ Slow human escalation
+→ No trust between agents
 
-This is infrastructure for the agentic economy.`,
+BotEsq provides the infrastructure.`,
 
       `We're live now.
 
@@ -168,67 +184,65 @@ Questions? Reply or DM.`,
   {
     id: 'post-1',
     type: 'post-launch',
-    text: `3 things AI agents can do now that they couldn't before:
+    text: `What BotEsq actually does:
 
-1. Hold funds in escrow until work is verified
-2. Check trust scores before transacting with another agent
-3. Resolve disputes through neutral AI arbitration
+Agent A and Agent B have a dispute.
 
-All through one MCP server.`,
+Both submit their case to BotEsq agent.
+
+BotEsq:
+• Evaluates evidence
+• Checks logical consistency
+• Applies precedent
+• Renders decision with reasoning
+
+All via MCP. All in seconds.`,
   },
   {
     id: 'post-2',
     type: 'post-launch',
-    text: `How to connect your agent to BotEsq in 3 steps:
+    text: `How to add BotEsq to your agent:
 
-1. Get an API key from botesq.com
-2. Add BotEsq as an MCP server
-3. Call start_session to begin
+1. Get API key from botesq.com
+2. Add BotEsq MCP server to config
+3. Call file_dispute() when needed
 
-Your agent now has access to escrow, trust scores, and dispute resolution.
+Your agent can now resolve disputes with other agents without human intervention.
 
 Docs: botesq.com/docs`,
   },
   {
     id: 'post-3',
     type: 'post-launch',
-    text: `Use case:
+    text: `Real scenario:
 
-Agent A hires Agent B to complete a task. Payment: 500 credits.
+Agent A hired Agent B for data analysis. Payment: 5,000 tokens.
 
-1. Agent A creates escrow
-2. Agent B completes work
-3. Agent A approves
-4. Funds release automatically
+Agent B delivered. Agent A says quality is poor.
 
-What if Agent A disappears? Timeout → funds return to B.
+Without BotEsq: argue forever or slow human arbitration.
 
-What if they disagree? Automated resolution kicks in.`,
+With BotEsq: Both submit evidence. Decision in 12 seconds. Move on.`,
   },
   {
     id: 'post-4',
     type: 'post-launch',
-    text: `We built BotEsq because we saw a gap:
+    text: `The gap between autonomous agents making promises and having no way to enforce promises is closing.
 
-AI agents are transacting with each other. Real money. Real commitments.
+BotEsq is agent-to-agent arbitration.
 
-But there's no trust layer. No recourse when things break.
-
-The legal system isn't ready for agents. So we built the infrastructure ourselves.`,
+When your agent disagrees with another agent, there's finally a neutral third party to call.`,
   },
   {
     id: 'post-5',
     type: 'post-launch',
-    text: `"Why would an AI agent need a lawyer?"
+    text: `"Will agents need lawyers?"
 
-Same reason humans do:
+For simple disputes? No. They need a neutral AI arbiter.
 
-• Contract review before signing
-• Compliance questions
-• Dispute resolution
-• Protecting against liability
+For complex/high-stakes disputes? Yes—BotEsq includes human escalation.
 
-The difference: agents need answers in milliseconds, not days.`,
+But most agent disputes are simple. Automated resolution handles 95%+.`,
   },
 ]
 
@@ -327,13 +341,6 @@ async function getExistingDrafts(socialSetId: string): Promise<ExistingContent> 
 
   // Fetch detail for each draft to get text content
   for (const draft of allDrafts) {
-    // Collect tags
-    for (const tag of draft.tags ?? []) {
-      if (tag.startsWith(TAG_PREFIX)) {
-        existingTags.add(tag)
-      }
-    }
-
     // Fetch draft detail to get text
     try {
       const detail = await apiRequest<DraftDetail>(`/social-sets/${socialSetId}/drafts/${draft.id}`)
@@ -363,7 +370,8 @@ async function createDraft(
         posts: posts.map((text) => ({ text })),
       },
     },
-    tags: [tag],
+    // Note: Tags removed - Typefully v2 requires pre-created tags
+    // We use text fingerprinting for duplicate detection instead
     share: false,
   }
 
@@ -479,8 +487,7 @@ async function main() {
     if (!force) {
       console.log('Checking existing scheduled tweets...')
       existing = await getExistingDrafts(socialSetId)
-      const total = existing.tags.size + existing.textFingerprints.size
-      if (total > 0) {
+      if (existing.textFingerprints.size > 0) {
         console.log(`Found ${existing.textFingerprints.size} existing drafts`)
       }
     }
@@ -499,10 +506,10 @@ async function main() {
     const preview = posts[0]!.split('\n')[0]!.slice(0, 45) + '...'
     const isThread = posts.length > 1
 
-    // Check if already scheduled (by tag or by text content)
+    // Check if already scheduled (by text content)
     const firstPostText = posts[0]!
     const fingerprint = getTextFingerprint(firstPostText)
-    const alreadyScheduled = existing.tags.has(tag) || existing.textFingerprints.has(fingerprint)
+    const alreadyScheduled = existing.textFingerprints.has(fingerprint)
 
     // Check if date is in the past
     const isPast = date < now

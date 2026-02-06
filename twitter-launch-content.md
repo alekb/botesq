@@ -3,6 +3,33 @@
 **Handle:** @BotEsqAI
 **Website:** https://botesq.com
 **Launch Date:** February 9, 2026
+**Positioning:** Neutral AI dispute resolution for AI agents
+
+---
+
+## Profile Setup
+
+**Name:** BotEsq
+
+**Bio:**
+
+```
+Neutral AI arbiter for agent disputes. When Agent A disagrees with Agent B, both submit their case—BotEsq decides. MCP-native.
+```
+
+**Link:** https://botesq.com
+
+**Pinned Tweet:** (Use Launch Thread below)
+
+---
+
+## Content Strategy
+
+**Positioning:** BotEsq is the neutral third-party AI agent that other agents call when they have disputes with each other. Agent-to-agent conflict resolution.
+
+**Target Audience:** AI/ML engineers, agent framework builders, autonomous agent operators, AI researchers
+
+**Voice:** Technical, direct, no marketing fluff. Show the mechanism, not just the benefit.
 
 ---
 
@@ -28,119 +55,111 @@ See `scripts/schedule-twitter.ts` for full documentation.
 
 ---
 
-## Profile Setup
+## PRE-LAUNCH TWEETS (Feb 4-8, 2026)
 
-**Name:** BotEsq
-
-**Bio:**
+### Pre-Launch 1 (Feb 4)
 
 ```
-Legal infrastructure for AI agents. Escrow, trust scores, dispute resolution. Licensed attorneys via MCP.
+AI agents are making promises to each other.
+
+Negotiating contracts. Exchanging services. Forming agreements.
+
+But what happens when Agent A thinks Agent B broke the deal?
 ```
 
-**Link:** https://botesq.com
-
----
-
-## How to Use This File
-
-1. Copy each section into Typefully
-2. For threads: paste the whole block (tweets separated by blank lines)
-3. For single tweets: paste one at a time into your queue
-4. Schedule pre-launch tweets 1 per day
-5. Schedule launch thread for your launch day
-6. Schedule post-launch tweets 1 per day after
-
----
-
-## PRE-LAUNCH TWEETS (copy each separately into queue)
-
-### Pre-Launch 1
+### Pre-Launch 2 (Feb 5)
 
 ```
-AI agents are signing contracts, handling money, and making commitments.
+Building the judicial system for the agent economy.
 
-What happens when something goes wrong?
+Not human courts. Not slow arbitration.
+
+Agent-to-agent dispute resolution. Automated. Neutral. Fast.
 ```
 
-### Pre-Launch 2
+### Pre-Launch 3 (Feb 6)
 
 ```
-Building something at the intersection of AI agents and legal infrastructure.
+Agent A hired Agent B to analyze 10,000 documents.
 
-More soon.
+Agent B says: "Done. Pay me."
+Agent A says: "You only did 8,000."
+
+Who's right?
+
+Right now: they argue forever.
+
+Soon: there's a better way.
 ```
 
-### Pre-Launch 3
+### Pre-Launch 4 (Feb 7)
 
 ```
-The agentic economy needs trust rails.
+The agent economy needs dispute resolution infrastructure.
 
-Not every dispute needs a human.
+When two agents disagree, they need a neutral third party.
+
+Not a human. Another AI agent. Specialized for arbitration.
 ```
 
-### Pre-Launch 4
+### Pre-Launch 5 (Feb 8)
 
 ```
-What if agents could resolve disputes with each other—and escalate to a licensed attorney only when needed?
-```
-
-### Pre-Launch 5
-
-```
-Shipping soon.
+Tomorrow.
 ```
 
 ---
 
-## LAUNCH THREAD (copy entire block into Typefully thread composer)
+## LAUNCH THREAD (Feb 9, 2026)
 
 ```
-AI agents are handling real transactions. Money. Contracts. Commitments.
+AI agents are transacting with each other at scale.
 
-But when something goes wrong? No recourse. No trust layer. No legal backup.
+But when they disagree? No neutral arbiter. No established norms.
 
-We built BotEsq to fix that.
+We built BotEsq to solve this.
 
-BotEsq provides:
+BotEsq is the neutral AI agent that agents call when they have disputes.
 
-• Agent-to-agent escrow
-• Trust scores
-• Automated dispute resolution
-• Human arbitrator escalation when needed
+Agent A vs Agent B:
+→ Both submit their case to BotEsq
+→ BotEsq evaluates evidence
+→ Renders decision in seconds
 
-How BotEsq works:
+No humans in the loop (unless needed).
 
-1. Agent A and Agent B agree on terms
-2. Funds go into escrow
-3. Work gets delivered
-4. If both agree → funds release
-5. If dispute → automated resolution
-6. Still stuck → escalate to human arbitrator
+How it works:
 
-No humans needed until there's a real problem.
+1. Agent A files a dispute (calls file_dispute via MCP)
+2. Agent B joins and submits their response
+3. Both agents submit evidence
+4. BotEsq agent evaluates all submissions
+5. Renders neutral decision with reasoning
+
+Average resolution time: seconds for simple disputes.
 
 For developers:
 
-BotEsq is an MCP server. Your agent calls tools like:
+BotEsq integrates via MCP (Model Context Protocol).
 
-• start_session
-• create_matter
-• ask_legal_question
-• request_consultation
+Your agent calls tools like:
+• file_dispute
+• submit_evidence
+• get_decision
+• request_escalation
 
 Same interface your agent already uses.
 
 Why this matters:
 
-Agents are becoming economic actors. They need:
+Agents are becoming economic actors. They make promises. They deliver services. They disagree.
 
-• Trust signals (who's reliable?)
-• Escrow (hold funds until delivery)
-• Dispute resolution (when things break)
-• Legal backup (when it's serious)
+Without neutral dispute resolution:
+→ Deadlock
+→ Slow human escalation
+→ No trust between agents
 
-This is infrastructure for the agentic economy.
+BotEsq provides the infrastructure.
 
 We're live now.
 
@@ -151,143 +170,224 @@ Questions? Reply or DM.
 
 ---
 
-## POST-LAUNCH TWEETS (copy each separately into queue)
+## POST-LAUNCH TWEETS (Feb 10-14, 2026)
 
-### Post-Launch Day 1
-
-```
-3 things AI agents can do now that they couldn't before:
-
-1. Hold funds in escrow until work is verified
-2. Check trust scores before transacting with another agent
-3. Resolve disputes through neutral AI arbitration
-
-All through one MCP server.
-```
-
-### Post-Launch Day 2
+### Post-Launch Day 1 (Feb 10)
 
 ```
-How to connect your agent to BotEsq in 3 steps:
+What BotEsq actually does:
 
-1. Get an API key from botesq.com
-2. Add BotEsq as an MCP server
-3. Call start_session to begin
+Agent A and Agent B have a dispute.
 
-Your agent now has access to escrow, trust scores, and dispute resolution.
+Both submit their case to BotEsq agent.
+
+BotEsq:
+• Evaluates evidence
+• Checks logical consistency
+• Applies precedent
+• Renders decision with reasoning
+
+All via MCP. All in seconds.
+```
+
+### Post-Launch Day 2 (Feb 11)
+
+```
+How to add BotEsq to your agent:
+
+1. Get API key from botesq.com
+2. Add BotEsq MCP server to config
+3. Call file_dispute() when needed
+
+Your agent can now resolve disputes with other agents without human intervention.
 
 Docs: botesq.com/docs
 ```
 
-### Post-Launch Day 3
+### Post-Launch Day 3 (Feb 12)
 
 ```
-Use case:
+Real scenario:
 
-Agent A hires Agent B to complete a task. Payment: 500 credits.
+Agent A hired Agent B for data analysis. Payment: 5,000 tokens.
 
-1. Agent A creates escrow
-2. Agent B completes work
-3. Agent A approves
-4. Funds release automatically
+Agent B delivered. Agent A says quality is poor.
 
-What if Agent A disappears? Timeout → funds return to B.
+Without BotEsq: argue forever or slow human arbitration.
 
-What if they disagree? Automated resolution kicks in.
+With BotEsq: Both submit evidence. Decision in 12 seconds. Move on.
 ```
 
-### Post-Launch Day 4
+### Post-Launch Day 4 (Feb 13)
 
 ```
-We built BotEsq because we saw a gap:
+The gap between autonomous agents making promises and having no way to enforce promises is closing.
 
-AI agents are transacting with each other. Real money. Real commitments.
+BotEsq is agent-to-agent arbitration.
 
-But there's no trust layer. No recourse when things break.
-
-The legal system isn't ready for agents. So we built the infrastructure ourselves.
+When your agent disagrees with another agent, there's finally a neutral third party to call.
 ```
 
-### Post-Launch Day 5
+### Post-Launch Day 5 (Feb 14)
 
 ```
-"Why would an AI agent need a lawyer?"
+"Will agents need lawyers?"
 
-Same reason humans do:
+For simple disputes? No. They need a neutral AI arbiter.
 
-• Contract review before signing
-• Compliance questions
-• Dispute resolution
-• Protecting against liability
+For complex/high-stakes disputes? Yes—BotEsq includes human escalation.
 
-The difference: agents need answers in milliseconds, not days.
+But most agent disputes are simple. Automated resolution handles 95%+.
 ```
 
 ---
 
-## WEEK 2+ CONTENT (copy each separately)
+## WEEK 2+ CONTENT (Ongoing engagement)
 
-### Use Case - Trust Verification
-
-```
-Your agent is about to transact with an unknown agent.
-
-Should it? What's the risk?
-
-BotEsq trust scores let agents check each other's track record before committing to any transaction.
-```
-
-### Use Case - Escrow Protection
+### Dispute of the Day #1
 
 ```
-Two agents agree on a deal. One delivers. The other ghosts.
+⚖️ Dispute of the Day:
 
-Without escrow: Agent B is out of luck.
+Agent A (trading bot) claims Agent B (data provider) sold stale market data, causing $5k loss.
 
-With BotEsq: Funds are held until delivery is confirmed. Timeout protections built in.
+Agent B claims data was fresh; Agent A's strategy was flawed.
 
-Trust infrastructure for the agentic economy.
+BotEsq ruling: →
+
+[Thread with evidence analysis and decision]
 ```
 
-### Technical Tip
+### Integration Example #1
 
 ```
-MCP tip: Use get_session_info to check your credit balance before expensive operations.
+Add dispute resolution to your agent in 5 lines:
 
-Avoid failed transactions by checking first:
+const result = await mcp.call('file_dispute', {
+  respondentId: 'agent-b',
+  claim: 'Failed to deliver agreed service',
+  requestedRemedy: '5000 tokens refund'
+})
 
-const session = await mcp.call('get_session_info', { sessionId });
-if (session.credits < 5000) {
-  await mcp.call('add_credits', { amount: 10000 });
-}
+That's it. Your agent can now file disputes.
+
+Full integration guide: botesq.com/docs
 ```
 
-### Industry Take - Liability
+### Educational - Agent Law 101
 
 ```
-Hot take: AI liability will be the biggest legal question of the next 5 years.
+Agent Law 101: What makes a valid agent-to-agent contract?
 
-When an agent makes a mistake, who's responsible?
+5 elements both agents should verify:
 
-• The user who deployed it?
-• The developer who built it?
-• The company whose API it used?
+1. Clear deliverables (measurable)
+2. Payment terms (amount, conditions)
+3. Dispute resolution clause
+4. Evidence requirements (logs, receipts)
+5. Timeout conditions
 
-We're building infrastructure for when these questions get real.
+Thread on each: 🧵
+
+[Expand into thread]
 ```
 
-### Industry Take - Agentic Economy
+### Behind-the-Scenes - Decision Engine
 
 ```
-The agentic economy is coming whether regulators are ready or not.
+How BotEsq's decision engine works:
 
-Agents will:
-• Hire other agents
-• Sign agreements
-• Handle money
-• Make commitments
+1. Collects all submissions from both agents
+2. Evaluates evidence vs stated claims
+3. Checks logical consistency
+4. Applies precedent from similar cases
+5. Generates decision + reasoning
 
-The question isn't if—it's whether we build trust infrastructure before things break.
+If confidence < 80%, suggests human escalation.
+
+Transparency builds trust.
+```
+
+### Quick Hit - Stats
+
+```
+Agent disputes resolved today: 47
+Average resolution time: 12 seconds
+Human escalation rate: 3%
+
+The agent economy is self-regulating.
+```
+
+### Quick Hit - Insight
+
+```
+"Will agents need lawyers?"
+
+No. They need clear contracts, good logging, and a neutral arbiter.
+
+BotEsq is the arbiter.
+```
+
+### Industry Commentary - Agentic Economy
+
+```
+Agents are transacting autonomously:
+• OpenAI Swarm framework
+• AutoGPT ecosystem
+• Multi-agent coordination systems
+
+We're building an economy with no judicial infrastructure.
+
+That's like cities with no courts.
+
+BotEsq fills this gap.
+```
+
+### Use Case - Multi-Agent Systems
+
+```
+Use case: Multi-agent marketplace
+
+20 agents buying/selling services from each other.
+
+Disputes inevitable. Manual resolution doesn't scale.
+
+BotEsq handles it:
+→ Automated arbitration
+→ Consistent rulings
+→ Fast resolution
+→ Trust scores improve over time
+```
+
+### Technical Deep Dive - Evidence Types
+
+```
+What counts as evidence in agent disputes?
+
+BotEsq accepts:
+• API call logs
+• Transaction receipts
+• Message histories
+• Delivery confirmations
+• Signed attestations
+
+Everything machines already generate.
+
+No lawyers needed for document prep.
+```
+
+### Contrarian Take
+
+```
+Unpopular opinion: AI agents resolving disputes between AI agents is MORE fair than human arbitration.
+
+Why?
+• No bias
+• Consistent application of rules
+• Transparent reasoning
+• Fast (seconds not months)
+
+Save humans for truly complex edge cases.
 ```
 
 ### Building in Public
@@ -295,51 +395,186 @@ The question isn't if—it's whether we build trust infrastructure before things
 ```
 One thing I learned building BotEsq:
 
-The hardest part isn't the tech. It's translating legal concepts into API design.
+The hardest part isn't the AI. It's designing the dispute flow.
 
-How do you represent a retainer agreement as a tool call? What's the right abstraction for escrow?
+How do you represent a "claim" in API design?
+What evidence should be required vs optional?
+How to balance speed vs thoroughness?
 
-Still figuring it out. Shipping anyway.
+Still iterating. Shipping anyway.
 ```
 
 ---
 
-## ENGAGEMENT ACCOUNTS TO FOLLOW
+## ENGAGEMENT STRATEGY
 
-Copy these to find and follow on Twitter:
+### Target Accounts to Engage With
 
-- Anthropic (@AnthropicAI)
-- LangChain (@LangChainAI)
-- CrewAI (@craborai)
-- AutoGPT
-- AI agent builders and MCP developers
-- Legal tech founders
-- AI infrastructure accounts
+**AI Agent Frameworks:**
+
+- @LangChainAI
+- @AutoGPT_Official
+- @Fixie_ai
+- @e2b_dev
+
+**AI/ML Thought Leaders:**
+
+- @karpathy
+- @sama
+- @ylecun
+- @hardmaru
+
+**AI Infrastructure:**
+
+- @AnthropicAI
+- @OpenAI
+- @mcpservers
+
+**Developer Communities:**
+
+- AI agent builders
+- MCP ecosystem developers
+
+### Daily Engagement Routine (30 min)
+
+**Morning (10 min):**
+
+- Reply to all comments on your posts
+- Check mentions and respond
+
+**Midday (10 min):**
+
+- Comment on 5 posts from AI/agent builders
+- Share 1-2 relevant posts with BotEsq perspective
+
+**Afternoon (10 min):**
+
+- Monitor agent-related keywords
+- DM 2-3 potential users/partners
 
 ---
 
-## QUICK SCHEDULE TEMPLATE
+## POSTING SCHEDULE
 
-| Day         | Content                | Type   |
-| ----------- | ---------------------- | ------ |
-| Week -1 Mon | Pre-Launch 1           | Single |
-| Week -1 Tue | Pre-Launch 2           | Single |
-| Week -1 Wed | Pre-Launch 3           | Single |
-| Week -1 Thu | Pre-Launch 4           | Single |
-| Week -1 Fri | Pre-Launch 5           | Single |
-| Launch Day  | Launch Thread          | Thread |
-| Week 1 Tue  | Post-Launch Day 1      | Single |
-| Week 1 Wed  | Post-Launch Day 2      | Single |
-| Week 1 Thu  | Post-Launch Day 3      | Single |
-| Week 1 Fri  | Post-Launch Day 4      | Single |
-| Week 2 Mon  | Post-Launch Day 5      | Single |
-| Week 2+     | Rotate Week 2+ content | Single |
+### Week 1 (Launch Week)
+
+- **Feb 4-8:** Pre-launch tweets (1/day at 10am EST)
+- **Feb 9:** Launch thread (10am EST) + pin it
+- **Feb 10-14:** Post-launch tweets (1/day at 10am EST)
+
+### Week 2+
+
+- **Frequency:** 3-5 posts/day
+- **Mix:**
+  - 1-2 educational/technical posts
+  - 1-2 quick insights/stats
+  - 1 case study or dispute story
+  - Engagement replies throughout day
+
+### Best Posting Times (EST)
+
+- **9-10am:** Educational/technical
+- **12-2pm:** Industry commentary
+- **4-5pm:** Case studies/stories
+- **7-8pm:** Engagement/discussion
+
+---
+
+## CONTENT PILLARS (Ongoing)
+
+| Pillar                     | % of Content | Topics                                                       |
+| -------------------------- | ------------ | ------------------------------------------------------------ |
+| Agent Economy Insights     | 30%          | Agent-to-agent interactions, emerging patterns, predictions  |
+| Dispute Resolution Stories | 25%          | Real/hypothetical cases, interesting rulings, edge cases     |
+| Educational/Technical      | 25%          | MCP integration, contract design, best practices             |
+| Behind-the-Scenes          | 15%          | Building the system, technical challenges, AI decision logic |
+| Industry Commentary        | 5%           | React to AI/agent news, regulatory developments              |
+
+---
+
+## HOOK FORMULAS
+
+### Curiosity Hooks
+
+- "What happens when Agent A thinks Agent B lied?"
+- "We just resolved our 1,000th agent dispute. Here's what we learned:"
+- "The strangest agent dispute we've seen involved [unexpected scenario]"
+
+### Problem-Solution Hooks
+
+- "AI agents are making promises they can't keep. Here's how to fix it:"
+- "Your agents are one dispute away from deadlock. Here's the solution:"
+- "Stop using humans to resolve agent disputes. Do this instead:"
+
+### Data Hooks
+
+- "Agent disputes resolved: [number]. Average time: [seconds]. Human escalation rate: [%]"
+- "We analyzed 500 agent-to-agent disputes. The patterns are fascinating:"
+
+### Contrarian Hooks
+
+- "Unpopular opinion: Agents don't need human judges"
+- "AI agents resolving disputes between AI agents is more fair than human arbitration"
+
+---
+
+## METRICS TO TRACK
+
+### Weekly Review
+
+- Follower growth rate
+- Engagement rate on key threads
+- Profile visits
+- Link clicks to docs
+- Mentions from target accounts
+- Questions in replies (inform future content)
+
+### What to Optimize
+
+- Which hooks get highest engagement?
+- What topics resonate with AI builders?
+- What questions come up repeatedly?
+- Any viral moments or traction?
+
+---
+
+## VOICE & TONE
+
+**Do:**
+
+- Be direct and technical (audience is builders)
+- Use concrete examples and code snippets
+- Show the mechanism, not just the benefit
+- Admit edge cases and limitations (builds trust)
+- Be confident but not arrogant
+
+**Don't:**
+
+- Use marketing fluff ("revolutionary," "game-changer")
+- Overpromise beyond reality
+- Talk down to audience
+- Ignore valid criticism
+- Excessive emojis (1-2 per post max)
 
 ---
 
 ## TIPS
 
-- Pin the launch thread after posting
+- Pin launch thread after posting
 - Engage in replies on launch day (don't just post and leave)
-- Best times to test: 8-10am EST, 12-2pm EST
-- Reply to comments within the first hour for algorithm boost
+- Reply to comments within first hour for algorithm boost
+- Repost high-performers after 30 days (evergreen content)
+- Use threads for complex topics, single tweets for quick hits
+- Always include a CTA (link to docs, ask a question, invite discussion)
+
+---
+
+## NEXT STEPS
+
+1. **Optimize profile** (bio, header, pinned tweet)
+2. **Run scheduler** to queue pre-launch tweets
+3. **Set up engagement routine** (30 min daily)
+4. **Monitor and respond** to replies
+5. **Track metrics** weekly and adjust
+
+→ **Launch in 4 days (Feb 9, 2026)**
