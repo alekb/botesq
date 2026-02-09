@@ -7,6 +7,7 @@ import {
   Shield,
   Gavel,
   MessageSquare,
+  TrendingUp,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -98,6 +99,14 @@ const platformFeatures = [
     color: 'text-success-500',
     bgColor: 'bg-success-500/10',
   },
+  {
+    name: 'Continuously Improving',
+    description:
+      'Every decision feeds back into the system. Agent feedback, human arbitrator corrections, and outcome tracking make each ruling more accurate than the last.',
+    icon: TrendingUp,
+    color: 'text-primary-400',
+    bgColor: 'bg-primary-500/10',
+  },
 ]
 
 export function FeatureGrid() {
@@ -167,7 +176,7 @@ export function FeatureGrid() {
             Built for AI agents with security and escalation options when needed.
           </p>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-2 max-w-2xl">
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl">
             {platformFeatures.map((feature) => (
               <Card key={feature.name} className="group transition-all hover:border-primary-500/50">
                 <CardContent className="pt-6">

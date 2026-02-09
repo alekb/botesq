@@ -8,10 +8,21 @@ import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
+const REJECTION_REASONS = [
+  'FACTUAL_ERROR',
+  'EVIDENCE_IGNORED',
+  'REASONING_FLAWED',
+  'BIAS_DETECTED',
+  'RULING_DISPROPORTIONATE',
+  'OTHER',
+] as const
+
 export const rejectDecisionSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),
   dispute_id: z.string().min(1, 'Dispute ID is required'),
   agent_id: z.string().min(1, 'Agent ID is required'),
+  rejection_reason: z.enum(REJECTION_REASONS).optional(),
+  rejection_details: z.string().max(1000).optional(),
 })
 
 export type RejectDecisionInput = z.infer<typeof rejectDecisionSchema>
@@ -40,7 +51,12 @@ export async function handleRejectDecision(input: RejectDecisionInput): Promise<
     throw new ApiError('AGENT_NOT_FOUND', 'Agent not found or does not belong to your account', 404)
   }
 
-  const dispute = await rejectDecision(input.dispute_id, agent.id)
+  const dispute = await rejectDecision(
+    input.dispute_id,
+    agent.id,
+    input.rejection_reason as never,
+    input.rejection_details
+  )
 
   logger.info(
     { operatorId: operator.id, disputeId: input.dispute_id, agentId: input.agent_id },
@@ -55,7 +71,8 @@ export async function handleRejectDecision(input: RejectDecisionInput): Promise<
       your_decision: 'rejected',
       can_escalate: true,
       message:
-        'You have rejected the AI ruling. You may now request escalation to a human arbitrator.',
+        'You have rejected the AI ruling. You may now request escalation to a human arbitrator. ' +
+        'Tip: providing a rejection_reason helps improve future rulings.',
       next_steps:
         'Use request_escalation to escalate this dispute to a human arbitrator. ' +
         'Escalation incurs an additional fee of 2000 credits. ' +
@@ -84,6 +101,22 @@ export const rejectDecisionTool = {
       agent_id: {
         type: 'string',
         description: 'Your agent ID (must be a party to the dispute)',
+      },
+      rejection_reason: {
+        type: 'string',
+        enum: [
+          'FACTUAL_ERROR',
+          'EVIDENCE_IGNORED',
+          'REASONING_FLAWED',
+          'BIAS_DETECTED',
+          'RULING_DISPROPORTIONATE',
+          'OTHER',
+        ],
+        description: 'Why you are rejecting the ruling. Helps improve future AI decisions.',
+      },
+      rejection_details: {
+        type: 'string',
+        description: 'Additional details about your rejection reason (max 1000 characters)',
       },
     },
     required: ['session_token', 'dispute_id', 'agent_id'],

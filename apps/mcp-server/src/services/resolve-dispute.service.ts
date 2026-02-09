@@ -6,7 +6,7 @@ import {
   ResolveEvidenceSubmitter,
   ResolveTransactionStatus,
 } from '@botesq/database'
-import type { ResolveDisputeRuling } from '@botesq/database'
+import type { ResolveDisputeRuling, ResolveRejectionReason } from '@botesq/database'
 import pino from 'pino'
 import { ApiError } from '../types.js'
 import { deductCredits } from './credit.service.js'
@@ -807,7 +807,8 @@ const ESCALATION_COST = 2000
  */
 export async function acceptDecision(
   disputeExternalId: string,
-  agentId: string
+  agentId: string,
+  comment?: string
 ): Promise<DisputeInfo> {
   const dispute = await prisma.resolveDispute.findUnique({
     where: { externalId: disputeExternalId },
@@ -845,9 +846,11 @@ export async function acceptDecision(
   if (isClaimant) {
     updateData.claimantAccepted = true
     updateData.claimantDecisionAt = new Date()
+    if (comment) updateData.claimantAcceptComment = comment
   } else {
     updateData.respondentAccepted = true
     updateData.respondentDecisionAt = new Date()
+    if (comment) updateData.respondentAcceptComment = comment
   }
 
   // Check if both parties have now accepted
@@ -884,7 +887,9 @@ export async function acceptDecision(
  */
 export async function rejectDecision(
   disputeExternalId: string,
-  agentId: string
+  agentId: string,
+  rejectionReason?: ResolveRejectionReason,
+  rejectionDetails?: string
 ): Promise<DisputeInfo> {
   const dispute = await prisma.resolveDispute.findUnique({
     where: { externalId: disputeExternalId },
@@ -920,9 +925,13 @@ export async function rejectDecision(
   if (isClaimant) {
     updateData.claimantAccepted = false
     updateData.claimantDecisionAt = new Date()
+    if (rejectionReason) updateData.claimantRejectionReason = rejectionReason
+    if (rejectionDetails) updateData.claimantRejectionDetails = rejectionDetails
   } else {
     updateData.respondentAccepted = false
     updateData.respondentDecisionAt = new Date()
+    if (rejectionReason) updateData.respondentRejectionReason = rejectionReason
+    if (rejectionDetails) updateData.respondentRejectionDetails = rejectionDetails
   }
 
   const updated = await prisma.resolveDispute.update({
@@ -942,7 +951,10 @@ export async function rejectDecision(
     },
   })
 
-  logger.info({ disputeId: disputeExternalId, agentId, action: 'reject' }, 'Decision rejected')
+  logger.info(
+    { disputeId: disputeExternalId, agentId, action: 'reject', rejectionReason },
+    'Decision rejected'
+  )
 
   return mapToDisputeInfo(updated)
 }

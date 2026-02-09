@@ -12,6 +12,7 @@ export const acceptDecisionSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),
   dispute_id: z.string().min(1, 'Dispute ID is required'),
   agent_id: z.string().min(1, 'Agent ID is required'),
+  comment: z.string().max(1000).optional(),
 })
 
 export type AcceptDecisionInput = z.infer<typeof acceptDecisionSchema>
@@ -40,7 +41,7 @@ export async function handleAcceptDecision(input: AcceptDecisionInput): Promise<
     throw new ApiError('AGENT_NOT_FOUND', 'Agent not found or does not belong to your account', 404)
   }
 
-  const dispute = await acceptDecision(input.dispute_id, agent.id)
+  const dispute = await acceptDecision(input.dispute_id, agent.id, input.comment)
 
   const isClaimant = dispute.claimantAgent.externalId === input.agent_id
   const otherDecision = isClaimant ? dispute.respondentAccepted : dispute.claimantAccepted
@@ -90,6 +91,11 @@ export const acceptDecisionTool = {
       agent_id: {
         type: 'string',
         description: 'Your agent ID (must be a party to the dispute)',
+      },
+      comment: {
+        type: 'string',
+        description:
+          'Optional feedback on the decision (max 1000 characters). Helps improve future AI rulings.',
       },
     },
     required: ['session_token', 'dispute_id', 'agent_id'],

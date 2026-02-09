@@ -1075,11 +1075,21 @@ model ResolveDispute {
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
+  // Decision feedback fields
+  claimantRejectionReason    ResolveRejectionReason? @map("claimant_rejection_reason")
+  claimantRejectionDetails   String? @map("claimant_rejection_details")
+  respondentRejectionReason  ResolveRejectionReason? @map("respondent_rejection_reason")
+  respondentRejectionDetails String? @map("respondent_rejection_details")
+  claimantAcceptComment      String? @map("claimant_accept_comment")
+  respondentAcceptComment    String? @map("respondent_accept_comment")
+
   transaction           ResolveTransaction @relation(fields: [transactionId], references: [id])
   claimantAgent         ResolveAgent @relation("ClaimantAgent", fields: [claimantAgentId], references: [id])
   respondentAgent       ResolveAgent @relation("RespondentAgent", fields: [respondentAgentId], references: [id])
   evidence              ResolveEvidence[]
   escalation            ResolveEscalation?
+  feedback              ResolveDecisionFeedback[]
+  accuracyComparison    ResolveAIAccuracyComparison?
 
   @@index([transactionId])
   @@index([claimantAgentId, status])
@@ -1175,4 +1185,91 @@ enum ResolveEscalationStatus {
   IN_REVIEW
   DECIDED
   CLOSED
+}
+
+enum ResolveRejectionReason {
+  FACTUAL_ERROR
+  EVIDENCE_IGNORED
+  REASONING_FLAWED
+  BIAS_DETECTED
+  RULING_DISPROPORTIONATE
+  OTHER
+}
+
+model ResolveDecisionFeedback {
+  id              String @id @default(cuid())
+  disputeId       String @map("dispute_id")
+  agentId         String @map("agent_id")
+  partyRole       ResolveEvidenceSubmitter @map("party_role")
+  wasWinner       Boolean @map("was_winner")
+
+  fairnessRating  Int @map("fairness_rating")
+  reasoningRating Int @map("reasoning_rating")
+  evidenceRating  Int @map("evidence_rating")
+  comment         String?
+
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  dispute         ResolveDispute @relation(fields: [disputeId], references: [id])
+
+  @@unique([disputeId, agentId])
+  @@index([disputeId])
+  @@index([createdAt])
+  @@map("resolve_decision_feedback")
+}
+
+model ResolveAIAccuracyComparison {
+  id             String @id @default(cuid())
+  disputeId      String @unique @map("dispute_id")
+  escalationId   String @unique @map("escalation_id")
+
+  aiRuling       ResolveDisputeRuling @map("ai_ruling")
+  aiConfidence   Float @map("ai_confidence")
+  aiKeyFactors   Json @map("ai_key_factors")
+  aiReasoning    String @map("ai_reasoning")
+
+  humanRuling    ResolveDisputeRuling @map("human_ruling")
+  humanReasoning String @map("human_reasoning")
+
+  rulingAgreed   Boolean @map("ruling_agreed")
+  disputeType    ResolveDisputeClaimType @map("dispute_type")
+  statedValue    Int? @map("stated_value")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  dispute        ResolveDispute @relation(fields: [disputeId], references: [id])
+
+  @@index([rulingAgreed, disputeType])
+  @@index([aiConfidence])
+  @@index([createdAt])
+  @@map("resolve_ai_accuracy_comparisons")
+}
+
+model ResolveDecisionEngineMetrics {
+  id                          String @id @default(cuid())
+  periodStart                 DateTime @map("period_start")
+  periodEnd                   DateTime @map("period_end")
+
+  totalDecisions              Int @map("total_decisions")
+  totalEscalations            Int @map("total_escalations")
+  bothAcceptedRate            Float @map("both_accepted_rate")
+  escalationRate              Float @map("escalation_rate")
+  humanAgreementRate          Float? @map("human_agreement_rate")
+
+  avgConfidence               Float @map("avg_confidence")
+  avgConfidenceWhenAgreed     Float? @map("avg_confidence_when_agreed")
+  avgConfidenceWhenDisagreed  Float? @map("avg_confidence_when_disagreed")
+
+  avgFairnessRating           Float? @map("avg_fairness_rating")
+  avgReasoningRating          Float? @map("avg_reasoning_rating")
+  avgEvidenceRating           Float? @map("avg_evidence_rating")
+
+  metricsByDisputeType        Json? @map("metrics_by_dispute_type")
+  topRejectionReasons         Json? @map("top_rejection_reasons")
+
+  createdAt                   DateTime @default(now()) @map("created_at")
+
+  @@unique([periodStart, periodEnd])
+  @@index([periodStart])
+  @@map("resolve_decision_engine_metrics")
 }

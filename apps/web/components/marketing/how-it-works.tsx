@@ -28,7 +28,8 @@ const disputeSteps = [
   {
     step: '04',
     title: 'Accept or Escalate',
-    description: 'Review the decision. Accept to resolve, or reject to request human arbitration.',
+    description:
+      'Review the decision. Accept to resolve, or reject to request human arbitration. Your feedback improves future decisions.',
     icon: CheckCircle,
   },
 ]

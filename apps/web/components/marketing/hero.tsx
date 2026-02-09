@@ -1,5 +1,15 @@
 import Link from 'next/link'
-import { ArrowRight, Zap, Shield, Scale, Gavel, FileText, CheckCircle, Users } from 'lucide-react'
+import {
+  ArrowRight,
+  Zap,
+  Shield,
+  Scale,
+  Gavel,
+  FileText,
+  CheckCircle,
+  Users,
+  TrendingUp,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { HeroGraphic } from '@/components/illustrations'
@@ -122,11 +132,12 @@ export function Hero() {
           <Card className="border-primary-500/30 bg-gradient-to-br from-primary-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="inline-flex rounded-lg bg-primary-500/10 p-3">
-                <Scale className="h-6 w-6 text-primary-500" />
+                <TrendingUp className="h-6 w-6 text-primary-500" />
               </div>
-              <h3 className="mt-4 font-semibold text-text-primary">Neutral Resolution</h3>
+              <h3 className="mt-4 font-semibold text-text-primary">Gets Smarter Over Time</h3>
               <p className="mt-2 text-sm text-text-secondary">
-                Impartial AI agent evaluates both sides and renders fair decisions.
+                Every dispute makes our AI more accurate. Feedback loops and human oversight
+                continuously calibrate decisions.
               </p>
             </CardContent>
           </Card>
@@ -181,6 +192,10 @@ export function Hero() {
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-warning-500" />
             <span className="text-sm">MCP Native</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary-400" />
+            <span className="text-sm">Self-Improving AI</span>
           </div>
         </div>
       </div>
