@@ -22,6 +22,10 @@ const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'd
 // Response deadline: 72 hours
 const RESPONSE_DEADLINE_HOURS = 72
 
+// Evidence review grace period: 24 hours after response received
+// Disputes won't go to arbitration until both parties mark complete OR this period expires
+const EVIDENCE_GRACE_PERIOD_HOURS = 24
+
 // Pricing constants
 const FREE_VALUE_THRESHOLD_CENTS = 10000 // $100
 const FREE_MONTHLY_DISPUTES = 5
@@ -578,6 +582,22 @@ export async function addEvidence(params: {
     )
   }
 
+  // Check if this party has already marked submission complete
+  if (submittedBy === ResolveEvidenceSubmitter.CLAIMANT && dispute.claimantSubmissionComplete) {
+    throw new ApiError(
+      'SUBMISSION_CLOSED',
+      'You have already marked your submission as complete. No more evidence can be submitted.',
+      400
+    )
+  }
+  if (submittedBy === ResolveEvidenceSubmitter.RESPONDENT && dispute.respondentSubmissionComplete) {
+    throw new ApiError(
+      'SUBMISSION_CLOSED',
+      'You have already marked your submission as complete. No more evidence can be submitted.',
+      400
+    )
+  }
+
   const evidence = await prisma.resolveEvidence.create({
     data: {
       disputeId: dispute.id,
@@ -599,6 +619,107 @@ export async function addEvidence(params: {
   )
 
   return { evidenceId: evidence.id }
+}
+
+/**
+ * Mark submission as complete for a party
+ */
+export async function markSubmissionComplete(params: {
+  disputeExternalId: string
+  agentId: string
+}): Promise<{
+  disputeId: string
+  yourSubmissionComplete: boolean
+  otherPartyComplete: boolean
+  bothComplete: boolean
+}> {
+  const { disputeExternalId, agentId } = params
+
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  // Determine party role
+  const isClaimant = dispute.claimantAgentId === agentId
+  const isRespondent = dispute.respondentAgentId === agentId
+
+  if (!isClaimant && !isRespondent) {
+    throw new ApiError('NOT_PARTY', 'Only dispute parties can mark submission complete', 403)
+  }
+
+  // Must be in a status that allows evidence submission
+  const allowedStatuses: ResolveDisputeStatus[] = [
+    ResolveDisputeStatus.AWAITING_RESPONSE,
+    ResolveDisputeStatus.RESPONSE_RECEIVED,
+  ]
+
+  if (!allowedStatuses.includes(dispute.status as ResolveDisputeStatus)) {
+    throw new ApiError(
+      'SUBMISSION_CLOSED',
+      `Cannot mark submission complete for dispute in ${dispute.status} status`,
+      400
+    )
+  }
+
+  // Check if already marked complete
+  if (isClaimant && dispute.claimantSubmissionComplete) {
+    throw new ApiError(
+      'ALREADY_COMPLETE',
+      'You have already marked your submission as complete',
+      400
+    )
+  }
+  if (isRespondent && dispute.respondentSubmissionComplete) {
+    throw new ApiError(
+      'ALREADY_COMPLETE',
+      'You have already marked your submission as complete',
+      400
+    )
+  }
+
+  const now = new Date()
+  const updateData: Record<string, unknown> = {}
+
+  if (isClaimant) {
+    updateData.claimantSubmissionComplete = true
+    updateData.claimantSubmissionCompletedAt = now
+  } else {
+    updateData.respondentSubmissionComplete = true
+    updateData.respondentSubmissionCompletedAt = now
+  }
+
+  await prisma.resolveDispute.update({
+    where: { id: dispute.id },
+    data: updateData,
+  })
+
+  const otherPartyComplete = isClaimant
+    ? dispute.respondentSubmissionComplete
+    : dispute.claimantSubmissionComplete
+
+  const bothComplete =
+    (isClaimant && otherPartyComplete) || (isRespondent && dispute.claimantSubmissionComplete)
+
+  logger.info(
+    {
+      disputeId: disputeExternalId,
+      agentId,
+      role: isClaimant ? 'claimant' : 'respondent',
+      bothComplete,
+    },
+    'Submission marked complete'
+  )
+
+  return {
+    disputeId: dispute.externalId,
+    yourSubmissionComplete: true,
+    otherPartyComplete,
+    bothComplete,
+  }
 }
 
 /**
@@ -763,7 +884,12 @@ export async function listDisputesForAgent(
 }
 
 /**
- * List disputes pending arbitration
+ * List disputes pending arbitration.
+ *
+ * A dispute is ready for arbitration when:
+ * 1. Both parties have marked submission complete, OR
+ * 2. The evidence grace period (24h after response received) has expired, OR
+ * 3. The response deadline has passed (respondent never responded)
  */
 export async function listDisputesPendingArbitration(): Promise<
   Array<{
@@ -774,13 +900,23 @@ export async function listDisputesPendingArbitration(): Promise<
   }>
 > {
   const now = new Date()
+  const gracePeriodCutoff = new Date(now.getTime() - EVIDENCE_GRACE_PERIOD_HOURS * 60 * 60 * 1000)
 
   return await prisma.resolveDispute.findMany({
     where: {
       OR: [
-        // Response received, ready for arbitration
-        { status: ResolveDisputeStatus.RESPONSE_RECEIVED },
-        // Awaiting response but deadline passed
+        // Both parties marked submission complete
+        {
+          status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+          claimantSubmissionComplete: true,
+          respondentSubmissionComplete: true,
+        },
+        // Grace period expired after response received
+        {
+          status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+          responseSubmittedAt: { lt: gracePeriodCutoff },
+        },
+        // Awaiting response but deadline passed (respondent never responded)
         {
           status: ResolveDisputeStatus.AWAITING_RESPONSE,
           responseDeadline: { lt: now },

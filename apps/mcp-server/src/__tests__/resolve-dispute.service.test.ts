@@ -67,6 +67,8 @@ import {
   fileDispute,
   respondToDispute,
   addEvidence,
+  markSubmissionComplete,
+  listDisputesPendingArbitration,
   recordRuling,
   acceptDecision,
   rejectDecision,
@@ -643,6 +645,309 @@ describe('resolve-dispute.service', () => {
           submittedBy: ResolveEvidenceSubmitter.RESPONDENT,
         }),
       })
+    })
+  })
+
+  describe('addEvidence - submission complete blocking', () => {
+    it('should throw error if claimant already marked submission complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        claimantAgentId: 'agent_claimant',
+        respondentAgentId: 'agent_respondent',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        claimantSubmissionComplete: true,
+        respondentSubmissionComplete: false,
+      } as never)
+
+      await expect(
+        addEvidence({
+          disputeExternalId: 'RDISP-123',
+          submittingAgentId: 'agent_claimant',
+          evidenceType: ResolveEvidenceType.TEXT_STATEMENT,
+          title: 'Late evidence',
+          content: 'Should be blocked',
+        })
+      ).rejects.toThrow('already marked your submission as complete')
+    })
+
+    it('should throw error if respondent already marked submission complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        claimantAgentId: 'agent_claimant',
+        respondentAgentId: 'agent_respondent',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        claimantSubmissionComplete: false,
+        respondentSubmissionComplete: true,
+      } as never)
+
+      await expect(
+        addEvidence({
+          disputeExternalId: 'RDISP-123',
+          submittingAgentId: 'agent_respondent',
+          evidenceType: ResolveEvidenceType.TEXT_STATEMENT,
+          title: 'Late evidence',
+          content: 'Should be blocked',
+        })
+      ).rejects.toThrow('already marked your submission as complete')
+    })
+
+    it('should still allow other party to submit if only one party marked complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        claimantAgentId: 'agent_claimant',
+        respondentAgentId: 'agent_respondent',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        claimantSubmissionComplete: true,
+        respondentSubmissionComplete: false,
+      } as never)
+      vi.mocked(prisma.resolveEvidence.create).mockResolvedValue({ id: 'ev_123' } as never)
+
+      const result = await addEvidence({
+        disputeExternalId: 'RDISP-123',
+        submittingAgentId: 'agent_respondent',
+        evidenceType: ResolveEvidenceType.TEXT_STATEMENT,
+        title: 'Respondent evidence',
+        content: 'Still allowed because respondent has not marked complete',
+      })
+
+      expect(result.evidenceId).toBe('ev_123')
+    })
+  })
+
+  describe('markSubmissionComplete', () => {
+    const mockDispute = {
+      id: 'dispute_123',
+      externalId: 'RDISP-123',
+      claimantAgentId: 'agent_claimant',
+      respondentAgentId: 'agent_respondent',
+      status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+      claimantSubmissionComplete: false,
+      respondentSubmissionComplete: false,
+    }
+
+    it('should throw error if dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      await expect(
+        markSubmissionComplete({
+          disputeExternalId: 'nonexistent',
+          agentId: 'agent_claimant',
+        })
+      ).rejects.toThrow('Dispute not found')
+    })
+
+    it('should throw error if not a party', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+
+      await expect(
+        markSubmissionComplete({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_outsider',
+        })
+      ).rejects.toThrow('Only dispute parties')
+    })
+
+    it('should throw error if dispute status does not allow it', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        status: ResolveDisputeStatus.IN_ARBITRATION,
+      } as never)
+
+      await expect(
+        markSubmissionComplete({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_claimant',
+        })
+      ).rejects.toThrow('Cannot mark submission complete')
+    })
+
+    it('should throw error if claimant already marked complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        claimantSubmissionComplete: true,
+      } as never)
+
+      await expect(
+        markSubmissionComplete({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_claimant',
+        })
+      ).rejects.toThrow('already marked your submission as complete')
+    })
+
+    it('should throw error if respondent already marked complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        respondentSubmissionComplete: true,
+      } as never)
+
+      await expect(
+        markSubmissionComplete({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_respondent',
+        })
+      ).rejects.toThrow('already marked your submission as complete')
+    })
+
+    it('should mark claimant submission as complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await markSubmissionComplete({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_claimant',
+      })
+
+      expect(result.yourSubmissionComplete).toBe(true)
+      expect(result.otherPartyComplete).toBe(false)
+      expect(result.bothComplete).toBe(false)
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            claimantSubmissionComplete: true,
+            claimantSubmissionCompletedAt: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should mark respondent submission as complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await markSubmissionComplete({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_respondent',
+      })
+
+      expect(result.yourSubmissionComplete).toBe(true)
+      expect(result.otherPartyComplete).toBe(false)
+      expect(result.bothComplete).toBe(false)
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            respondentSubmissionComplete: true,
+            respondentSubmissionCompletedAt: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should report bothComplete=true when claimant marks complete and respondent already is', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        respondentSubmissionComplete: true,
+      } as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await markSubmissionComplete({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_claimant',
+      })
+
+      expect(result.yourSubmissionComplete).toBe(true)
+      expect(result.otherPartyComplete).toBe(true)
+      expect(result.bothComplete).toBe(true)
+    })
+
+    it('should report bothComplete=true when respondent marks complete and claimant already is', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        claimantSubmissionComplete: true,
+      } as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await markSubmissionComplete({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_respondent',
+      })
+
+      expect(result.yourSubmissionComplete).toBe(true)
+      expect(result.otherPartyComplete).toBe(true)
+      expect(result.bothComplete).toBe(true)
+    })
+
+    it('should allow marking complete during AWAITING_RESPONSE status', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        status: ResolveDisputeStatus.AWAITING_RESPONSE,
+      } as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await markSubmissionComplete({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_claimant',
+      })
+
+      expect(result.yourSubmissionComplete).toBe(true)
+    })
+  })
+
+  describe('listDisputesPendingArbitration', () => {
+    it('should include disputes where both parties marked complete', async () => {
+      vi.mocked(prisma.resolveDispute.findMany).mockResolvedValue([
+        {
+          id: 'dispute_1',
+          externalId: 'RDISP-1',
+          responseDeadline: new Date(),
+          status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        },
+      ] as never)
+
+      const result = await listDisputesPendingArbitration()
+
+      expect(result).toHaveLength(1)
+      // Verify the query includes the both-complete condition
+      const queryArg = vi.mocked(prisma.resolveDispute.findMany).mock.calls[0]?.[0]
+      const orConditions = queryArg?.where?.OR as Array<Record<string, unknown>>
+      expect(orConditions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+            claimantSubmissionComplete: true,
+            respondentSubmissionComplete: true,
+          }),
+        ])
+      )
+    })
+
+    it('should include disputes where grace period has expired', async () => {
+      vi.mocked(prisma.resolveDispute.findMany).mockResolvedValue([])
+
+      await listDisputesPendingArbitration()
+
+      const queryArg = vi.mocked(prisma.resolveDispute.findMany).mock.calls[0]?.[0]
+      const orConditions = queryArg?.where?.OR as Array<Record<string, unknown>>
+      expect(orConditions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+            responseSubmittedAt: expect.objectContaining({ lt: expect.any(Date) }),
+          }),
+        ])
+      )
+    })
+
+    it('should include disputes where response deadline passed', async () => {
+      vi.mocked(prisma.resolveDispute.findMany).mockResolvedValue([])
+
+      await listDisputesPendingArbitration()
+
+      const queryArg = vi.mocked(prisma.resolveDispute.findMany).mock.calls[0]?.[0]
+      const orConditions = queryArg?.where?.OR as Array<Record<string, unknown>>
+      expect(orConditions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            status: ResolveDisputeStatus.AWAITING_RESPONSE,
+            responseDeadline: expect.objectContaining({ lt: expect.any(Date) }),
+          }),
+        ])
+      )
     })
   })
 
