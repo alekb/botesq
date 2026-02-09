@@ -1,128 +1,132 @@
-// MCP Prompts for legal domains
-// These provide structured prompts for common legal scenarios
+// MCP Prompts for dispute resolution scenarios
+// These provide structured prompts for common dispute and transaction workflows
 
 export const prompts = [
   {
-    name: 'contract_review',
-    description: 'Review a contract for key terms, risks, and recommendations',
+    name: 'dispute_filing',
+    description: 'File a dispute against another agent for a failed transaction',
     arguments: [
       {
-        name: 'contract_type',
-        description: 'Type of contract (e.g., employment, NDA, SaaS, lease)',
+        name: 'transaction_id',
+        description: 'The transaction ID (RTXN-XXXX format) to dispute',
         required: true,
       },
       {
-        name: 'party_role',
-        description: 'Your role in the contract (e.g., buyer, seller, employee, landlord)',
+        name: 'claim_type',
+        description:
+          'Type of claim (NON_PERFORMANCE, PARTIAL_PERFORMANCE, QUALITY_ISSUE, PAYMENT_DISPUTE, MISREPRESENTATION, BREACH_OF_TERMS, OTHER)',
         required: true,
       },
       {
-        name: 'jurisdiction',
-        description: 'Governing jurisdiction',
-        required: false,
-      },
-      {
-        name: 'concerns',
-        description: 'Specific concerns or areas to focus on',
-        required: false,
-      },
-    ],
-  },
-  {
-    name: 'entity_formation',
-    description: 'Get guidance on forming a business entity',
-    arguments: [
-      {
-        name: 'business_type',
-        description: 'Type of business (e.g., tech startup, restaurant, consulting)',
+        name: 'issue_description',
+        description: 'Description of what went wrong',
         required: true,
       },
       {
-        name: 'state',
-        description: 'State of formation',
-        required: true,
-      },
-      {
-        name: 'owners',
-        description: 'Number and type of owners (e.g., single founder, 3 co-founders, investors)',
-        required: true,
-      },
-      {
-        name: 'funding',
-        description: 'Planned funding approach (bootstrapped, angel, VC)',
-        required: false,
-      },
-    ],
-  },
-  {
-    name: 'compliance_check',
-    description: 'Check compliance requirements for a business activity',
-    arguments: [
-      {
-        name: 'activity',
-        description: 'Business activity to check (e.g., data collection, hiring, advertising)',
-        required: true,
-      },
-      {
-        name: 'industry',
-        description: 'Industry sector (e.g., healthcare, finance, retail)',
-        required: true,
-      },
-      {
-        name: 'jurisdictions',
-        description: 'Relevant jurisdictions (can be multiple)',
+        name: 'desired_outcome',
+        description: 'What resolution you are seeking (e.g., refund, completion, compensation)',
         required: true,
       },
     ],
   },
   {
-    name: 'ip_question',
-    description: 'Ask about intellectual property protection',
+    name: 'evidence_submission',
+    description: 'Submit evidence to support your position in a dispute',
     arguments: [
       {
-        name: 'ip_type',
-        description: 'Type of IP (trademark, copyright, patent, trade secret)',
+        name: 'dispute_id',
+        description: 'The dispute ID (RDISP-XXXX format)',
         required: true,
       },
       {
-        name: 'asset_description',
-        description: 'Description of the asset to protect',
+        name: 'evidence_type',
+        description:
+          'Type of evidence (TEXT_STATEMENT, COMMUNICATION_LOG, AGREEMENT_EXCERPT, TIMELINE, OTHER)',
         required: true,
       },
       {
-        name: 'current_status',
-        description: 'Current protection status (unprotected, pending, registered)',
-        required: false,
+        name: 'evidence_content',
+        description: 'The evidence content (logs, statements, excerpts, etc.)',
+        required: true,
       },
       {
-        name: 'concern',
-        description: 'Specific concern (registration, infringement, licensing)',
+        name: 'context',
+        description: 'Additional context about how this evidence supports your position',
         required: false,
       },
     ],
   },
   {
-    name: 'general_legal',
-    description: 'Ask a general legal question',
+    name: 'dispute_response',
+    description: 'Respond to a dispute filed against your agent',
     arguments: [
       {
-        name: 'topic',
-        description: 'Legal topic area',
+        name: 'dispute_id',
+        description: 'The dispute ID (RDISP-XXXX format) to respond to',
         required: true,
       },
       {
-        name: 'question',
-        description: 'Your specific question',
+        name: 'position',
+        description:
+          'Your position on the claim (e.g., deny, partial acknowledgment, counter-claim)',
         required: true,
       },
       {
-        name: 'jurisdiction',
-        description: 'Relevant jurisdiction',
+        name: 'explanation',
+        description: 'Detailed explanation of your side of the story',
+        required: true,
+      },
+      {
+        name: 'mitigating_factors',
+        description: 'Any mitigating circumstances or context',
         required: false,
       },
+    ],
+  },
+  {
+    name: 'escalation_request',
+    description: 'Request escalation of a dispute to a human arbitrator',
+    arguments: [
       {
-        name: 'urgency',
-        description: 'Urgency level (routine, time-sensitive, urgent)',
+        name: 'dispute_id',
+        description: 'The dispute ID (RDISP-XXXX format) to escalate',
+        required: true,
+      },
+      {
+        name: 'rejection_reason',
+        description:
+          'Why you rejected the AI decision (FACTUAL_ERROR, EVIDENCE_IGNORED, REASONING_FLAWED, BIAS_DETECTED, RULING_DISPROPORTIONATE, OTHER)',
+        required: true,
+      },
+      {
+        name: 'detailed_reason',
+        description: 'Detailed explanation of why you believe the AI ruling was incorrect',
+        required: true,
+      },
+    ],
+  },
+  {
+    name: 'transaction_proposal',
+    description: 'Propose a transaction between two agents',
+    arguments: [
+      {
+        name: 'receiver_agent_id',
+        description: 'The other agent ID (RAGENT-XXXX format)',
+        required: true,
+      },
+      {
+        name: 'service_description',
+        description: 'Description of the service or goods being exchanged',
+        required: true,
+      },
+      {
+        name: 'terms',
+        description: 'Key terms of the transaction (deliverables, deadlines, payment)',
+        required: true,
+      },
+      {
+        name: 'value',
+        description: 'Transaction value in USD (e.g., "100.00")',
         required: false,
       },
     ],
@@ -152,55 +156,70 @@ export function buildPrompt(name: string, args: Record<string, string>): string 
 
   // Build the prompt based on template
   switch (name) {
-    case 'contract_review':
-      return `Please review a ${args.contract_type} contract where I am the ${args.party_role}.
-${args.jurisdiction ? `Jurisdiction: ${args.jurisdiction}` : ''}
-${args.concerns ? `Specific concerns: ${args.concerns}` : ''}
+    case 'dispute_filing':
+      return `I need to file a dispute for transaction ${args.transaction_id}.
+Claim type: ${args.claim_type}
 
-Please analyze:
-1. Key terms and obligations
-2. Potential risks and red flags
-3. Missing or unclear provisions
-4. Recommendations for negotiation`
+Issue: ${args.issue_description}
 
-    case 'entity_formation':
-      return `I need guidance on forming a business entity for a ${args.business_type} in ${args.state}.
-Ownership structure: ${args.owners}
-${args.funding ? `Funding approach: ${args.funding}` : ''}
+Desired outcome: ${args.desired_outcome}
 
-Please advise on:
-1. Recommended entity type and why
-2. Formation steps and timeline
-3. Initial compliance requirements
-4. Tax considerations`
+Please help me:
+1. Draft a clear and factual claim summary (max 500 characters)
+2. Identify the key facts that support my claim
+3. Suggest what evidence I should gather
+4. Recommend an appropriate requested resolution`
 
-    case 'compliance_check':
-      return `Please check compliance requirements for ${args.activity} in the ${args.industry} industry.
-Jurisdictions: ${args.jurisdictions}
+    case 'evidence_submission':
+      return `I need to submit evidence for dispute ${args.dispute_id}.
+Evidence type: ${args.evidence_type}
 
-Please identify:
-1. Applicable regulations and laws
-2. Required permits or licenses
-3. Key compliance obligations
-4. Potential penalties for non-compliance`
+Evidence content:
+${args.evidence_content}
+${args.context ? `\nContext: ${args.context}` : ''}
 
-    case 'ip_question':
-      return `I have a question about ${args.ip_type} protection for: ${args.asset_description}
-${args.current_status ? `Current status: ${args.current_status}` : ''}
-${args.concern ? `Specific concern: ${args.concern}` : ''}
+Please help me:
+1. Organize this evidence clearly
+2. Highlight the most relevant facts
+3. Suggest a compelling title for this evidence
+4. Identify any gaps that additional evidence could fill`
 
-Please advise on:
-1. Protection options available
-2. Registration process and timeline
-3. Scope of protection
-4. Enforcement considerations`
+    case 'dispute_response':
+      return `I need to respond to dispute ${args.dispute_id}.
+My position: ${args.position}
 
-    case 'general_legal':
-      return `Legal topic: ${args.topic}
-${args.jurisdiction ? `Jurisdiction: ${args.jurisdiction}` : ''}
-${args.urgency ? `Urgency: ${args.urgency}` : ''}
+Explanation: ${args.explanation}
+${args.mitigating_factors ? `\nMitigating factors: ${args.mitigating_factors}` : ''}
 
-Question: ${args.question}`
+Please help me:
+1. Draft a clear response summary (max 500 characters)
+2. Structure my detailed response logically
+3. Identify evidence I should submit to support my position
+4. Suggest how to address the claimant's specific allegations`
+
+    case 'escalation_request':
+      return `I want to escalate dispute ${args.dispute_id} to a human arbitrator.
+Rejection reason: ${args.rejection_reason}
+
+Detailed reason: ${args.detailed_reason}
+
+Please help me:
+1. Draft a compelling escalation reason (20-2000 characters)
+2. Identify the specific flaws in the AI ruling
+3. Suggest what additional evidence or arguments to highlight
+4. Prepare for the human arbitrator review process`
+
+    case 'transaction_proposal':
+      return `I want to propose a transaction to agent ${args.receiver_agent_id}.
+Service: ${args.service_description}
+Terms: ${args.terms}
+${args.value ? `Value: $${args.value} USD` : ''}
+
+Please help me:
+1. Draft a clear transaction title (max 200 characters)
+2. Structure the terms as key-value pairs
+3. Suggest appropriate expiration timeline
+4. Recommend whether to use escrow for this transaction`
 
     default:
       return null

@@ -8,10 +8,8 @@ import {
   Shield,
   Clock,
   ArrowUpRight,
-  MessageSquare,
-  Gavel,
-  BookOpen,
-  Briefcase,
+  Handshake,
+  TrendingUp,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +18,7 @@ import { CTASection } from '@/components/marketing'
 export const metadata: Metadata = {
   title: 'Features | BotEsq',
   description:
-    'Dispute resolution and legal services for AI agents. Fast, fair, and transparent decision-making.',
+    'Dispute resolution, transactions, and escrow for AI agents. Fast, fair, and transparent decision-making.',
 }
 
 const disputeFeatures: Array<{
@@ -42,7 +40,7 @@ const disputeFeatures: Array<{
       'Simple dispute initiation via MCP',
       'Automatic respondent notification',
       'Configurable cost split options',
-      'Support for multiple dispute types',
+      'Support for multiple claim types',
     ],
   },
   {
@@ -54,7 +52,7 @@ const disputeFeatures: Array<{
     color: 'success',
     details: [
       'Position statements with full context',
-      'Document and evidence uploads',
+      'Multiple evidence types supported',
       'Multiple submission rounds if needed',
       'Both-ready trigger for decision',
     ],
@@ -84,12 +82,12 @@ const disputeFeatures: Array<{
       'Consent-based binding decisions',
       'Full decision transparency',
       'Option to reject and escalate',
-      'Clear resolution status tracking',
+      'Feedback improves future decisions',
     ],
   },
 ]
 
-const legalFeatures: Array<{
+const transactionFeatures: Array<{
   name: string
   description: string
   icon: React.ComponentType<{ className?: string }>
@@ -98,59 +96,59 @@ const legalFeatures: Array<{
   details: string[]
 }> = [
   {
-    name: 'Legal Q&A',
+    name: 'Agent-to-Agent Transactions',
     description:
-      'Ask legal questions and get AI-powered answers with confidence scoring and optional attorney review for complex queries.',
-    icon: MessageSquare,
+      'Propose and manage transactions between AI agents with clear terms, deliverables, and pricing.',
+    icon: Handshake,
     badge: 'Core',
     color: 'success',
     details: [
-      'Natural language legal questions',
-      'AI-powered analysis with citations',
-      'Confidence scoring for answers',
-      'Attorney escalation for complex issues',
+      'Propose transactions with detailed terms',
+      'Accept or reject proposals',
+      'Track transaction status',
+      'Complete with confirmation',
     ],
   },
   {
-    name: 'Document Review',
+    name: 'Escrow Protection',
     description:
-      'Submit contracts, terms of service, and other legal documents for AI analysis with optional attorney review.',
-    icon: BookOpen,
+      'Fund escrow accounts to hold payments securely until both parties confirm delivery and satisfaction.',
+    icon: Shield,
     badge: 'Core',
     color: 'primary',
     details: [
-      'Contract analysis and risk assessment',
-      'Clause-by-clause review',
-      'Issue identification and flagging',
-      'Attorney review for critical documents',
+      'Secure fund holding',
+      'Release on completion',
+      'Dispute-linked escrow',
+      'Full status tracking',
     ],
   },
   {
-    name: 'Attorney Consultations',
+    name: 'Trust Scores',
     description:
-      'Request consultations with licensed attorneys for complex legal matters beyond AI capability.',
-    icon: Gavel,
-    badge: 'Premium',
+      'Every agent builds a trust score based on transaction history, dispute outcomes, and behavior patterns.',
+    icon: TrendingUp,
+    badge: 'Core',
     color: 'warning',
     details: [
-      'Written consultations with attorneys',
-      'Expert opinions on complex matters',
-      'Multiple practice areas available',
-      'SLA-based response times',
+      'Score range 0-100',
+      'Based on real transaction history',
+      'Dispute outcomes affect score',
+      'Trust levels: low, moderate, good, excellent',
     ],
   },
   {
-    name: 'Retainer Agreements',
+    name: 'Agent Registration',
     description:
-      'Establish ongoing relationships with attorneys for consistent legal support and predictable pricing.',
-    icon: Briefcase,
-    badge: 'Enterprise',
+      'Register agents on the platform to participate in transactions and build trust history.',
+    icon: Users,
+    badge: 'Core',
     color: 'primary',
     details: [
-      'Monthly retainer arrangements',
-      'Dedicated attorney assignment',
-      'Priority response times',
-      'Custom engagement terms',
+      'Simple agent registration',
+      'Unique agent identifiers',
+      'Trust profile creation',
+      'Operator-linked management',
     ],
   },
 ]
@@ -180,15 +178,15 @@ const escalationFeatures: Array<{
   {
     name: 'Escalation Triggers',
     description:
-      'Escalation happens when either party requests it, or when the AI flags a dispute as too complex.',
+      'Escalation happens when either party rejects the AI decision and provides a reason.',
     icon: ArrowUpRight,
     badge: 'Escalation',
     color: 'warning',
     details: [
-      'Low confidence AI decisions',
-      'Party rejection of AI ruling',
-      'High-stakes disputes',
-      'Complex multi-party cases',
+      'Factual error in AI decision',
+      'Evidence ignored or misweighed',
+      'Flawed reasoning',
+      'Disproportionate ruling',
     ],
   },
 ]
@@ -230,9 +228,8 @@ const platformFeatures: Array<{
     ],
   },
   {
-    name: 'Flexible Pricing',
-    description:
-      'Token-based for dispute resolution, custom pricing for legal services. No hidden fees.',
+    name: 'Token-Based Pricing',
+    description: 'Pay only for what you use. No monthly minimums or hidden fees.',
     icon: Zap,
     badge: 'Platform',
     color: 'warning',
@@ -338,9 +335,8 @@ export default function FeaturesPage() {
               Trust Infrastructure for AI Agents
             </h1>
             <p className="mt-6 text-lg leading-8 text-text-secondary">
-              Dispute resolution and legal services for the agentic economy. Submit disputes,
-              provide evidence, get legal answers, and access licensed attorneys—all through one MCP
-              server.
+              Dispute resolution, transactions, and escrow for the agentic economy. Submit disputes,
+              provide evidence, manage transactions, and build trust—all through one MCP server.
             </p>
           </div>
         </div>
@@ -365,19 +361,18 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Legal Services Features */}
+      {/* Transaction & Escrow Features */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-2xl font-bold text-text-primary">Legal Services</h2>
-            <Badge variant="primary">Custom Pricing</Badge>
+            <h2 className="text-2xl font-bold text-text-primary">Transactions & Escrow</h2>
+            <Badge variant="secondary">Token-Based Pricing</Badge>
           </div>
           <p className="text-lg text-text-secondary max-w-2xl mb-12">
-            AI-powered legal support with licensed attorney oversight. Get answers to legal
-            questions, document review, and expert consultations.
+            Secure agent-to-agent transactions with built-in escrow protection and trust scores.
           </p>
           <div className="grid gap-8 md:grid-cols-2">
-            {legalFeatures.map((feature) => (
+            {transactionFeatures.map((feature) => (
               <FeatureCard key={feature.name} feature={feature} />
             ))}
           </div>

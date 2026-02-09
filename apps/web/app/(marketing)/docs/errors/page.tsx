@@ -86,28 +86,43 @@ const errorCategories = [
     name: 'Resource Errors',
     errors: [
       {
-        code: 'MATTER_NOT_FOUND',
+        code: 'DISPUTE_NOT_FOUND',
         status: 404,
-        description: 'The specified matter does not exist or is not accessible.',
-        resolution: 'Verify the matter_id and ensure it belongs to your account.',
+        description: 'The specified dispute does not exist or is not accessible.',
+        resolution:
+          'Verify the dispute_id (RDISP-XXXX format) and ensure it belongs to your account.',
       },
       {
-        code: 'DOCUMENT_NOT_FOUND',
+        code: 'TRANSACTION_NOT_FOUND',
         status: 404,
-        description: 'The specified document does not exist or is not accessible.',
-        resolution: 'Verify the document_id and ensure it belongs to your account.',
+        description: 'The specified transaction does not exist or is not accessible.',
+        resolution:
+          'Verify the transaction_id (RTXN-XXXX format) and ensure it belongs to your account.',
       },
       {
-        code: 'CONSULTATION_NOT_FOUND',
+        code: 'EVIDENCE_NOT_FOUND',
         status: 404,
-        description: 'The specified consultation does not exist or is not accessible.',
-        resolution: 'Verify the consultation_id and ensure it belongs to your account.',
+        description: 'The specified evidence does not exist or is not accessible.',
+        resolution: 'Verify the evidence_id and ensure it belongs to your dispute.',
       },
       {
-        code: 'RETAINER_NOT_FOUND',
+        code: 'ESCROW_NOT_FOUND',
         status: 404,
-        description: 'The specified retainer does not exist or has expired.',
-        resolution: 'Call get_retainer_terms to get a fresh retainer offer.',
+        description: 'No escrow account exists for this transaction.',
+        resolution: 'Use fund_escrow to create an escrow account for the transaction.',
+      },
+      {
+        code: 'DECISION_NOT_FOUND',
+        status: 404,
+        description: 'No decision has been rendered for this dispute yet.',
+        resolution: 'Wait for both parties to submit evidence and mark as ready.',
+      },
+      {
+        code: 'AGENT_NOT_FOUND',
+        status: 404,
+        description: 'The specified agent does not exist.',
+        resolution:
+          'Verify the agent_id (RAGENT-XXXX format). Register agents with register_resolve_agent.',
       },
     ],
   },
@@ -115,28 +130,37 @@ const errorCategories = [
     name: 'State Errors',
     errors: [
       {
-        code: 'RETAINER_REQUIRED',
+        code: 'DISPUTE_NOT_ACTIVE',
         status: 409,
-        description: 'This operation requires an accepted retainer agreement.',
-        resolution: 'Call get_retainer_terms and accept_retainer before proceeding.',
+        description: 'The dispute is not in an active state for this operation.',
+        resolution:
+          'Check dispute status with get_dispute. The dispute may already be closed or decided.',
       },
       {
-        code: 'MATTER_NOT_ACTIVE',
+        code: 'EVIDENCE_SUBMISSION_CLOSED',
         status: 409,
-        description: 'The matter is not in an active state.',
-        resolution: 'Check matter status. May need to accept retainer or reopen the matter.',
+        description: 'Evidence submission is closed for this dispute.',
+        resolution:
+          'Evidence can only be submitted while the dispute is in PENDING_RESPONSE or UNDER_REVIEW status.',
       },
       {
-        code: 'DOCUMENT_PROCESSING',
+        code: 'DECISION_PENDING',
         status: 409,
-        description: 'The document is still being processed.',
-        resolution: 'Wait and retry. Check status with get_document_analysis.',
+        description: 'The AI decision is still being generated.',
+        resolution: 'Wait for the decision to complete. Use webhooks to get notified when ready.',
       },
       {
-        code: 'CONSULTATION_PENDING',
+        code: 'ESCALATION_IN_PROGRESS',
         status: 409,
-        description: 'The consultation is still pending attorney review.',
-        resolution: 'Wait and retry. Check status with get_consultation_result.',
+        description: 'An escalation is already in progress for this dispute.',
+        resolution: 'Check escalation status with get_escalation_status.',
+      },
+      {
+        code: 'TRANSACTION_NOT_ACTIVE',
+        status: 409,
+        description: 'The transaction is not in an active state for this operation.',
+        resolution:
+          'Check transaction status. It may already be completed, cancelled, or disputed.',
       },
     ],
   },
@@ -202,7 +226,7 @@ export default function ErrorsPage() {
     "details": {
       "required_credits": 10000,
       "available_credits": 5000,
-      "operation": "create_matter"
+      "operation": "file_dispute"
     },
     "request_id": "req_abc123..."
   }

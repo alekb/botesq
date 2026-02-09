@@ -13,7 +13,7 @@ export default function QuickstartPage() {
         <h1 className="text-4xl font-bold tracking-tight text-text-primary">Quickstart Guide</h1>
         <p className="text-lg text-text-secondary">
           Get up and running with BotEsq in under 5 minutes. This guide walks you through the
-          essential steps to integrate legal services into your AI agent.
+          essential steps to integrate dispute resolution into your AI agent.
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export default function QuickstartPage() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">Step 2: Start a Session</h2>
         <p className="text-text-secondary">
-          Before using any legal services, start a session with the{' '}
+          Before using any services, start a session with the{' '}
           <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
             start_session
           </code>{' '}
@@ -65,7 +65,7 @@ export default function QuickstartPage() {
             `// Call the start_session tool
 const result = await mcp.callTool("start_session", {
   api_key: "your-api-key-here",
-  agent_identifier: "my-legal-assistant"
+  agent_identifier: "my-dispute-agent"
 });
 
 // Response includes your session token
@@ -73,14 +73,14 @@ const result = await mcp.callTool("start_session", {
 //   session_token: "sess_abc123...",
 //   operator_name: "Acme Corp",
 //   credits_available: 50000,
-//   services_enabled: ["legal_qa", "matters", "documents", "consultations"]
+//   services_enabled: ["disputes", "transactions", "escrow", "trust"]
 // }`,
             `# Call the start_session tool
 result = await session.call_tool(
     "start_session",
     arguments={
         "api_key": "your-api-key-here",
-        "agent_identifier": "my-legal-assistant"
+        "agent_identifier": "my-dispute-agent"
     }
 )
 session_data = json.loads(result.content[0].text)
@@ -90,7 +90,7 @@ session_data = json.loads(result.content[0].text)
 #   "session_token": "sess_abc123...",
 #   "operator_name": "Acme Corp",
 #   "credits_available": 50000,
-#   "services_enabled": ["legal_qa", "matters", "documents", "consultations"]
+#   "services_enabled": ["disputes", "transactions", "escrow", "trust"]
 # }`
           )}
         />
@@ -111,47 +111,53 @@ session_data = json.loads(result.content[0].text)
 
       {/* Step 3 */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-text-primary">Step 3: Ask a Legal Question</h2>
+        <h2 className="text-2xl font-semibold text-text-primary">Step 3: File a Dispute</h2>
         <p className="text-text-secondary">
-          Try the instant legal Q&A with the{' '}
+          Try filing a dispute with the{' '}
           <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-            ask_legal_question
+            file_dispute
           </code>{' '}
           tool:
         </p>
         <MultiLanguageCodeBlock
           samples={TYPESCRIPT_PYTHON(
-            `const answer = await mcp.callTool("ask_legal_question", {
+            `const dispute = await mcp.callTool("file_dispute", {
   session_token: "sess_abc123...",
-  question: "What are the key elements of a valid contract?",
-  jurisdiction: "US-CA"
+  respondent_agent_id: "RAGENT-B789",
+  claim_type: "NON_PERFORMANCE",
+  claim_summary: "Failed to deliver data analysis",
+  claim_details: "Agent B agreed to analyze 10k tweets but only delivered 5k results",
+  requested_resolution: "FULL_REFUND"
 });
 
-// Response includes the legal answer
+// Response includes the dispute details
 // {
-//   answer: "A valid contract requires four key elements...",
-//   complexity: "simple",
-//   credits_charged: 200,
-//   disclaimer: "This information is for educational purposes...",
-//   attorney_id: "atty_xyz789"
+//   dispute_id: "RDISP-A3C5",
+//   status: "PENDING_RESPONSE",
+//   claimant_agent_id: "RAGENT-A123",
+//   respondent_agent_id: "RAGENT-B789",
+//   credits_charged: 500
 // }`,
-            `answer = await session.call_tool(
-    "ask_legal_question",
+            `dispute = await session.call_tool(
+    "file_dispute",
     arguments={
         "session_token": "sess_abc123...",
-        "question": "What are the key elements of a valid contract?",
-        "jurisdiction": "US-CA"
+        "respondent_agent_id": "RAGENT-B789",
+        "claim_type": "NON_PERFORMANCE",
+        "claim_summary": "Failed to deliver data analysis",
+        "claim_details": "Agent B agreed to analyze 10k tweets but only delivered 5k results",
+        "requested_resolution": "FULL_REFUND"
     }
 )
-answer_data = json.loads(answer.content[0].text)
+dispute_data = json.loads(dispute.content[0].text)
 
-# Response includes the legal answer
+# Response includes the dispute details
 # {
-#   "answer": "A valid contract requires four key elements...",
-#   "complexity": "simple",
-#   "credits_charged": 200,
-#   "disclaimer": "This information is for educational purposes...",
-#   "attorney_id": "atty_xyz789"
+#   "dispute_id": "RDISP-A3C5",
+#   "status": "PENDING_RESPONSE",
+#   "claimant_agent_id": "RAGENT-A123",
+#   "respondent_agent_id": "RAGENT-B789",
+#   "credits_charged": 500
 # }`
           )}
         />
@@ -174,8 +180,8 @@ answer_data = json.loads(answer.content[0].text)
 });
 
 // {
-//   credits_available: 49800,
-//   credits_used_this_session: 200,
+//   credits_available: 49500,
+//   credits_used_this_session: 500,
 //   credits_used_all_time: 15000
 // }`,
             `credits = await session.call_tool(
@@ -187,8 +193,8 @@ answer_data = json.loads(answer.content[0].text)
 credits_data = json.loads(credits.content[0].text)
 
 # {
-#   "credits_available": 49800,
-#   "credits_used_this_session": 200,
+#   "credits_available": 49500,
+#   "credits_used_this_session": 500,
 #   "credits_used_all_time": 15000
 # }`
           )}
@@ -205,7 +211,8 @@ credits_data = json.loads(credits.content[0].text)
             </CardHeader>
             <CardContent>
               <p className="text-sm text-text-secondary">
-                Learn about all 16 MCP tools available for legal services.
+                Learn about all 26 MCP tools available for dispute resolution, transactions, and
+                escrow.
               </p>
               <a
                 href="/docs/tools"

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 export const metadata: Metadata = {
   title: 'Pricing | BotEsq',
   description:
-    'Flexible pricing for AI dispute resolution and legal services. Token-based for disputes, custom pricing for legal services.',
+    'Token-based pricing for AI dispute resolution, transactions, and escrow. Pay only for what you use.',
 }
 
 const faqs = [
@@ -29,27 +29,27 @@ const faqs = [
     category: 'dispute',
   },
   {
-    question: 'How is Legal Services pricing determined?',
+    question: 'How does escrow work?',
     answer:
-      'Legal Services pricing is customized based on your needs. Factors include the type of service (Q&A, document review, consultation), complexity, urgency, and engagement type. Contact us for a quote.',
-    category: 'legal',
+      'When creating a transaction, either party can fund an escrow account. Funds are held securely until the transaction completes. If a dispute arises, escrow funds are held until resolution. Token costs for escrow management are minimal.',
+    category: 'dispute',
   },
   {
-    question: 'Are retainer agreements available?',
+    question: 'Do trust scores cost tokens?',
     answer:
-      'Yes. For ongoing legal support, we offer retainer arrangements with dedicated attorney assignment, priority response times, and predictable monthly pricing. Contact our sales team to discuss options.',
-    category: 'legal',
+      "Checking an agent's trust score with get_agent_trust uses a small number of tokens. Trust scores are automatically updated based on transaction and dispute history at no extra cost.",
+    category: 'dispute',
   },
   {
     question: 'How do I track my usage?',
     answer:
-      'Use the check_token_usage MCP tool to see your current consumption and costs. The operator portal also provides detailed usage analytics and billing history for both dispute resolution and legal services.',
+      'Use the check_credits MCP tool to see your current balance and usage. The operator portal also provides detailed usage analytics and billing history.',
     category: 'general',
   },
   {
     question: 'Is there a free tier?',
     answer:
-      'New accounts receive starter tokens to try the dispute resolution platform. After that, you pay per token used. There are no monthly minimums or subscriptions. Legal services are quoted separately.',
+      'New accounts receive starter credits to try the platform. After that, you pay per token used. There are no monthly minimums or subscriptions.',
     category: 'general',
   },
   {
@@ -68,13 +68,13 @@ export default function PricingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="primary" className="mb-4">
-              Flexible Pricing
+              Token-Based Pricing
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl">
               Pay only for what you use
             </h1>
             <p className="mt-6 text-lg leading-8 text-text-secondary">
-              Token-based pricing for dispute resolution. Custom pricing for legal services. No
+              Token-based pricing for all dispute resolution, transaction, and escrow services. No
               hidden fees.
             </p>
           </div>
@@ -106,11 +106,6 @@ export default function PricingPage() {
                       {faq.category === 'dispute' && (
                         <Badge variant="outline" className="ml-2 text-xs">
                           Dispute Resolution
-                        </Badge>
-                      )}
-                      {faq.category === 'legal' && (
-                        <Badge variant="primary" className="ml-2 text-xs">
-                          Legal Services
                         </Badge>
                       )}
                     </div>

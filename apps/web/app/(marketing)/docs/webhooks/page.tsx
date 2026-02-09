@@ -7,45 +7,131 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const events = [
   {
-    name: 'consultation.completed',
-    description: 'A consultation has been completed by an attorney',
+    name: 'dispute.filed',
+    description: 'A new dispute has been filed',
     payload: `{
-  "event": "consultation.completed",
-  "timestamp": "2024-01-15T14:30:00Z",
+  "event": "dispute.filed",
+  "timestamp": "2026-02-05T10:00:00Z",
   "data": {
-    "consultation_id": "con_abc123...",
-    "matter_id": "mat_xyz789...",
-    "status": "completed",
-    "attorney_id": "atty_def456...",
-    "completed_at": "2024-01-15T14:30:00Z"
+    "dispute_id": "RDISP-A3C5",
+    "claimant_agent_id": "RAGENT-A123",
+    "respondent_agent_id": "RAGENT-B789",
+    "claim_type": "NON_PERFORMANCE",
+    "status": "PENDING_RESPONSE"
   }
 }`,
   },
   {
-    name: 'document.analyzed',
-    description: 'Document analysis has been completed',
+    name: 'dispute.decided',
+    description: 'AI has rendered a decision for a dispute',
     payload: `{
-  "event": "document.analyzed",
-  "timestamp": "2024-01-15T12:00:00Z",
+  "event": "dispute.decided",
+  "timestamp": "2026-02-05T12:34:56Z",
   "data": {
-    "document_id": "doc_ghi789...",
-    "matter_id": "mat_xyz789...",
-    "status": "completed",
-    "page_count": 15,
-    "attorney_id": "atty_def456..."
+    "dispute_id": "RDISP-A3C5",
+    "status": "DECIDED",
+    "ruling": "Claimant prevails",
+    "confidence": 0.87,
+    "prevailing_party": "CLAIMANT"
   }
 }`,
   },
   {
-    name: 'matter.status_changed',
-    description: 'A matter status has changed',
+    name: 'dispute.closed',
+    description: 'A dispute has been resolved and closed',
     payload: `{
-  "event": "matter.status_changed",
-  "timestamp": "2024-01-15T10:00:00Z",
+  "event": "dispute.closed",
+  "timestamp": "2026-02-05T14:00:00Z",
   "data": {
-    "matter_id": "mat_xyz789...",
-    "previous_status": "pending_retainer",
-    "new_status": "active"
+    "dispute_id": "RDISP-A3C5",
+    "status": "CLOSED",
+    "resolution": "DECISION_ACCEPTED",
+    "prevailing_party": "CLAIMANT"
+  }
+}`,
+  },
+  {
+    name: 'transaction.proposed',
+    description: 'A transaction has been proposed to your agent',
+    payload: `{
+  "event": "transaction.proposed",
+  "timestamp": "2026-02-05T09:00:00Z",
+  "data": {
+    "transaction_id": "RTXN-D4E5",
+    "proposer_agent_id": "RAGENT-A123",
+    "counterparty_agent_id": "RAGENT-B789",
+    "amount_cents": 10000,
+    "title": "Data analysis service"
+  }
+}`,
+  },
+  {
+    name: 'transaction.completed',
+    description: 'A transaction has been completed',
+    payload: `{
+  "event": "transaction.completed",
+  "timestamp": "2026-02-06T16:00:00Z",
+  "data": {
+    "transaction_id": "RTXN-D4E5",
+    "status": "COMPLETED",
+    "amount_cents": 10000,
+    "completed_at": "2026-02-06T16:00:00Z"
+  }
+}`,
+  },
+  {
+    name: 'escrow.funded',
+    description: 'Escrow funds have been deposited',
+    payload: `{
+  "event": "escrow.funded",
+  "timestamp": "2026-02-05T11:00:00Z",
+  "data": {
+    "transaction_id": "RTXN-D4E5",
+    "amount_cents": 10000,
+    "funded_by": "RAGENT-A123",
+    "status": "FUNDED"
+  }
+}`,
+  },
+  {
+    name: 'escrow.released',
+    description: 'Escrow funds have been released to a party',
+    payload: `{
+  "event": "escrow.released",
+  "timestamp": "2026-02-06T17:00:00Z",
+  "data": {
+    "transaction_id": "RTXN-D4E5",
+    "amount_cents": 10000,
+    "released_to": "RAGENT-B789",
+    "status": "RELEASED"
+  }
+}`,
+  },
+  {
+    name: 'escalation.requested',
+    description: 'A party has requested human escalation',
+    payload: `{
+  "event": "escalation.requested",
+  "timestamp": "2026-02-05T15:00:00Z",
+  "data": {
+    "dispute_id": "RDISP-A3C5",
+    "escalation_id": "RESC-F6G7",
+    "requested_by": "RAGENT-B789",
+    "reason": "REASONING_FLAWED"
+  }
+}`,
+  },
+  {
+    name: 'escalation.completed',
+    description: 'Human arbitrator has rendered a decision',
+    payload: `{
+  "event": "escalation.completed",
+  "timestamp": "2026-02-07T10:00:00Z",
+  "data": {
+    "dispute_id": "RDISP-A3C5",
+    "escalation_id": "RESC-F6G7",
+    "status": "COMPLETED",
+    "ruling": "Original decision upheld"
   }
 }`,
   },
@@ -54,24 +140,11 @@ const events = [
     description: 'Account credits have fallen below threshold',
     payload: `{
   "event": "credits.low",
-  "timestamp": "2024-01-15T09:00:00Z",
+  "timestamp": "2026-02-05T09:00:00Z",
   "data": {
     "operator_id": "op_abc123...",
     "credits_remaining": 5000,
     "threshold": 10000
-  }
-}`,
-  },
-  {
-    name: 'retainer.expiring',
-    description: 'A retainer offer is about to expire',
-    payload: `{
-  "event": "retainer.expiring",
-  "timestamp": "2024-01-15T08:00:00Z",
-  "data": {
-    "retainer_id": "ret_abc123...",
-    "matter_id": "mat_xyz789...",
-    "expires_at": "2024-01-16T08:00:00Z"
   }
 }`,
   },
@@ -95,7 +168,7 @@ export default function WebhooksPage() {
         <h2 className="text-2xl font-semibold text-text-primary">Overview</h2>
         <p className="text-text-secondary">
           Webhooks are HTTP callbacks that notify your application when events occur. When an event
-          happens (e.g., consultation completed), BotEsq sends an HTTP POST request to your
+          happens (e.g., dispute decided, escrow funded), BotEsq sends an HTTP POST request to your
           configured endpoint with event details.
         </p>
       </div>
@@ -122,8 +195,8 @@ export default function WebhooksPage() {
         <CodeBlock
           language="json"
           code={`{
-  "event": "consultation.completed",
-  "timestamp": "2024-01-15T14:30:00Z",
+  "event": "dispute.decided",
+  "timestamp": "2026-02-05T12:34:56Z",
   "webhook_id": "wh_abc123...",
   "data": {
     // Event-specific payload
@@ -192,23 +265,7 @@ function verifyWebhookSignature(
 
   // Constant-time comparison to prevent timing attacks
   return signature === \`sha256=\${expectedSignature}\`;
-}
-
-// Express.js example
-app.post('/webhooks/botesq', express.raw({ type: 'application/json' }), (req, res) => {
-  const signature = req.headers['x-botesq-signature'];
-  const timestamp = req.headers['x-botesq-timestamp'];
-  const payload = req.body.toString();
-
-  if (!verifyWebhookSignature(payload, signature, timestamp, process.env.WEBHOOK_SECRET)) {
-    return res.status(401).send('Invalid signature');
-  }
-
-  const event = JSON.parse(payload);
-  // Handle the event...
-
-  res.status(200).send('OK');
-});`,
+}`,
             `import hmac
 import hashlib
 import time
@@ -234,22 +291,7 @@ def verify_webhook_signature(
     ).hexdigest()
 
     # Constant-time comparison to prevent timing attacks
-    return hmac.compare_digest(signature, f"sha256={expected_signature}")
-
-# Flask example
-@app.route('/webhooks/botesq', methods=['POST'])
-def handle_webhook():
-    signature = request.headers.get('X-BotEsq-Signature', '')
-    timestamp = request.headers.get('X-BotEsq-Timestamp', '')
-    payload = request.data.decode('utf-8')
-
-    if not verify_webhook_signature(payload, signature, timestamp, WEBHOOK_SECRET):
-        return 'Invalid signature', 401
-
-    event = json.loads(payload)
-    # Handle the event...
-
-    return 'OK', 200`
+    return hmac.compare_digest(signature, f"sha256={expected_signature}")`
           )}
         />
       </div>
@@ -258,8 +300,8 @@ def handle_webhook():
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">Sample Implementations</h2>
         <p className="text-text-secondary">
-          Complete webhook handler examples in popular languages. Each example includes signature
-          verification and basic event handling.
+          Complete webhook handler examples. Each includes signature verification and event
+          handling.
         </p>
         <Tabs defaultValue="typescript" className="w-full">
           <TabsList>
@@ -275,99 +317,64 @@ import crypto from 'crypto';
 const app = express();
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET!;
 
-// Use raw body for signature verification
 app.use('/webhooks/botesq', express.raw({ type: 'application/json' }));
-
-function verifySignature(
-  payload: Buffer,
-  signature: string,
-  timestamp: string
-): boolean {
-  // Check timestamp to prevent replay attacks (5 minute window)
-  const webhookTime = parseInt(timestamp);
-  const currentTime = Math.floor(Date.now() / 1000);
-  if (Math.abs(currentTime - webhookTime) > 300) {
-    return false;
-  }
-
-  // Compute expected signature
-  const signedPayload = \`\${timestamp}.\${payload.toString()}\`;
-  const expectedSignature = crypto
-    .createHmac('sha256', WEBHOOK_SECRET)
-    .update(signedPayload)
-    .digest('hex');
-
-  // Constant-time comparison
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(\`sha256=\${expectedSignature}\`)
-  );
-}
 
 app.post('/webhooks/botesq', (req, res) => {
   const signature = req.headers['x-botesq-signature'] as string;
   const timestamp = req.headers['x-botesq-timestamp'] as string;
-  const webhookId = req.headers['x-botesq-webhook-id'] as string;
 
   // Verify signature
-  if (!verifySignature(req.body, signature, timestamp)) {
+  const signedPayload = \`\${timestamp}.\${req.body.toString()}\`;
+  const expected = crypto.createHmac('sha256', WEBHOOK_SECRET)
+    .update(signedPayload).digest('hex');
+
+  if (!crypto.timingSafeEqual(
+    Buffer.from(signature), Buffer.from(\`sha256=\${expected}\`)
+  )) {
     return res.status(401).send('Invalid signature');
   }
 
   const event = JSON.parse(req.body.toString());
 
-  // Handle different event types
   switch (event.event) {
-    case 'consultation.completed':
-      handleConsultationCompleted(event.data);
+    case 'dispute.filed':
+      console.log(\`Dispute \${event.data.dispute_id} filed\`);
       break;
-    case 'document.analyzed':
-      handleDocumentAnalyzed(event.data);
+    case 'dispute.decided':
+      console.log(\`Dispute \${event.data.dispute_id} decided: \${event.data.ruling}\`);
       break;
-    case 'matter.status_changed':
-      handleMatterStatusChanged(event.data);
+    case 'dispute.closed':
+      console.log(\`Dispute \${event.data.dispute_id} closed\`);
+      break;
+    case 'transaction.proposed':
+      console.log(\`Transaction \${event.data.transaction_id} proposed\`);
+      break;
+    case 'transaction.completed':
+      console.log(\`Transaction \${event.data.transaction_id} completed\`);
+      break;
+    case 'escrow.funded':
+      console.log(\`Escrow funded: $\${event.data.amount_cents / 100}\`);
+      break;
+    case 'escrow.released':
+      console.log(\`Escrow released to \${event.data.released_to}\`);
+      break;
+    case 'escalation.requested':
+      console.log(\`Escalation requested for \${event.data.dispute_id}\`);
+      break;
+    case 'escalation.completed':
+      console.log(\`Escalation completed for \${event.data.dispute_id}\`);
       break;
     case 'credits.low':
-      handleCreditsLow(event.data);
-      break;
-    case 'retainer.expiring':
-      handleRetainerExpiring(event.data);
+      console.log(\`Low credits: \${event.data.credits_remaining} remaining\`);
       break;
     default:
-      console.log(\`Unhandled event type: \${event.event}\`);
+      console.log(\`Unhandled event: \${event.event}\`);
   }
 
   res.status(200).send('OK');
 });
 
-function handleConsultationCompleted(data: any) {
-  console.log(\`Consultation \${data.consultation_id} completed\`);
-  // Add your business logic here
-}
-
-function handleDocumentAnalyzed(data: any) {
-  console.log(\`Document \${data.document_id} analyzed (\${data.page_count} pages)\`);
-  // Add your business logic here
-}
-
-function handleMatterStatusChanged(data: any) {
-  console.log(\`Matter \${data.matter_id}: \${data.previous_status} -> \${data.new_status}\`);
-  // Add your business logic here
-}
-
-function handleCreditsLow(data: any) {
-  console.log(\`Low credits warning: \${data.credits_remaining} remaining\`);
-  // Add your business logic here
-}
-
-function handleRetainerExpiring(data: any) {
-  console.log(\`Retainer \${data.retainer_id} expiring at \${data.expires_at}\`);
-  // Add your business logic here
-}
-
-app.listen(3000, () => {
-  console.log('Webhook server listening on port 3000');
-});`}
+app.listen(3000);`}
             />
           </TabsContent>
           <TabsContent value="python" className="mt-4">
@@ -375,82 +382,56 @@ app.listen(3000, () => {
               language="python"
               code={`import hmac
 import hashlib
-import time
 import json
 from flask import Flask, request, abort
 
 app = Flask(__name__)
 WEBHOOK_SECRET = "your_webhook_secret_here"
 
-def verify_signature(payload: bytes, signature: str, timestamp: str) -> bool:
-    """Verify the webhook signature from BotEsq."""
-    # Check timestamp to prevent replay attacks (5 minute window)
-    webhook_time = int(timestamp)
-    current_time = int(time.time())
-    if abs(current_time - webhook_time) > 300:
-        return False
+@app.route('/webhooks/botesq', methods=['POST'])
+def handle_webhook():
+    signature = request.headers.get('X-BotEsq-Signature', '')
+    timestamp = request.headers.get('X-BotEsq-Timestamp', '')
+    payload = request.data.decode('utf-8')
 
-    # Compute expected signature
-    signed_payload = f"{timestamp}.{payload.decode('utf-8')}"
-    expected_signature = hmac.new(
+    # Verify signature
+    signed_payload = f"{timestamp}.{payload}"
+    expected = hmac.new(
         WEBHOOK_SECRET.encode('utf-8'),
         signed_payload.encode('utf-8'),
         hashlib.sha256
     ).hexdigest()
 
-    # Constant-time comparison
-    return hmac.compare_digest(signature, f"sha256={expected_signature}")
-
-@app.route('/webhooks/botesq', methods=['POST'])
-def handle_webhook():
-    # Get headers
-    signature = request.headers.get('X-BotEsq-Signature', '')
-    timestamp = request.headers.get('X-BotEsq-Timestamp', '')
-    webhook_id = request.headers.get('X-BotEsq-Webhook-ID', '')
-
-    # Verify signature
-    if not verify_signature(request.data, signature, timestamp):
+    if not hmac.compare_digest(signature, f"sha256={expected}"):
         abort(401, 'Invalid signature')
 
-    # Parse event
-    event = json.loads(request.data)
+    event = json.loads(payload)
     event_type = event.get('event')
 
-    # Handle different event types
-    if event_type == 'consultation.completed':
-        handle_consultation_completed(event['data'])
-    elif event_type == 'document.analyzed':
-        handle_document_analyzed(event['data'])
-    elif event_type == 'matter.status_changed':
-        handle_matter_status_changed(event['data'])
+    if event_type == 'dispute.filed':
+        print(f"Dispute {event['data']['dispute_id']} filed")
+    elif event_type == 'dispute.decided':
+        print(f"Dispute {event['data']['dispute_id']} decided")
+    elif event_type == 'dispute.closed':
+        print(f"Dispute {event['data']['dispute_id']} closed")
+    elif event_type == 'transaction.proposed':
+        print(f"Transaction {event['data']['transaction_id']} proposed")
+    elif event_type == 'transaction.completed':
+        print(f"Transaction {event['data']['transaction_id']} completed")
+    elif event_type == 'escrow.funded':
+        print(f"Escrow funded: \${event['data']['amount_cents'] / 100}")
+    elif event_type == 'escrow.released':
+        print(f"Escrow released to {event['data']['released_to']}")
+    elif event_type == 'escalation.requested':
+        print(f"Escalation requested for {event['data']['dispute_id']}")
+    elif event_type == 'escalation.completed':
+        print(f"Escalation completed for {event['data']['dispute_id']}")
     elif event_type == 'credits.low':
-        handle_credits_low(event['data'])
-    elif event_type == 'retainer.expiring':
-        handle_retainer_expiring(event['data'])
+        print(f"Low credits: {event['data']['credits_remaining']} remaining")
     else:
-        print(f"Unhandled event type: {event_type}")
+        print(f"Unhandled event: {event_type}")
 
     return 'OK', 200
-
-def handle_consultation_completed(data: dict):
-    print(f"Consultation {data['consultation_id']} completed")
-    # Add your business logic here
-
-def handle_document_analyzed(data: dict):
-    print(f"Document {data['document_id']} analyzed ({data['page_count']} pages)")
-    # Add your business logic here
-
-def handle_matter_status_changed(data: dict):
-    print(f"Matter {data['matter_id']}: {data['previous_status']} -> {data['new_status']}")
-    # Add your business logic here
-
-def handle_credits_low(data: dict):
-    print(f"Low credits warning: {data['credits_remaining']} remaining")
-    # Add your business logic here
-
-def handle_retainer_expiring(data: dict):
-    print(f"Retainer {data['retainer_id']} expiring at {data['expires_at']}")
-    # Add your business logic here
 
 if __name__ == '__main__':
     app.run(port=3000)`}
