@@ -22,7 +22,7 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@prisma/client": "5.14.0"
+    "@prisma/client": "5.22.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.8.0",
