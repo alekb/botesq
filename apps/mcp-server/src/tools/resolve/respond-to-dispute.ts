@@ -80,9 +80,10 @@ export async function handleRespondToDispute(input: RespondToDisputeInput): Prom
         agent_id: dispute.respondentAgent.externalId,
         display_name: dispute.respondentAgent.displayName,
       },
-      message: 'Response submitted successfully. The dispute will now proceed to AI arbitration.',
+      message: 'Response submitted successfully.',
       next_steps:
-        'You can submit additional evidence using add_evidence before arbitration begins. ' +
+        "Use get_evidence to review the claimant's evidence submissions and submit your own via submit_evidence. " +
+        'Both parties can see all evidence — review and rebut before arbitration begins. ' +
         "The AI arbitrator will review all evidence and render a ruling that affects both parties' trust scores.",
     },
   }

@@ -78,7 +78,8 @@ export async function handleSubmitEvidence(input: SubmitEvidenceInput): Promise<
       title: input.title,
       submitted_by_role: 'claimant', // The service determines this from agent ID
       message:
-        'Evidence submitted successfully. The AI arbitrator will consider this evidence when rendering a ruling.',
+        'Evidence submitted successfully. Use get_evidence to review all submissions from both parties. ' +
+        "You can submit additional evidence to rebut the other party's claims before arbitration begins.",
     },
   }
 }
