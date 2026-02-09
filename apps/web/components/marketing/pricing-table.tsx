@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Check, Scale, Gavel, Users, ArrowRight, Mail } from 'lucide-react'
+import { Check, Scale, Users, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,12 +13,12 @@ export function PricingTable() {
             Simple, transparent pricing
           </h2>
           <p className="mt-4 text-lg text-text-secondary">
-            Two products, flexible pricing. Choose what fits your needs.
+            Token-based pricing for all dispute resolution services. Pay only for what you use.
           </p>
         </div>
 
         {/* Pricing tiers */}
-        <div className="mt-12 grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
           {/* Dispute Resolution */}
           <Card className="border-primary-500/30 bg-gradient-to-br from-primary-500/5 to-transparent">
             <CardContent className="pt-6">
@@ -34,7 +34,7 @@ export function PricingTable() {
                 </div>
               </div>
               <p className="text-sm text-text-secondary mb-4">
-                AI-powered dispute resolution for agent-to-agent disagreements.
+                AI-powered dispute resolution, transactions, escrow, and trust scores.
               </p>
               <ul className="space-y-2 text-sm text-text-secondary">
                 <li className="flex items-center gap-2">
@@ -56,48 +56,6 @@ export function PricingTable() {
               </ul>
               <Button className="mt-6 w-full" variant="outline" asChild>
                 <Link href="/signup">Get Started</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Legal Services */}
-          <Card className="border-success-500/30 bg-gradient-to-br from-success-500/5 to-transparent">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex rounded-lg bg-success-500/10 p-2">
-                  <Gavel className="h-5 w-5 text-success-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text-primary">Legal Services</h3>
-                  <Badge variant="primary">Custom pricing</Badge>
-                </div>
-              </div>
-              <p className="text-sm text-text-secondary mb-4">
-                AI-powered legal Q&A with licensed attorney oversight.
-              </p>
-              <ul className="space-y-2 text-sm text-text-secondary">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Legal Q&A with AI
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Document review and analysis
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Attorney consultations
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Retainer agreements
-                </li>
-              </ul>
-              <Button className="mt-6 w-full" asChild>
-                <Link href="/contact">
-                  Contact Sales
-                  <Mail className="ml-2 h-4 w-4" />
-                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -150,14 +108,12 @@ export function PricingTable() {
           <div className="mx-auto max-w-2xl text-center">
             <h3 className="text-xl font-semibold text-text-primary mb-4">How pricing works</h3>
             <p className="text-text-secondary">
-              Dispute Resolution uses token-based pricing—you pay for the tokens used during
-              processing. Legal Services pricing is customized based on your needs and engagement
-              type.
+              All services use token-based pricing—you pay for the tokens used during processing.
+              Human escalation incurs additional arbitrator fees.
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 text-left max-w-xl mx-auto">
               <div className="rounded-lg border border-border-default bg-background-primary p-4">
                 <h4 className="font-medium text-text-primary">Cost Split Options</h4>
-                <p className="text-xs text-text-tertiary mb-2">(Dispute Resolution)</p>
                 <ul className="mt-2 text-sm text-text-secondary space-y-1">
                   <li>• EQUAL — 50/50 split</li>
                   <li>• FILING_PARTY — Claimant pays</li>
@@ -176,8 +132,7 @@ export function PricingTable() {
               </div>
             </div>
             <p className="mt-6 text-sm text-text-tertiary">
-              Sign up to view detailed pricing in your dashboard, or contact us for Legal Services
-              pricing.
+              Sign up to view detailed pricing in your dashboard.
             </p>
           </div>
         </div>

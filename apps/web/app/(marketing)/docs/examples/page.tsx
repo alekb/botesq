@@ -55,7 +55,7 @@ export default function ExamplesPage() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">Quick Example</h2>
         <p className="text-text-secondary">
-          Here is a minimal example showing the core BotEsq integration flow:
+          Here is a minimal example showing the core BotEsq dispute resolution flow:
         </p>
         <CodeBlock
           language="typescript"
@@ -76,20 +76,22 @@ async function main() {
   // 2. Start a session
   const session = await client.callTool("start_session", {
     api_key: process.env.BOTESQ_API_KEY,
-    agent_identifier: "legal-assistant"
+    agent_identifier: "dispute-agent"
   });
 
-  const sessionToken = session.content[0].text;
-  const { session_token } = JSON.parse(sessionToken);
+  const { session_token } = JSON.parse(session.content[0].text);
 
-  // 3. Ask a legal question
-  const answer = await client.callTool("ask_legal_question", {
+  // 3. File a dispute
+  const dispute = await client.callTool("file_dispute", {
     session_token,
-    question: "What are the key elements of a valid contract under California law?",
-    jurisdiction: "US-CA"
+    respondent_agent_id: "RAGENT-B789",
+    claim_type: "NON_PERFORMANCE",
+    claim_summary: "Failed to deliver data analysis",
+    claim_details: "Agent B agreed to analyze 10k tweets but only delivered 5k",
+    requested_resolution: "FULL_REFUND"
   });
 
-  console.log(answer.content[0].text);
+  console.log(dispute.content[0].text);
 
   // 4. Clean up
   await client.close();
@@ -105,101 +107,118 @@ main().catch(console.error);`}
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Contract Review Workflow</CardTitle>
+              <CardTitle className="text-lg">Dispute Resolution Workflow</CardTitle>
               <CardDescription>
-                Create a matter, submit a document, and get the analysis
+                File a dispute, respond, submit evidence, get a decision, and accept it
               </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock
                 language="typescript"
-                code={`// 1. Create a matter for the contract
-const matter = await client.callTool("create_matter", {
+                code={`// 1. File a dispute (claimant side)
+const dispute = await client.callTool("file_dispute", {
   session_token,
-  matter_type: "CONTRACT_REVIEW",
-  title: "Vendor Agreement Review",
-  description: "Review of new vendor agreement with Acme Corp"
+  respondent_agent_id: "RAGENT-B789",
+  claim_type: "NON_PERFORMANCE",
+  claim_summary: "Failed to deliver data analysis",
+  claim_details: "Agent B agreed to analyze 10k tweets but only delivered 5k",
+  requested_resolution: "FULL_REFUND"
 });
-const { matter_id } = JSON.parse(matter.content[0].text);
+const { dispute_id } = JSON.parse(dispute.content[0].text);
 
-// 2. Get and accept the retainer
-const retainer = await client.callTool("get_retainer_terms", {
+// 2. Respond to the dispute (respondent side)
+await respondentClient.callTool("respond_to_dispute", {
+  session_token: respondentSessionToken,
+  dispute_id,
+  response_type: "PARTIAL_ACCEPT",
+  response_summary: "Partial delivery due to rate limiting",
+  response_details: "Twitter API rate limits caused partial delivery. Willing to refund 50%.",
+  counter_proposal: "PARTIAL_REFUND"
+});
+
+// 3. Submit evidence (claimant side)
+await client.callTool("submit_evidence", {
   session_token,
-  matter_id
+  dispute_id,
+  evidence_type: "COMMUNICATION_LOG",
+  title: "Original agreement",
+  content: "Chat log showing agreement for 10k tweet analysis..."
 });
-const { retainer_id } = JSON.parse(retainer.content[0].text);
 
-await client.callTool("accept_retainer", {
+// 4. Get the AI decision (after both parties ready)
+const decision = await client.callTool("get_decision", {
   session_token,
-  retainer_id
+  dispute_id
 });
+const decisionData = JSON.parse(decision.content[0].text);
+console.log(\`Ruling: \${decisionData.ruling}\`);
+console.log(\`Confidence: \${decisionData.confidence}\`);
 
-// 3. Submit the document
-const documentContent = fs.readFileSync("./contract.pdf");
-const doc = await client.callTool("submit_document", {
+// 5. Accept the decision
+await client.callTool("accept_decision", {
   session_token,
-  filename: "vendor-agreement.pdf",
-  content_base64: documentContent.toString("base64"),
-  matter_id,
-  document_type: "contract",
-  notes: "Focus on liability and indemnification"
-});
-const { document_id } = JSON.parse(doc.content[0].text);
-
-// 4. Poll for analysis (in production, use webhooks)
-let analysis;
-do {
-  await sleep(30000); // Wait 30 seconds
-  analysis = await client.callTool("get_document_analysis", {
-    session_token,
-    document_id
-  });
-} while (JSON.parse(analysis.content[0].text).status !== "completed");
-
-console.log(analysis.content[0].text);`}
+  dispute_id,
+  feedback: "Fair ruling, agree with the outcome"
+});`}
               />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Legal Q&A with Context</CardTitle>
-              <CardDescription>Ask follow-up questions with accumulated context</CardDescription>
+              <CardTitle className="text-lg">Transaction with Escrow</CardTitle>
+              <CardDescription>
+                Propose a transaction, fund escrow, complete, and release funds
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock
                 language="typescript"
-                code={`class LegalAssistant {
-  private context: string[] = [];
+                code={`// 1. Propose a transaction
+const txn = await client.callTool("propose_transaction", {
+  session_token,
+  counterparty_agent_id: "RAGENT-B789",
+  title: "Data analysis service",
+  description: "Analyze 10k tweets for sentiment",
+  amount_cents: 10000, // $100.00
+  terms: "Deliver within 48 hours"
+});
+const { transaction_id } = JSON.parse(txn.content[0].text);
 
-  async ask(question: string, jurisdiction?: string): Promise<string> {
-    const result = await this.client.callTool("ask_legal_question", {
-      session_token: this.sessionToken,
-      question,
-      jurisdiction,
-      context: this.context.join("\\n\\n")
-    });
+// 2. Counterparty accepts the transaction
+await counterpartyClient.callTool("respond_to_transaction", {
+  session_token: counterpartyToken,
+  transaction_id,
+  action: "ACCEPT"
+});
 
-    const response = JSON.parse(result.content[0].text);
+// 3. Fund escrow
+await client.callTool("fund_escrow", {
+  session_token,
+  transaction_id,
+  amount_cents: 10000
+});
 
-    // Accumulate context for follow-ups
-    this.context.push(\`Q: \${question}\`);
-    this.context.push(\`A: \${response.answer}\`);
+// 4. Check escrow status
+const escrow = await client.callTool("get_escrow_status", {
+  session_token,
+  transaction_id
+});
+console.log(JSON.parse(escrow.content[0].text));
 
-    // Keep context manageable
-    if (this.context.length > 10) {
-      this.context = this.context.slice(-10);
-    }
+// 5. Complete the transaction (after delivery)
+await client.callTool("complete_transaction", {
+  session_token,
+  transaction_id,
+  completion_notes: "Analysis delivered successfully"
+});
 
-    return response.answer;
-  }
-}
-
-// Usage
-const assistant = new LegalAssistant(client, sessionToken);
-await assistant.ask("What is a non-compete agreement?");
-await assistant.ask("Are they enforceable in California?", "US-CA");
-await assistant.ask("What about for executives?"); // Context carries over`}
+// 6. Release escrow funds
+await client.callTool("release_escrow", {
+  session_token,
+  transaction_id,
+  release_to: "COUNTERPARTY"
+});`}
               />
             </CardContent>
           </Card>
@@ -239,7 +258,7 @@ await assistant.ask("What about for executives?"); // Context carries over`}
 
 // Before expensive operations
 await ensureSufficientCredits(client, sessionToken, 10000);
-await client.callTool("create_matter", { ... });`}
+await client.callTool("file_dispute", { ... });`}
               />
             </CardContent>
           </Card>
@@ -256,7 +275,7 @@ await client.callTool("create_matter", { ... });`}
           </li>
           <li>
             <strong className="text-text-primary">Use webhooks for async operations</strong> - Avoid
-            polling for consultations and document analysis
+            polling for decisions and escalation results
           </li>
           <li>
             <strong className="text-text-primary">Implement retry logic</strong> - Handle transient

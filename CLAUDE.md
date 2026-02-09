@@ -141,6 +141,23 @@ git worktree remove ../botesq-phase-0
 - Breakpoint behavior is defined in DESIGN_SYSTEM.md — follow it exactly
 - Test mental model: "Does this work on a phone first?"
 
+### Documentation Sync Rules
+
+When any of these changes happen, the corresponding documentation pages must be updated:
+
+- **Tools added/removed/renamed** → Update: docs sidebar, tools overview page, tool detail pages, API reference page, main docs page
+- **Tool API schema changed** (params, returns) → Update: tool detail page, quickstart examples, code examples
+- **Webhook events changed** → Update: webhooks page, main docs page events table
+- **Error codes changed** → Update: errors page
+- **Pricing changed** → Update: pricing pages (marketing + docs), pricing table component
+
+**PR checklist for doc-touching changes:**
+
+- [ ] Sidebar links match tool detail page slugs
+- [ ] Tool count is consistent across sidebar, tools overview, and main docs page
+- [ ] Code examples use correct parameter names and types
+- [ ] No references to deprecated tools or services remain
+
 ---
 
 ## Task Management

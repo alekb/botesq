@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Zap, Shield, Scale, Code, Webhook, Gavel } from 'lucide-react'
+import { ArrowRight, Zap, Shield, Scale, Code, Webhook, Handshake } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -13,7 +13,7 @@ export default function DocsPage() {
           BotEsq API Documentation
         </h1>
         <p className="text-lg text-text-secondary">
-          Integrate dispute resolution and legal services into your AI agents using the Model
+          Integrate dispute resolution, transactions, and escrow into your AI agents using the Model
           Context Protocol (MCP). BotEsq provides trust infrastructure for the agentic economy.
         </p>
       </div>
@@ -44,7 +44,7 @@ export default function DocsPage() {
                 <Code className="h-5 w-5 text-primary-500" />
                 MCP Tools
               </CardTitle>
-              <CardDescription>Explore all available tools</CardDescription>
+              <CardDescription>Explore all 26 available tools</CardDescription>
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
@@ -76,9 +76,11 @@ export default function DocsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Scale className="h-5 w-5 text-primary-500" />
-                Dispute Examples
+                Examples
               </CardTitle>
-              <CardDescription>Code examples for dispute resolution</CardDescription>
+              <CardDescription>
+                Code examples for dispute resolution and transactions
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
@@ -88,24 +90,7 @@ export default function DocsPage() {
           </Card>
         </Link>
 
-        <Link href="/docs/legal-examples" className="group">
-          <Card className="h-full transition-colors hover:border-success-500/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Gavel className="h-5 w-5 text-success-500" />
-                Legal Examples
-              </CardTitle>
-              <CardDescription>Code examples for legal services</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <span className="inline-flex items-center text-sm text-success-500 group-hover:underline">
-                View examples <ArrowRight className="ml-1 h-4 w-4" />
-              </span>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="#webhooks" className="group">
+        <Link href="/docs/webhooks" className="group">
           <Card className="h-full transition-colors hover:border-primary-500/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -121,16 +106,33 @@ export default function DocsPage() {
             </CardContent>
           </Card>
         </Link>
+
+        <Link href="/docs/errors" className="group">
+          <Card className="h-full transition-colors hover:border-primary-500/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary-500" />
+                Error Handling
+              </CardTitle>
+              <CardDescription>Error codes and troubleshooting</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <span className="inline-flex items-center text-sm text-primary-500 group-hover:underline">
+                View errors <ArrowRight className="ml-1 h-4 w-4" />
+              </span>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* What is BotEsq */}
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">What is BotEsq?</h2>
         <p className="text-text-secondary">
-          BotEsq provides trust infrastructure for AI agents: dispute resolution and legal services.
-          When Agent A and Agent B have a disagreement, they submit their dispute to BotEsq for
-          neutral resolution. When an agent needs legal guidance, BotEsq provides AI-powered answers
-          with licensed attorney oversight.
+          BotEsq provides trust infrastructure for AI agents: dispute resolution, transactions, and
+          escrow. When Agent A and Agent B have a disagreement, they submit their dispute to BotEsq
+          for neutral resolution. When agents need to transact, BotEsq provides escrow protection
+          and trust scores.
         </p>
 
         <div className="grid gap-4 md:grid-cols-2 mt-6">
@@ -151,15 +153,15 @@ export default function DocsPage() {
           <div className="rounded-lg border border-success-500/30 bg-success-500/5 p-4">
             <h3 className="font-semibold text-text-primary flex items-center gap-2">
               <span className="inline-flex rounded bg-success-500/10 p-1">
-                <Gavel className="h-4 w-4 text-success-500" />
+                <Handshake className="h-4 w-4 text-success-500" />
               </span>
-              Legal Services
+              Transactions & Escrow
             </h3>
             <p className="mt-2 text-sm text-text-secondary">
-              AI-powered legal Q&A, document review, and attorney consultations. Licensed attorneys
-              provide oversight for complex matters.
+              Secure agent-to-agent transactions with built-in escrow. Trust scores track agent
+              reliability based on transaction and dispute history.
             </p>
-            <p className="mt-2 text-xs text-success-500 font-medium">Custom pricing</p>
+            <p className="mt-2 text-xs text-success-500 font-medium">Token-based pricing</p>
           </div>
         </div>
 
@@ -171,20 +173,20 @@ export default function DocsPage() {
               evaluation of both parties&apos; positions in disputes
             </li>
             <li>
-              <strong className="text-text-primary">Legal Q&A</strong> — AI-powered answers to legal
-              questions with confidence scoring
+              <strong className="text-text-primary">Transaction escrow</strong> — Secure fund
+              holding until both parties confirm delivery
             </li>
             <li>
               <strong className="text-text-primary">Evidence-based decisions</strong> — Both parties
               submit positions and supporting materials
             </li>
             <li>
-              <strong className="text-text-primary">Attorney oversight</strong> — Licensed attorneys
-              review complex matters and escalations
+              <strong className="text-text-primary">Agent trust scores</strong> — Track agent
+              reputation based on transaction and dispute history
             </li>
             <li>
-              <strong className="text-text-primary">Trust scores</strong> — Track agent reputation
-              based on transaction history
+              <strong className="text-text-primary">Feedback-driven improvement</strong> — Every
+              decision improves future rulings through agent feedback
             </li>
           </ul>
         </div>
@@ -206,12 +208,12 @@ export default function DocsPage() {
             tool to authenticate
           </li>
           <li>
-            <strong className="text-text-primary">Choose Your Service</strong> — File disputes or
-            ask legal questions depending on your needs
+            <strong className="text-text-primary">Register Agents</strong> — Register your agents to
+            build trust profiles and participate in transactions
           </li>
           <li>
-            <strong className="text-text-primary">Get Results</strong> — Receive decisions, answers,
-            or escalate to human experts
+            <strong className="text-text-primary">Transact & Resolve</strong> — Propose
+            transactions, manage escrow, file disputes, and receive decisions
           </li>
         </ol>
       </div>
@@ -219,15 +221,8 @@ export default function DocsPage() {
       {/* MCP Tools */}
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">MCP Tools</h2>
-        <p className="text-text-secondary">
-          BotEsq provides the following MCP tools organized by service:
-        </p>
+        <p className="text-text-secondary">BotEsq provides 26 MCP tools organized by category:</p>
 
-        {/* Dispute Resolution Tools */}
-        <h3 className="text-lg font-medium text-text-primary mt-6 flex items-center gap-2">
-          <Scale className="h-5 w-5 text-primary-500" />
-          Dispute Resolution Tools
-        </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -246,6 +241,30 @@ export default function DocsPage() {
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
                     get_session_info
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Info</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    list_services
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_disclaimers
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Credits</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    check_credits
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    add_credits
                   </code>
                 </td>
               </tr>
@@ -274,6 +293,22 @@ export default function DocsPage() {
                   ,{' '}
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
                     complete_transaction
+                  </code>
+                </td>
+              </tr>
+              <tr className="border-b border-border-default">
+                <td className="py-3 font-medium text-text-primary">Escrow</td>
+                <td className="py-3">
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    fund_escrow
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    release_escrow
+                  </code>
+                  ,{' '}
+                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                    get_escrow_status
                   </code>
                 </td>
               </tr>
@@ -338,135 +373,10 @@ export default function DocsPage() {
                 </td>
               </tr>
               <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Escrow</td>
+                <td className="py-3 font-medium text-text-primary">Feedback</td>
                 <td className="py-3">
                   <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    fund_escrow
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    release_escrow
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_escrow_status
-                  </code>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Legal Services Tools */}
-        <h3 className="text-lg font-medium text-text-primary mt-8 flex items-center gap-2">
-          <Gavel className="h-5 w-5 text-success-500" />
-          Legal Services Tools
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-default">
-                <th className="py-3 text-left font-medium text-text-primary">Category</th>
-                <th className="py-3 text-left font-medium text-text-primary">Tools</th>
-              </tr>
-            </thead>
-            <tbody className="text-text-secondary">
-              <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Legal Q&A</td>
-                <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    ask_legal_question
-                  </code>
-                </td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Documents</td>
-                <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    submit_document
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_document_analysis
-                  </code>
-                </td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Matters</td>
-                <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    create_matter
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_matter_status
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    list_matters
-                  </code>
-                </td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Consultations</td>
-                <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    request_consultation
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_consultation_result
-                  </code>
-                </td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Retainers</td>
-                <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_retainer_terms
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    accept_retainer
-                  </code>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Shared Tools */}
-        <h3 className="text-lg font-medium text-text-primary mt-8">Shared Tools</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-default">
-                <th className="py-3 text-left font-medium text-text-primary">Category</th>
-                <th className="py-3 text-left font-medium text-text-primary">Tools</th>
-              </tr>
-            </thead>
-            <tbody className="text-text-secondary">
-              <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Credits</td>
-                <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    check_credits
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    add_credits
-                  </code>
-                </td>
-              </tr>
-              <tr className="border-b border-border-default">
-                <td className="py-3 font-medium text-text-primary">Info</td>
-                <td className="py-3">
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    list_services
-                  </code>
-                  ,{' '}
-                  <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                    get_disclaimers
+                    submit_dispute_feedback
                   </code>
                 </td>
               </tr>
@@ -479,47 +389,28 @@ export default function DocsPage() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">Pricing</h2>
 
-        <div className="grid gap-4 md:grid-cols-2 mt-4">
-          <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4">
-            <h3 className="font-semibold text-text-primary">Dispute Resolution</h3>
-            <p className="mt-2 text-sm text-text-secondary">
-              Token-based pricing. Pay for tokens used during dispute processing—analyzing
-              submissions, evaluating evidence, and generating decisions.
-            </p>
-            <div className="space-y-2 mt-4">
-              <h4 className="text-sm font-medium text-text-primary">Cost Split Options</h4>
-              <ul className="list-inside list-disc space-y-1 text-sm text-text-secondary">
-                <li>
-                  <strong className="text-text-primary">EQUAL</strong> — 50/50 split
-                </li>
-                <li>
-                  <strong className="text-text-primary">FILING_PARTY</strong> — Claimant pays all
-                </li>
-                <li>
-                  <strong className="text-text-primary">LOSER_PAYS</strong> — Determined by decision
-                </li>
-                <li>
-                  <strong className="text-text-primary">CUSTOM</strong> — Parties negotiate %
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-success-500/30 bg-success-500/5 p-4">
-            <h3 className="font-semibold text-text-primary">Legal Services</h3>
-            <p className="mt-2 text-sm text-text-secondary">
-              Custom pricing based on service type and engagement. Contact our sales team for quotes
-              on legal Q&A, document review, and attorney consultations.
-            </p>
-            <div className="space-y-2 mt-4">
-              <h4 className="text-sm font-medium text-text-primary">Engagement Types</h4>
-              <ul className="list-inside list-disc space-y-1 text-sm text-text-secondary">
-                <li>Per-question Q&A</li>
-                <li>Per-document review</li>
-                <li>Consultation packages</li>
-                <li>Monthly retainers</li>
-              </ul>
-            </div>
+        <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-4">
+          <h3 className="font-semibold text-text-primary">Token-Based Pricing</h3>
+          <p className="mt-2 text-sm text-text-secondary">
+            All services use token-based pricing. Pay for tokens used during dispute processing,
+            transaction management, and evidence analysis.
+          </p>
+          <div className="space-y-2 mt-4">
+            <h4 className="text-sm font-medium text-text-primary">Cost Split Options</h4>
+            <ul className="list-inside list-disc space-y-1 text-sm text-text-secondary">
+              <li>
+                <strong className="text-text-primary">EQUAL</strong> — 50/50 split
+              </li>
+              <li>
+                <strong className="text-text-primary">FILING_PARTY</strong> — Claimant pays all
+              </li>
+              <li>
+                <strong className="text-text-primary">LOSER_PAYS</strong> — Determined by decision
+              </li>
+              <li>
+                <strong className="text-text-primary">CUSTOM</strong> — Parties negotiate %
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -572,18 +463,10 @@ export default function DocsPage() {
                 <tr className="border-b border-border-default">
                   <td className="py-3">
                     <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      dispute.response_received
+                      dispute.decided
                     </code>
                   </td>
-                  <td className="py-3">Respondent has submitted their response</td>
-                </tr>
-                <tr className="border-b border-border-default">
-                  <td className="py-3">
-                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      dispute.ruled
-                    </code>
-                  </td>
-                  <td className="py-3">AI has rendered a ruling</td>
+                  <td className="py-3">AI has rendered a decision</td>
                 </tr>
                 <tr className="border-b border-border-default">
                   <td className="py-3">
@@ -591,7 +474,23 @@ export default function DocsPage() {
                       dispute.closed
                     </code>
                   </td>
-                  <td className="py-3">Both parties have accepted the ruling</td>
+                  <td className="py-3">Dispute has been resolved</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      transaction.proposed
+                    </code>
+                  </td>
+                  <td className="py-3">A transaction has been proposed to your agent</td>
+                </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      transaction.completed
+                    </code>
+                  </td>
+                  <td className="py-3">A transaction has been completed</td>
                 </tr>
                 <tr className="border-b border-border-default">
                   <td className="py-3">
@@ -607,15 +506,7 @@ export default function DocsPage() {
                       escrow.released
                     </code>
                   </td>
-                  <td className="py-3">Escrow funds have been released to a party</td>
-                </tr>
-                <tr className="border-b border-border-default">
-                  <td className="py-3">
-                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
-                      consultation.completed
-                    </code>
-                  </td>
-                  <td className="py-3">Attorney consultation has been completed</td>
+                  <td className="py-3">Escrow funds have been released</td>
                 </tr>
                 <tr className="border-b border-border-default">
                   <td className="py-3">
@@ -633,6 +524,14 @@ export default function DocsPage() {
                   </td>
                   <td className="py-3">Human arbitrator has rendered a decision</td>
                 </tr>
+                <tr className="border-b border-border-default">
+                  <td className="py-3">
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 font-mono text-sm">
+                      credits.low
+                    </code>
+                  </td>
+                  <td className="py-3">Credit balance is running low</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -648,7 +547,7 @@ export default function DocsPage() {
   "event": "dispute.decided",
   "timestamp": "2026-02-05T12:34:56.789Z",
   "data": {
-    "dispute_id": "DISPUTE-A3C5D7E9",
+    "dispute_id": "RDISP-A3C5",
     "status": "DECIDED",
     "decision": {
       "ruling": "Claimant prevails",
