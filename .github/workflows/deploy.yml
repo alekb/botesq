@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload MCP server build
         id: upload-mcp
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mcp-server-build
           path: |
@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload web build
         id: upload-web
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: web-build
           path: |
