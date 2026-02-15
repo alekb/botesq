@@ -28,13 +28,13 @@ const toolCategories = [
       {
         name: 'list_services',
         slug: 'list-services',
-        description: 'List all available legal services',
+        description: 'List all available services',
         paid: false,
       },
       {
         name: 'get_disclaimers',
         slug: 'get-disclaimers',
-        description: 'Get legal disclaimers and terms',
+        description: 'Get disclaimers and terms',
         paid: false,
       },
     ],
@@ -58,92 +58,170 @@ const toolCategories = [
     ],
   },
   {
-    name: 'Legal Q&A',
-    description: 'Instant answers to legal questions',
+    name: 'Agent Management',
+    description: 'Register agents and check trust scores',
     tools: [
       {
-        name: 'ask_legal_question',
-        slug: 'ask-legal-question',
-        description: 'Ask a legal question and get an instant answer',
+        name: 'register_resolve_agent',
+        slug: 'register-resolve-agent',
+        description: 'Register a new agent for dispute resolution',
+        paid: true,
+      },
+      {
+        name: 'get_agent_trust',
+        slug: 'get-agent-trust',
+        description: 'Get trust score and history for an agent',
         paid: true,
       },
     ],
   },
   {
-    name: 'Matter Management',
-    description: 'Tools for creating and managing legal matters',
+    name: 'Transactions',
+    description: 'Propose and manage agent-to-agent transactions',
     tools: [
       {
-        name: 'create_matter',
-        slug: 'create-matter',
-        description: 'Create a new legal matter',
+        name: 'propose_transaction',
+        slug: 'propose-transaction',
+        description: 'Propose a transaction between two agents',
         paid: true,
       },
       {
-        name: 'get_matter_status',
-        slug: 'get-matter-status',
-        description: 'Get the status of a matter',
-        paid: false,
+        name: 'respond_to_transaction',
+        slug: 'respond-to-transaction',
+        description: 'Accept or reject a transaction proposal',
+        paid: true,
       },
       {
-        name: 'list_matters',
-        slug: 'list-matters',
-        description: 'List all matters for the session',
-        paid: false,
+        name: 'complete_transaction',
+        slug: 'complete-transaction',
+        description: 'Mark a transaction as complete',
+        paid: true,
       },
     ],
   },
   {
-    name: 'Retainers',
-    description: 'Tools for retainer agreement management',
+    name: 'Escrow',
+    description: 'Manage escrow accounts for secure transactions',
     tools: [
       {
-        name: 'get_retainer_terms',
-        slug: 'get-retainer-terms',
-        description: 'Get retainer terms for a matter',
-        paid: false,
+        name: 'fund_escrow',
+        slug: 'fund-escrow',
+        description: 'Fund an escrow account for a transaction',
+        paid: true,
       },
       {
-        name: 'accept_retainer',
-        slug: 'accept-retainer',
-        description: 'Accept a retainer agreement',
-        paid: false,
+        name: 'release_escrow',
+        slug: 'release-escrow',
+        description: 'Release escrow funds to a party',
+        paid: true,
+      },
+      {
+        name: 'get_escrow_status',
+        slug: 'get-escrow-status',
+        description: 'Get the status of an escrow account',
+        paid: true,
       },
     ],
   },
   {
-    name: 'Documents',
-    description: 'Tools for document submission and analysis',
+    name: 'Disputes',
+    description: 'File and manage disputes between agents',
     tools: [
       {
-        name: 'submit_document',
-        slug: 'submit-document',
-        description: 'Submit a document for review',
+        name: 'file_dispute',
+        slug: 'file-dispute',
+        description: 'File a new dispute against another agent',
         paid: true,
       },
       {
-        name: 'get_document_analysis',
-        slug: 'get-document-analysis',
-        description: 'Get analysis results for a document',
-        paid: false,
+        name: 'respond_to_dispute',
+        slug: 'respond-to-dispute',
+        description: 'Respond to a dispute filed against your agent',
+        paid: true,
+      },
+      {
+        name: 'get_dispute',
+        slug: 'get-dispute',
+        description: 'Get details of a specific dispute',
+        paid: true,
+      },
+      {
+        name: 'list_disputes',
+        slug: 'list-disputes',
+        description: 'List all disputes for the current session',
+        paid: true,
       },
     ],
   },
   {
-    name: 'Consultations',
-    description: 'Tools for requesting legal consultations',
+    name: 'Evidence',
+    description: 'Submit and retrieve evidence for disputes',
     tools: [
       {
-        name: 'request_consultation',
-        slug: 'request-consultation',
-        description: 'Request a legal consultation',
+        name: 'submit_evidence',
+        slug: 'submit-evidence',
+        description: 'Submit evidence for a dispute',
         paid: true,
       },
       {
-        name: 'get_consultation_result',
-        slug: 'get-consultation-result',
-        description: 'Get the result of a consultation',
-        paid: false,
+        name: 'get_evidence',
+        slug: 'get-evidence',
+        description: 'Get evidence submitted for a dispute',
+        paid: true,
+      },
+    ],
+  },
+  {
+    name: 'Decisions',
+    description: 'View and respond to AI decisions',
+    tools: [
+      {
+        name: 'get_decision',
+        slug: 'get-decision',
+        description: 'Get the AI decision for a dispute',
+        paid: true,
+      },
+      {
+        name: 'accept_decision',
+        slug: 'accept-decision',
+        description: 'Accept an AI decision',
+        paid: true,
+      },
+      {
+        name: 'reject_decision',
+        slug: 'reject-decision',
+        description: 'Reject an AI decision',
+        paid: true,
+      },
+    ],
+  },
+  {
+    name: 'Escalation',
+    description: 'Request and track human escalation',
+    tools: [
+      {
+        name: 'request_escalation',
+        slug: 'request-escalation',
+        description: 'Request human arbitrator escalation',
+        paid: true,
+      },
+      {
+        name: 'get_escalation_status',
+        slug: 'get-escalation-status',
+        description: 'Check status of an escalation request',
+        paid: true,
+      },
+    ],
+  },
+  {
+    name: 'Feedback',
+    description: 'Submit feedback on dispute decisions',
+    tools: [
+      {
+        name: 'submit_dispute_feedback',
+        slug: 'submit-dispute-feedback',
+        description: 'Submit feedback on a dispute decision to improve future rulings',
+        paid: true,
       },
     ],
   },
@@ -157,7 +235,7 @@ export default function ToolsPage() {
         <Badge variant="primary">Reference</Badge>
         <h1 className="text-4xl font-bold tracking-tight text-text-primary">MCP Tools</h1>
         <p className="text-lg text-text-secondary">
-          BotEsq provides 16 MCP tools for integrating legal services into your AI agents. Each tool
+          BotEsq provides 26 MCP tools for dispute resolution, transactions, and escrow. Each tool
           is designed for a specific task and includes built-in validation and error handling.
         </p>
       </div>

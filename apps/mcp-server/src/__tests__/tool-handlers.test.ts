@@ -127,10 +127,13 @@ describe('MCP Tool Handlers', () => {
       expect(toolNames).toContain('fund_escrow')
       expect(toolNames).toContain('release_escrow')
       expect(toolNames).toContain('get_escrow_status')
+
+      // Resolve tools - feedback
+      expect(toolNames).toContain('submit_dispute_feedback')
     })
 
-    it('should export exactly 35 tools', () => {
-      expect(tools).toHaveLength(35)
+    it('should export exactly 37 tools', () => {
+      expect(tools).toHaveLength(37)
     })
 
     it('should have handler functions for all tools', () => {

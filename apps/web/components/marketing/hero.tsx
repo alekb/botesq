@@ -1,5 +1,15 @@
 import Link from 'next/link'
-import { ArrowRight, Zap, Shield, Scale, Gavel, FileText, CheckCircle, Users } from 'lucide-react'
+import {
+  ArrowRight,
+  Zap,
+  Shield,
+  Scale,
+  FileText,
+  CheckCircle,
+  Users,
+  TrendingUp,
+  Handshake,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { HeroGraphic } from '@/components/illustrations'
@@ -30,8 +40,8 @@ export function Hero() {
 
             {/* Subheadline */}
             <p className="mt-6 text-lg leading-8 text-text-secondary sm:text-xl">
-              Dispute resolution and legal services for the agentic economy. Escrow, trust scores,
-              AI arbitration, and licensed attorney support—all through one MCP server.
+              Neutral dispute resolution for the agentic economy. Escrow, trust scores, AI
+              arbitration, and human escalation—all through one MCP server.
             </p>
 
             {/* CTAs */}
@@ -72,11 +82,11 @@ export function Hero() {
               <ul className="space-y-2 text-sm text-text-secondary">
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-primary-500 flex-shrink-0" />
-                  Agent-to-agent transaction escrow
+                  AI-powered neutral decisions
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-primary-500 flex-shrink-0" />
-                  Trust scores based on history
+                  Evidence-based evaluation
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-primary-500 flex-shrink-0" />
@@ -86,31 +96,31 @@ export function Hero() {
             </CardContent>
           </Card>
 
-          {/* Legal Services */}
+          {/* Transactions & Escrow */}
           <Card className="border-success-500/30 bg-gradient-to-br from-success-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="inline-flex rounded-lg bg-success-500/10 p-3">
-                  <Gavel className="h-6 w-6 text-success-500" />
+                  <Handshake className="h-6 w-6 text-success-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-text-primary">Legal Services</h3>
+                <h3 className="text-lg font-semibold text-text-primary">Transactions & Escrow</h3>
               </div>
               <p className="text-sm text-text-secondary mb-4">
-                AI-powered legal Q&A with licensed attorney oversight. Get answers to legal
-                questions, document review, and expert consultations when your agent needs help.
+                Secure agent-to-agent transactions with built-in escrow. Propose, negotiate, and
+                complete deals with funds held safely until both parties are satisfied.
               </p>
               <ul className="space-y-2 text-sm text-text-secondary">
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  AI-powered legal Q&A
+                  Agent-to-agent transaction escrow
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Document review and analysis
+                  Trust scores based on history
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success-500 flex-shrink-0" />
-                  Licensed attorney consultations
+                  Automated dispute protection
                 </li>
               </ul>
             </CardContent>
@@ -122,11 +132,12 @@ export function Hero() {
           <Card className="border-primary-500/30 bg-gradient-to-br from-primary-500/5 to-transparent">
             <CardContent className="pt-6">
               <div className="inline-flex rounded-lg bg-primary-500/10 p-3">
-                <Scale className="h-6 w-6 text-primary-500" />
+                <TrendingUp className="h-6 w-6 text-primary-500" />
               </div>
-              <h3 className="mt-4 font-semibold text-text-primary">Neutral Resolution</h3>
+              <h3 className="mt-4 font-semibold text-text-primary">Gets Smarter Over Time</h3>
               <p className="mt-2 text-sm text-text-secondary">
-                Impartial AI agent evaluates both sides and renders fair decisions.
+                Every dispute makes our AI more accurate. Feedback loops and human oversight
+                continuously calibrate decisions.
               </p>
             </CardContent>
           </Card>
@@ -148,9 +159,9 @@ export function Hero() {
               <div className="inline-flex rounded-lg bg-warning-500/10 p-3">
                 <Shield className="h-6 w-6 text-warning-500" />
               </div>
-              <h3 className="mt-4 font-semibold text-text-primary">Attorney Backed</h3>
+              <h3 className="mt-4 font-semibold text-text-primary">Transparent Decisions</h3>
               <p className="mt-2 text-sm text-text-secondary">
-                Licensed attorneys review complex cases and provide expert oversight.
+                Every ruling includes detailed reasoning. Accept to resolve, or reject and escalate.
               </p>
             </CardContent>
           </Card>
@@ -175,12 +186,16 @@ export function Hero() {
             <span className="text-sm">Neutral AI Arbiter</span>
           </div>
           <div className="flex items-center gap-2">
-            <Gavel className="h-5 w-5 text-success-500" />
-            <span className="text-sm">Licensed Attorneys</span>
+            <TrendingUp className="h-5 w-5 text-success-500" />
+            <span className="text-sm">Agent Trust Scores</span>
           </div>
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-warning-500" />
             <span className="text-sm">MCP Native</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary-400" />
+            <span className="text-sm">Human Escalation</span>
           </div>
         </div>
       </div>

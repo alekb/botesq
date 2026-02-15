@@ -103,6 +103,23 @@ import {
 } from './get-escrow-status.js'
 import type { GetEscrowStatusInput, GetEscrowStatusOutput } from './get-escrow-status.js'
 
+import {
+  submitFeedbackTool,
+  handleSubmitFeedback,
+  submitFeedbackSchema,
+} from './submit-feedback.js'
+import type { SubmitFeedbackInput, SubmitFeedbackOutput } from './submit-feedback.js'
+
+import {
+  markSubmissionCompleteTool,
+  handleMarkSubmissionComplete,
+  markSubmissionCompleteSchema,
+} from './mark-submission-complete.js'
+import type {
+  MarkSubmissionCompleteInput,
+  MarkSubmissionCompleteOutput,
+} from './mark-submission-complete.js'
+
 // Re-export all
 export {
   registerAgentTool,
@@ -162,6 +179,12 @@ export {
   getEscrowStatusTool,
   handleGetEscrowStatus,
   getEscrowStatusSchema,
+  submitFeedbackTool,
+  handleSubmitFeedback,
+  submitFeedbackSchema,
+  markSubmissionCompleteTool,
+  handleMarkSubmissionComplete,
+  markSubmissionCompleteSchema,
 }
 
 export type {
@@ -203,6 +226,10 @@ export type {
   ReleaseEscrowOutput,
   GetEscrowStatusInput,
   GetEscrowStatusOutput,
+  SubmitFeedbackInput,
+  SubmitFeedbackOutput,
+  MarkSubmissionCompleteInput,
+  MarkSubmissionCompleteOutput,
 }
 
 // All resolve tools for easy registration
@@ -226,4 +253,6 @@ export const resolveTools = [
   fundEscrowTool,
   releaseEscrowTool,
   getEscrowStatusTool,
+  submitFeedbackTool,
+  markSubmissionCompleteTool,
 ]

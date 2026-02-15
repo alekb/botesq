@@ -91,6 +91,8 @@ import {
   handleReleaseEscrow,
   getEscrowStatusSchema,
   handleGetEscrowStatus,
+  markSubmissionCompleteSchema,
+  handleMarkSubmissionComplete,
 } from './resolve/index.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
@@ -257,6 +259,10 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
   get_escrow_status: async (input) => {
     const validated = getEscrowStatusSchema.parse(input)
     return handleGetEscrowStatus(validated)
+  },
+  mark_submission_complete: async (input) => {
+    const validated = markSubmissionCompleteSchema.parse(input)
+    return handleMarkSubmissionComplete(validated)
   },
 }
 

@@ -17,7 +17,7 @@ export default function APIReferencePage() {
         <div className="mx-auto max-w-4xl">
           <h1 className="text-4xl font-bold tracking-tight text-text-primary">API Reference</h1>
           <p className="mt-4 text-lg text-text-secondary">
-            Complete reference documentation for BotEsq's MCP-native tools and integration.
+            Complete reference documentation for BotEsq&apos;s MCP-native tools and integration.
           </p>
         </div>
       </section>
@@ -40,8 +40,8 @@ export default function APIReferencePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Complete reference for all MCP tools including sessions, disputes, submissions,
-                  and legal services.
+                  Complete reference for all MCP tools including disputes, transactions, escrow,
+                  and trust scores.
                 </p>
                 <Button asChild>
                   <Link href="/docs/tools">View Tools</Link>
@@ -128,11 +128,11 @@ export default function APIReferencePage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Session Management</CardTitle>
+                <CardTitle className="text-lg">Session & Info</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Tools for managing sessions and checking service availability.
+                  Tools for managing sessions, checking services, and viewing disclaimers.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Link
@@ -155,6 +155,93 @@ export default function APIReferencePage() {
                   >
                     list_services
                   </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/get-disclaimers"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    get_disclaimers
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Agent Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-text-secondary mb-4">
+                  Tools for registering agents and checking trust scores.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href="/docs/tools/register-resolve-agent"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    register_resolve_agent
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/get-agent-trust"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    get_agent_trust
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Transactions & Escrow</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-text-secondary mb-4">
+                  Tools for managing agent-to-agent transactions and escrow accounts.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href="/docs/tools/propose-transaction"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    propose_transaction
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/respond-to-transaction"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    respond_to_transaction
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/complete-transaction"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    complete_transaction
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/fund-escrow"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    fund_escrow
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/release-escrow"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    release_escrow
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/get-escrow-status"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    get_escrow_status
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -165,7 +252,7 @@ export default function APIReferencePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Tools for filing disputes, managing submissions, and viewing decisions.
+                  Tools for filing disputes, responding, and viewing dispute status.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Link
@@ -176,10 +263,10 @@ export default function APIReferencePage() {
                   </Link>
                   <span className="text-text-tertiary">•</span>
                   <Link
-                    href="/docs/tools/join-dispute"
+                    href="/docs/tools/respond-to-dispute"
                     className="text-sm text-primary-500 hover:underline"
                   >
-                    join_dispute
+                    respond_to_dispute
                   </Link>
                   <span className="text-text-tertiary">•</span>
                   <Link
@@ -190,10 +277,10 @@ export default function APIReferencePage() {
                   </Link>
                   <span className="text-text-tertiary">•</span>
                   <Link
-                    href="/docs/tools/get-dispute-status"
+                    href="/docs/tools/get-dispute"
                     className="text-sm text-primary-500 hover:underline"
                   >
-                    get_dispute_status
+                    get_dispute
                   </Link>
                 </div>
               </CardContent>
@@ -205,21 +292,23 @@ export default function APIReferencePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Tools for submitting positions, evidence, and managing submission workflow.
+                  Tools for submitting evidence, reviewing the other party&apos;s submissions, and
+                  signaling readiness for arbitration. Both parties have a 24-hour review period to
+                  submit rebuttals before arbitration begins.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Link
-                    href="/docs/tools/submit-position"
-                    className="text-sm text-primary-500 hover:underline"
-                  >
-                    submit_position
-                  </Link>
-                  <span className="text-text-tertiary">•</span>
                   <Link
                     href="/docs/tools/submit-evidence"
                     className="text-sm text-primary-500 hover:underline"
                   >
                     submit_evidence
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/get-evidence"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    get_evidence
                   </Link>
                   <span className="text-text-tertiary">•</span>
                   <Link
@@ -269,31 +358,45 @@ export default function APIReferencePage() {
                   >
                     request_escalation
                   </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/get-escalation-status"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    get_escalation_status
+                  </Link>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Billing & Usage</CardTitle>
+                <CardTitle className="text-lg">Credits & Feedback</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Tools for monitoring token usage and estimating costs.
+                  Tools for monitoring credits and providing feedback on decisions.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    href="/docs/tools/check-token-usage"
+                    href="/docs/tools/check-credits"
                     className="text-sm text-primary-500 hover:underline"
                   >
-                    check_token_usage
+                    check_credits
                   </Link>
                   <span className="text-text-tertiary">•</span>
                   <Link
-                    href="/docs/tools/get-token-estimate"
+                    href="/docs/tools/add-credits"
                     className="text-sm text-primary-500 hover:underline"
                   >
-                    get_token_estimate
+                    add_credits
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/submit-dispute-feedback"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    submit_dispute_feedback
                   </Link>
                 </div>
               </CardContent>
@@ -315,7 +418,7 @@ export default function APIReferencePage() {
                 className="text-primary-500 hover:underline flex items-center gap-2"
               >
                 Error Handling Guide
-                <span className="text-text-tertiary text-sm">→</span>
+                <span className="text-text-tertiary text-sm">&rarr;</span>
               </Link>
               <p className="text-sm text-text-secondary mt-1">
                 Learn how to handle errors and implement retry logic.
@@ -327,22 +430,10 @@ export default function APIReferencePage() {
                 className="text-primary-500 hover:underline flex items-center gap-2"
               >
                 Webhook Integration
-                <span className="text-text-tertiary text-sm">→</span>
+                <span className="text-text-tertiary text-sm">&rarr;</span>
               </Link>
               <p className="text-sm text-text-secondary mt-1">
-                Receive real-time notifications about dispute events.
-              </p>
-            </li>
-            <li>
-              <Link
-                href="/docs/prompts"
-                className="text-primary-500 hover:underline flex items-center gap-2"
-              >
-                AI Prompting Guide
-                <span className="text-text-tertiary text-sm">→</span>
-              </Link>
-              <p className="text-sm text-text-secondary mt-1">
-                Best practices for writing effective dispute positions and evidence.
+                Receive real-time notifications about dispute and transaction events.
               </p>
             </li>
           </ul>

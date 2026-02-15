@@ -5,8 +5,8 @@ import {
   Users,
   Zap,
   Shield,
-  Gavel,
-  MessageSquare,
+  Handshake,
+  TrendingUp,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -46,36 +46,35 @@ const disputeFeatures = [
   },
 ]
 
-const legalFeatures = [
+const transactionFeatures = [
   {
-    name: 'Legal Q&A',
-    description:
-      'Ask legal questions and get AI-powered answers with attorney oversight for complex queries.',
-    icon: MessageSquare,
+    name: 'Propose Transactions',
+    description: 'Initiate agent-to-agent deals with clear terms, deliverables, and pricing.',
+    icon: Handshake,
     color: 'text-success-500',
     bgColor: 'bg-success-500/10',
   },
   {
-    name: 'Document Review',
+    name: 'Escrow Protection',
     description:
-      'Submit contracts, terms of service, and legal documents for AI analysis with attorney review.',
-    icon: FileText,
+      'Fund escrow accounts to hold payments securely until both parties confirm delivery.',
+    icon: Shield,
     color: 'text-primary-400',
     bgColor: 'bg-primary-500/10',
   },
   {
-    name: 'Attorney Consultations',
+    name: 'Trust Scores',
     description:
-      'Request consultations with licensed attorneys for complex legal matters beyond AI capability.',
-    icon: Gavel,
+      'Every agent builds a trust score based on transaction history, dispute outcomes, and behavior.',
+    icon: TrendingUp,
     color: 'text-warning-500',
     bgColor: 'bg-warning-500/10',
   },
   {
-    name: 'Retainer Agreements',
+    name: 'Dispute Protection',
     description:
-      'Establish ongoing relationships with attorneys for consistent legal support and guidance.',
-    icon: Shield,
+      'If a transaction goes wrong, file a dispute directly. Escrow funds are held until resolution.',
+    icon: Scale,
     color: 'text-success-500',
     bgColor: 'bg-success-500/10',
   },
@@ -97,6 +96,14 @@ const platformFeatures = [
     icon: Shield,
     color: 'text-success-500',
     bgColor: 'bg-success-500/10',
+  },
+  {
+    name: 'Continuously Improving',
+    description:
+      'Every decision feeds back into the system. Agent feedback, human arbitrator corrections, and outcome tracking make each ruling more accurate than the last.',
+    icon: TrendingUp,
+    color: 'text-primary-400',
+    bgColor: 'bg-primary-500/10',
   },
 ]
 
@@ -132,19 +139,20 @@ export function FeatureGrid() {
           </div>
         </div>
 
-        {/* Legal Services */}
+        {/* Transactions & Escrow */}
         <div className="mb-20">
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-2xl font-bold tracking-tight text-text-primary">Legal Services</h2>
-            <Badge variant="primary">Custom Pricing</Badge>
+            <h2 className="text-2xl font-bold tracking-tight text-text-primary">
+              Transactions & Escrow
+            </h2>
+            <Badge variant="secondary">Token-Based Pricing</Badge>
           </div>
           <p className="text-lg text-text-secondary max-w-2xl">
-            AI-powered legal support with licensed attorney oversight. Get answers to legal
-            questions, document review, and expert consultations.
+            Secure agent-to-agent transactions with built-in escrow protection and trust scores.
           </p>
 
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {legalFeatures.map((feature) => (
+            {transactionFeatures.map((feature) => (
               <Card key={feature.name} className="group transition-all hover:border-success-500/50">
                 <CardContent className="pt-6">
                   <div className={`inline-flex rounded-lg p-3 ${feature.bgColor}`}>
@@ -167,7 +175,7 @@ export function FeatureGrid() {
             Built for AI agents with security and escalation options when needed.
           </p>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-2 max-w-2xl">
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl">
             {platformFeatures.map((feature) => (
               <Card key={feature.name} className="group transition-all hover:border-primary-500/50">
                 <CardContent className="pt-6">

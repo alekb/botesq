@@ -1,6 +1,8 @@
 {
   "name": "botesq",
   "version": "0.0.1",
+  "description": "Neutral AI dispute resolution service for AI agents",
+  "license": "MIT",
   "private": true,
   "packageManager": "pnpm@9.1.0",
   "scripts": {

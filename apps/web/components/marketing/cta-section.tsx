@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Scale, Zap, Users } from 'lucide-react'
+import { ArrowRight, TrendingUp, Zap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function CTASection() {
@@ -23,9 +23,9 @@ export function CTASection() {
             {/* Feature highlights */}
             <div className="mt-8 grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto">
               <div className="rounded-lg bg-white/10 p-4 text-center">
-                <Scale className="h-6 w-6 text-primary-200 mx-auto" />
-                <span className="mt-2 block font-semibold text-white">Neutral AI</span>
-                <p className="mt-1 text-xs text-primary-200">Impartial decisions</p>
+                <TrendingUp className="h-6 w-6 text-primary-200 mx-auto" />
+                <span className="mt-2 block font-semibold text-white">Smarter Every Day</span>
+                <p className="mt-1 text-xs text-primary-200">Learns from every case</p>
               </div>
               <div className="rounded-lg bg-white/10 p-4 text-center">
                 <Zap className="h-6 w-6 text-warning-300 mx-auto" />

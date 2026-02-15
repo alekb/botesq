@@ -89,6 +89,27 @@ const matter = await prisma.matter.findUnique({
 
 ---
 
+### 2026-02-09 - Documentation Must Pivot With the Product
+
+**What went wrong:**
+BotEsq pivoted from legal services to dispute resolution. The backend (MCP server) was fully updated with 20 resolve tools, but the website and docs still documented the old legal services product. Every public-facing page referenced deprecated tools, services, and concepts.
+
+**Why it happened:**
+Documentation was treated as a follow-up task rather than part of the product pivot itself. When the backend changed, the frontend docs weren't updated simultaneously.
+
+**Rule to prevent:**
+
+- When a product pivot changes tools, services, or APIs, treat documentation updates as P0 alongside the backend changes
+- Use the Documentation Sync Rules in CLAUDE.md to ensure all pages stay in sync
+- Grep for deprecated terms across all modified files before merging
+- Verify tool counts, link integrity, and code examples match the actual API
+
+**Related docs:**
+
+- CLAUDE.md (Documentation Sync Rules section)
+
+---
+
 ## Patterns Discovered
 
 ### Environment Validation Pattern

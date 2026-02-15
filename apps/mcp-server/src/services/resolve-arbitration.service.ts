@@ -14,6 +14,7 @@ import {
   calculateTrustImpact,
 } from './resolve-agent.service.js'
 import { prisma } from '@botesq/database'
+import { getCalibrationContext } from './feedback.service.js'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
@@ -95,10 +96,21 @@ export async function arbitrateDispute(input: ArbitrationInput): Promise<Arbitra
 
   const userPrompt = buildArbitrationPrompt(input)
 
+  // Enrich system prompt with calibration notes from historical feedback
+  let systemPrompt = ARBITRATION_SYSTEM_PROMPT
+  try {
+    const calibration = await getCalibrationContext()
+    if (calibration) {
+      systemPrompt += calibration
+    }
+  } catch (err) {
+    logger.warn({ error: err }, 'Failed to fetch calibration context, proceeding without it')
+  }
+
   try {
     const response = await chatCompletion(
       [
-        { role: 'system', content: ARBITRATION_SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       {

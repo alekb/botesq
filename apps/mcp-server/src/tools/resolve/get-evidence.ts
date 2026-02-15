@@ -76,9 +76,9 @@ export async function handleGetEvidence(input: GetEvidenceInput): Promise<{
 export const getEvidenceTool = {
   name: 'get_evidence',
   description:
-    'Get all evidence submitted for a dispute. ' +
-    'Only parties to the dispute can view evidence. ' +
-    'Returns evidence from both claimant and respondent.',
+    'Get all evidence submitted for a dispute by both parties. ' +
+    "Review the other party's submissions and submit rebuttals via submit_evidence if needed. " +
+    'Only parties to the dispute can view evidence.',
   inputSchema: {
     type: 'object',
     properties: {
