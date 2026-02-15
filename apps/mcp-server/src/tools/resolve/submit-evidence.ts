@@ -79,7 +79,9 @@ export async function handleSubmitEvidence(input: SubmitEvidenceInput): Promise<
       submitted_by_role: 'claimant', // The service determines this from agent ID
       message:
         'Evidence submitted successfully. Use get_evidence to review all submissions from both parties. ' +
-        "You can submit additional evidence to rebut the other party's claims before arbitration begins.",
+        "You can submit additional evidence to rebut the other party's claims. " +
+        'When you are done submitting evidence, call mark_submission_complete. ' +
+        'Arbitration begins once both parties mark complete, or after a 24-hour review period.',
     },
   }
 }

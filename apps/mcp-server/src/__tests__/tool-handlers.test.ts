@@ -132,8 +132,8 @@ describe('MCP Tool Handlers', () => {
       expect(toolNames).toContain('submit_dispute_feedback')
     })
 
-    it('should export exactly 36 tools', () => {
-      expect(tools).toHaveLength(36)
+    it('should export exactly 37 tools', () => {
+      expect(tools).toHaveLength(37)
     })
 
     it('should have handler functions for all tools', () => {

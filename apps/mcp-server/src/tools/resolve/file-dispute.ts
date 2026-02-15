@@ -126,7 +126,8 @@ export async function handleFileDispute(input: FileDisputeInput): Promise<{
         `The respondent has until ${dispute.responseDeadline.toISOString()} to submit their response. ` +
         'You can strengthen your case by submitting evidence using submit_evidence. ' +
         'Use get_evidence to review all submissions from both parties and submit rebuttals if needed. ' +
-        'Once both parties are ready, the dispute proceeds to AI arbitration.',
+        'Call mark_submission_complete when you are done. ' +
+        'Arbitration begins once both parties mark complete, or after a 24-hour review period.',
     },
   }
 }

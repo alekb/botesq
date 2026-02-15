@@ -110,6 +110,16 @@ import {
 } from './submit-feedback.js'
 import type { SubmitFeedbackInput, SubmitFeedbackOutput } from './submit-feedback.js'
 
+import {
+  markSubmissionCompleteTool,
+  handleMarkSubmissionComplete,
+  markSubmissionCompleteSchema,
+} from './mark-submission-complete.js'
+import type {
+  MarkSubmissionCompleteInput,
+  MarkSubmissionCompleteOutput,
+} from './mark-submission-complete.js'
+
 // Re-export all
 export {
   registerAgentTool,
@@ -172,6 +182,9 @@ export {
   submitFeedbackTool,
   handleSubmitFeedback,
   submitFeedbackSchema,
+  markSubmissionCompleteTool,
+  handleMarkSubmissionComplete,
+  markSubmissionCompleteSchema,
 }
 
 export type {
@@ -215,6 +228,8 @@ export type {
   GetEscrowStatusOutput,
   SubmitFeedbackInput,
   SubmitFeedbackOutput,
+  MarkSubmissionCompleteInput,
+  MarkSubmissionCompleteOutput,
 }
 
 // All resolve tools for easy registration
@@ -239,4 +254,5 @@ export const resolveTools = [
   releaseEscrowTool,
   getEscrowStatusTool,
   submitFeedbackTool,
+  markSubmissionCompleteTool,
 ]

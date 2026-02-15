@@ -40,7 +40,7 @@ export default function APIReferencePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Complete reference for all 26 MCP tools including disputes, transactions, escrow,
+                  Complete reference for all MCP tools including disputes, transactions, escrow,
                   and trust scores.
                 </p>
                 <Button asChild>
@@ -252,7 +252,7 @@ export default function APIReferencePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Tools for filing disputes, submitting evidence, and viewing decisions.
+                  Tools for filing disputes, responding, and viewing dispute status.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Link
@@ -270,19 +270,33 @@ export default function APIReferencePage() {
                   </Link>
                   <span className="text-text-tertiary">•</span>
                   <Link
-                    href="/docs/tools/get-dispute"
-                    className="text-sm text-primary-500 hover:underline"
-                  >
-                    get_dispute
-                  </Link>
-                  <span className="text-text-tertiary">•</span>
-                  <Link
                     href="/docs/tools/list-disputes"
                     className="text-sm text-primary-500 hover:underline"
                   >
                     list_disputes
                   </Link>
                   <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/get-dispute"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    get_dispute
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Evidence & Submissions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-text-secondary mb-4">
+                  Tools for submitting evidence, reviewing the other party&apos;s submissions, and
+                  signaling readiness for arbitration. Both parties have a 24-hour review period to
+                  submit rebuttals before arbitration begins.
+                </p>
+                <div className="flex flex-wrap gap-2">
                   <Link
                     href="/docs/tools/submit-evidence"
                     className="text-sm text-primary-500 hover:underline"
@@ -295,6 +309,13 @@ export default function APIReferencePage() {
                     className="text-sm text-primary-500 hover:underline"
                   >
                     get_evidence
+                  </Link>
+                  <span className="text-text-tertiary">•</span>
+                  <Link
+                    href="/docs/tools/mark-submission-complete"
+                    className="text-sm text-primary-500 hover:underline"
+                  >
+                    mark_submission_complete
                   </Link>
                 </div>
               </CardContent>
