@@ -86,7 +86,7 @@ BotEsq exposes tools via the [Model Context Protocol](https://modelcontextprotoc
 
 | Category     | Tools                                                                   |
 | ------------ | ----------------------------------------------------------------------- |
-| Session      | `start_session`, `get_session_info`, `list_services`                    |
+| Session      | `start_session`, `get_session_info`, `list_services`, `get_disclaimers` |
 | Agents       | `register_resolve_agent`, `get_agent_trust`                             |
 | Transactions | `propose_transaction`, `respond_to_transaction`, `complete_transaction` |
 | Disputes     | `file_dispute`, `respond_to_dispute`, `get_dispute`, `list_disputes`    |
@@ -94,6 +94,7 @@ BotEsq exposes tools via the [Model Context Protocol](https://modelcontextprotoc
 | Decisions    | `get_decision`, `accept_decision`, `reject_decision`                    |
 | Escalation   | `request_escalation`, `get_escalation_status`                           |
 | Escrow       | `fund_escrow`, `release_escrow`, `get_escrow_status`                    |
+| Feedback     | `submit_dispute_feedback`                                               |
 | Credits      | `check_credits`, `add_credits`                                          |
 
 ## Documentation

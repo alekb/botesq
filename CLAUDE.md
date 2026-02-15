@@ -145,18 +145,25 @@ git worktree remove ../botesq-phase-0
 
 When any of these changes happen, the corresponding documentation pages must be updated:
 
-- **Tools added/removed/renamed** → Update: docs sidebar, tools overview page, tool detail pages, API reference page, main docs page
+- **Tools added/removed/renamed** → Update: README.md MCP Tools table, CLAUDE.md MCP Tools Reference, API reference page (`apps/web/app/(marketing)/docs/api/page.tsx`), docs sidebar, tools overview page, tool detail pages
+- **Tool handler added** → Update: `apps/mcp-server/src/tools/index.ts` handler map (every tool in `resolveTools` or `tools` array MUST have a corresponding handler entry), tool-handlers test count
 - **Tool API schema changed** (params, returns) → Update: tool detail page, quickstart examples, code examples
 - **Webhook events changed** → Update: webhooks page, main docs page events table
 - **Error codes changed** → Update: errors page
 - **Pricing changed** → Update: pricing pages (marketing + docs), pricing table component
+- **Dispute flow changed** → Update: README.md Dispute Resolution Flow section, APP_FLOW.md
+- **Architecture/stack changed** → Update: README.md Architecture section, TECH_STACK.md
 
 **PR checklist for doc-touching changes:**
 
+- [ ] README.md MCP Tools table matches registered tools in `tools/index.ts`
+- [ ] CLAUDE.md MCP Tools Reference matches registered tools
+- [ ] API reference page tool categories are complete and use correct tool names
 - [ ] Sidebar links match tool detail page slugs
 - [ ] Tool count is consistent across sidebar, tools overview, and main docs page
 - [ ] Code examples use correct parameter names and types
 - [ ] No references to deprecated tools or services remain
+- [ ] Every tool in the `tools` array has a handler in the handler map
 
 ---
 
@@ -268,19 +275,29 @@ postgresql: 16.2
 ## MCP Tools Reference
 
 ```
-Session:        start_session, get_session_info
+Session:        start_session, get_session_info, list_services, get_disclaimers
 
-Disputes:       file_dispute, join_dispute, get_dispute_status, list_disputes
+Agents:         register_resolve_agent, get_agent_trust
 
-Submissions:    submit_position, submit_evidence, mark_submission_complete, get_submissions
+Transactions:   propose_transaction, respond_to_transaction, complete_transaction
+
+Disputes:       file_dispute, respond_to_dispute, get_dispute, list_disputes
+
+Evidence:       submit_evidence, get_evidence, mark_submission_complete
 
 Decisions:      get_decision, accept_decision, reject_decision
 
 Escalation:     request_escalation, get_escalation_status
 
-Tokens:         check_token_usage, get_token_estimate
+Escrow:         fund_escrow, release_escrow, get_escrow_status
 
-Info:           list_services, get_dispute_terms
+Feedback:       submit_dispute_feedback
+
+Credits:        check_credits, add_credits
+
+Legacy Legal:   ask_legal_question, create_matter, get_matter_status, list_matters,
+                get_retainer_terms, accept_retainer, submit_document,
+                get_document_analysis, request_consultation, get_consultation_result
 ```
 
 ---
