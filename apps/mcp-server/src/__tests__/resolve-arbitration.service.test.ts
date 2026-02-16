@@ -34,6 +34,12 @@ vi.mock('../services/resolve-agent.service.js', () => ({
   calculateTrustImpact: vi.fn(),
 }))
 
+// Mock precedent-provider
+vi.mock('../services/precedent-provider.js', () => ({
+  getPrecedentProvider: vi.fn(),
+  formatPrecedentContext: vi.fn(),
+}))
+
 import { isLLMAvailable, chatCompletion } from '../services/llm.service.js'
 import {
   getDisputeById,
@@ -45,6 +51,7 @@ import {
   updateDisputeOutcome,
   calculateTrustImpact,
 } from '../services/resolve-agent.service.js'
+import { getPrecedentProvider, formatPrecedentContext } from '../services/precedent-provider.js'
 import { prisma } from '@botesq/database'
 import {
   arbitrateDispute,
@@ -55,6 +62,13 @@ import {
 describe('resolve-arbitration.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default: NullPrecedentProvider behavior (no precedent)
+    vi.mocked(getPrecedentProvider).mockReturnValue({
+      name: 'none',
+      findRelevantPrecedent: vi.fn().mockResolvedValue({ cases: [], source: 'none' }),
+      isAvailable: vi.fn().mockResolvedValue(true),
+    })
+    vi.mocked(formatPrecedentContext).mockReturnValue('')
   })
 
   const baseInput = {
@@ -202,6 +216,120 @@ describe('resolve-arbitration.service', () => {
       const result = await arbitrateDispute(baseInput)
 
       expect(result.details.confidence).toBe(0)
+    })
+  })
+
+  describe('precedent integration', () => {
+    it('should include precedent context in system prompt when provider returns cases', async () => {
+      vi.mocked(isLLMAvailable).mockReturnValue(true)
+
+      const mockPrecedent = {
+        cases: [
+          {
+            caseId: 'AAA-2024-001',
+            summary: 'Provider billed for services not rendered',
+            claimType: 'NON_PERFORMANCE',
+            ruling: 'CLAIMANT',
+            reasoning: 'No evidence of service delivery',
+            keyFactors: ['Missing service records'],
+            relevanceScore: 0.92,
+          },
+        ],
+        source: 'NY No-Fault Insurance Awards',
+        corpusSize: 3247,
+      }
+
+      vi.mocked(getPrecedentProvider).mockReturnValue({
+        name: 'ny-no-fault',
+        findRelevantPrecedent: vi.fn().mockResolvedValue(mockPrecedent),
+        isAvailable: vi.fn().mockResolvedValue(true),
+      })
+      vi.mocked(formatPrecedentContext).mockReturnValue(
+        '\n\n=== PRECEDENT CONTEXT ===\nRelevant precedent...'
+      )
+      vi.mocked(chatCompletion).mockResolvedValue({
+        content: JSON.stringify({
+          ruling: 'CLAIMANT',
+          reasoning: 'Evidence supports claimant, consistent with precedent AAA-2024-001.',
+          details: {
+            confidence: 0.92,
+            keyFactors: ['No delivery proof', 'Precedent supports ruling'],
+            mitigatingFactors: [],
+            recommendation: 'Issue full refund',
+          },
+        }),
+      } as never)
+
+      const result = await arbitrateDispute(baseInput)
+
+      // Verify precedent context was appended to system prompt
+      const systemPromptArg = vi.mocked(chatCompletion).mock.calls[0][0][0].content
+      expect(systemPromptArg).toContain('=== PRECEDENT CONTEXT ===')
+
+      // Verify precedent citations are attached to result
+      expect(result.precedentCitations).toHaveLength(1)
+      expect(result.precedentCitations![0]).toEqual({
+        caseId: 'AAA-2024-001',
+        relevanceScore: 0.92,
+        source: 'NY No-Fault Insurance Awards',
+      })
+    })
+
+    it('should proceed without precedent when provider is unavailable', async () => {
+      vi.mocked(isLLMAvailable).mockReturnValue(true)
+      vi.mocked(getPrecedentProvider).mockReturnValue({
+        name: 'ny-no-fault',
+        findRelevantPrecedent: vi.fn(),
+        isAvailable: vi.fn().mockResolvedValue(false),
+      })
+      vi.mocked(chatCompletion).mockResolvedValue({
+        content: JSON.stringify({
+          ruling: 'CLAIMANT',
+          reasoning: 'Evidence supports claimant.',
+          details: { confidence: 0.85 },
+        }),
+      } as never)
+
+      const result = await arbitrateDispute(baseInput)
+
+      expect(result.ruling).toBe('CLAIMANT')
+      expect(result.precedentCitations).toBeUndefined()
+    })
+
+    it('should proceed without precedent when provider throws', async () => {
+      vi.mocked(isLLMAvailable).mockReturnValue(true)
+      vi.mocked(getPrecedentProvider).mockReturnValue({
+        name: 'ny-no-fault',
+        findRelevantPrecedent: vi.fn().mockRejectedValue(new Error('DB connection failed')),
+        isAvailable: vi.fn().mockResolvedValue(true),
+      })
+      vi.mocked(chatCompletion).mockResolvedValue({
+        content: JSON.stringify({
+          ruling: 'SPLIT',
+          reasoning: 'Both parties share responsibility.',
+          details: { confidence: 0.7 },
+        }),
+      } as never)
+
+      const result = await arbitrateDispute(baseInput)
+
+      expect(result.ruling).toBe('SPLIT')
+      expect(result.precedentCitations).toBeUndefined()
+    })
+
+    it('should not attach precedentCitations when provider returns empty cases', async () => {
+      vi.mocked(isLLMAvailable).mockReturnValue(true)
+      vi.mocked(chatCompletion).mockResolvedValue({
+        content: JSON.stringify({
+          ruling: 'RESPONDENT',
+          reasoning: 'Respondent provided delivery proof.',
+          details: { confidence: 0.88 },
+        }),
+      } as never)
+
+      const result = await arbitrateDispute(baseInput)
+
+      expect(result.precedentCitations).toBeUndefined()
     })
   })
 

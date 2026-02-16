@@ -66,6 +66,23 @@ The existing codebase was built for the legal services model. To implement the d
 
 ## Active Tasks
 
+### PrecedentProvider Interface (Phase B — AI Arb Agent Data Moat)
+
+- [x] Define `PrecedentProvider` interface with `findRelevantPrecedent()` and `isAvailable()`
+- [x] Define `PrecedentCase` and `PrecedentResult` types
+- [x] Implement `NullPrecedentProvider` (default, returns no precedent)
+- [x] Implement provider registry (`registerPrecedentProvider`, `getPrecedentProvider`, `resetPrecedentProvider`)
+- [x] Implement `formatPrecedentContext()` for injecting precedent into arbitration prompts
+- [x] Refactor `resolve-arbitration.service.ts` to retrieve and inject precedent before LLM call
+- [x] Add `precedentCitations` field to `ArbitrationResult` for tracking which precedent was used
+- [x] Graceful degradation: provider failures don't block arbitration
+- [x] 12 unit tests for precedent-provider module
+- [x] 4 integration tests for precedent in arbitration service
+- [x] All 31 arbitration-related tests passing
+- [x] Build and lint clean
+- [ ] Phase C: Implement NY No-Fault PrecedentProvider (private, connects to pgvector)
+- [ ] Phase D: Quality & feedback loop for precedent-aware decisions
+
 ### Phase 17: Launch Preparation
 
 - [ ] Register with MCP Registry (deferred)
