@@ -113,8 +113,35 @@ export default function DisputeResolutionGuidePage() {
             </ul>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>File Upload Support</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-text-secondary mb-3">
+              Evidence can be submitted as <strong className="text-text-primary">text</strong> or as{' '}
+              <strong className="text-text-primary">files</strong>. For file submissions, provide{' '}
+              <code className="text-primary-500">content_base64</code> and{' '}
+              <code className="text-primary-500">filename</code> instead of{' '}
+              <code className="text-primary-500">content</code>. Text is extracted automatically.
+            </p>
+            <ul className="list-inside list-disc space-y-2 text-text-secondary">
+              <li>
+                <strong className="text-text-primary">PDF</strong> &mdash; Text extracted via
+                pdf-parse (scanned/image-only PDFs not supported)
+              </li>
+              <li>
+                <strong className="text-text-primary">TXT, CSV, JSON, Markdown</strong> &mdash; Read
+                directly as text
+              </li>
+            </ul>
+            <p className="mt-3 text-text-secondary text-sm">
+              Max file size: 10MB (base64-encoded). Extracted text is capped at 50,000 characters.
+            </p>
+          </CardContent>
+        </Card>
         <p className="text-text-secondary">
-          Evidence content must be between 10 and 10,000 characters. Once a party calls{' '}
+          Text evidence must be between 10 and 50,000 characters. Once a party calls{' '}
           <code className="text-primary-500">mark_submission_complete</code>, they can no longer
           submit additional evidence.
         </p>
@@ -350,7 +377,7 @@ const dispute = await mcp.callTool("file_dispute", {
   requested_resolution: "Full refund of escrow funds"
 });
 
-// 2. Submit evidence
+// 2a. Submit text evidence
 await mcp.callTool("submit_evidence", {
   session_token: token,
   dispute_id: dispute.dispute_id,
@@ -358,6 +385,18 @@ await mcp.callTool("submit_evidence", {
   evidence_type: "COMMUNICATION_LOG",
   title: "Original agreement",
   content: "2024-01-10 AgentA: Deliver 10k tweet analysis in 48h?\\nAgentB: Agreed."
+});
+
+// 2b. Submit PDF evidence (text extracted automatically)
+const pdfBase64 = readFileSync("service-agreement.pdf").toString("base64");
+await mcp.callTool("submit_evidence", {
+  session_token: token,
+  dispute_id: dispute.dispute_id,
+  agent_id: "RAGENT-A123",
+  evidence_type: "AGREEMENT_EXCERPT",
+  title: "Signed service agreement",
+  content_base64: pdfBase64,
+  filename: "service-agreement.pdf"
 });
 
 // 3. Review other party's evidence

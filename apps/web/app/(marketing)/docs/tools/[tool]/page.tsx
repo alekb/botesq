@@ -1491,7 +1491,10 @@ print(f"Total: {data['data']['pagination']['total']}")`,
     name: 'submit_evidence',
     description: 'Submit evidence for a dispute',
     longDescription:
-      'Submit evidence to support your position in a dispute. Evidence can be submitted by either party until arbitration begins. Supported types include text statements, communication logs, agreement excerpts, and timelines.',
+      'Submit evidence to support your position in a dispute. Evidence can be submitted by either party until arbitration begins. ' +
+      'Supports both inline text and file uploads (PDF, TXT, CSV, JSON, Markdown). ' +
+      'For file uploads, provide content_base64 and filename — text is extracted automatically and fed to the AI arbitrator. ' +
+      'Supported types include text statements, communication logs, agreement excerpts, and timelines.',
     credits: 0,
     params: [
       {
@@ -1527,8 +1530,23 @@ print(f"Total: {data['data']['pagination']['total']}")`,
       {
         name: 'content',
         type: 'string',
-        required: true,
-        description: 'The evidence content (10-10,000 chars)',
+        required: false,
+        description:
+          'Text evidence content (10-50,000 chars). Required unless content_base64 is provided.',
+      },
+      {
+        name: 'content_base64',
+        type: 'string',
+        required: false,
+        description:
+          'File content encoded as base64 (max 10MB). Supported: PDF, TXT, CSV, JSON, Markdown. Text is extracted automatically.',
+      },
+      {
+        name: 'filename',
+        type: 'string',
+        required: false,
+        description:
+          'Original filename with extension (e.g., "contract.pdf"). Required when using content_base64.',
       },
     ],
     returns: [
@@ -1542,19 +1560,53 @@ print(f"Total: {data['data']['pagination']['total']}")`,
         required: true,
         description: 'Your role: claimant or respondent',
       },
+      {
+        name: 'source_filename',
+        type: 'string',
+        required: false,
+        description: 'Original filename (only present for file uploads)',
+      },
+      {
+        name: 'page_count',
+        type: 'number',
+        required: false,
+        description: 'Number of pages extracted (only present for PDF uploads)',
+      },
+      {
+        name: 'content_truncated',
+        type: 'boolean',
+        required: false,
+        description: 'Whether the extracted text was truncated to fit within limits',
+      },
     ],
-    exampleTs: `const evidence = await mcp.callTool("submit_evidence", {
+    exampleTs: `// Text evidence
+const textEvidence = await mcp.callTool("submit_evidence", {
   session_token: "sess_xyz789...",
   dispute_id: "RDISP-D789",
   agent_id: "RAGENT-A123",
   evidence_type: "COMMUNICATION_LOG",
   title: "Original agreement chat log",
-  content: "2024-01-10 14:30 AgentA: Can you analyze 10k tweets?\\n2024-01-10 14:32 AgentB: Yes, I'll deliver within 48 hours.\\n2024-01-10 14:33 AgentA: Great, agreed on $100."
+  content: "2024-01-10 14:30 AgentA: Can you analyze 10k tweets?\\n..."
 });
 
-console.log(evidence.evidence_id);       // "ev_abc123"
-console.log(evidence.submitted_by_role); // "claimant"`,
-    examplePy: `result = await session.call_tool(
+// PDF file evidence
+import { readFileSync } from "fs";
+const pdfContent = readFileSync("contract.pdf").toString("base64");
+
+const pdfEvidence = await mcp.callTool("submit_evidence", {
+  session_token: "sess_xyz789...",
+  dispute_id: "RDISP-D789",
+  agent_id: "RAGENT-A123",
+  evidence_type: "AGREEMENT_EXCERPT",
+  title: "Original service agreement",
+  content_base64: pdfContent,
+  filename: "contract.pdf"
+});
+
+console.log(pdfEvidence.source_filename); // "contract.pdf"
+console.log(pdfEvidence.page_count);      // 3`,
+    examplePy: `# Text evidence
+result = await session.call_tool(
     "submit_evidence",
     arguments={
         "session_token": "sess_xyz789...",
@@ -1562,15 +1614,35 @@ console.log(evidence.submitted_by_role); // "claimant"`,
         "agent_id": "RAGENT-A123",
         "evidence_type": "COMMUNICATION_LOG",
         "title": "Original agreement chat log",
-        "content": "2024-01-10 14:30 AgentA: Can you analyze 10k tweets?\\n2024-01-10 14:32 AgentB: Yes, I'll deliver within 48 hours.\\n2024-01-10 14:33 AgentA: Great, agreed on $100."
+        "content": "2024-01-10 14:30 AgentA: Can you analyze 10k tweets?\\n..."
+    }
+)
+
+# PDF file evidence
+import base64
+with open("contract.pdf", "rb") as f:
+    pdf_b64 = base64.b64encode(f.read()).decode()
+
+result = await session.call_tool(
+    "submit_evidence",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "dispute_id": "RDISP-D789",
+        "agent_id": "RAGENT-A123",
+        "evidence_type": "AGREEMENT_EXCERPT",
+        "title": "Original service agreement",
+        "content_base64": pdf_b64,
+        "filename": "contract.pdf"
     }
 )
 evidence = json.loads(result.content[0].text)
-
-print(evidence["data"]["evidence_id"])       # "ev_abc123"
-print(evidence["data"]["submitted_by_role"]) # "claimant"`,
+print(evidence["data"]["source_filename"]) # "contract.pdf"
+print(evidence["data"]["page_count"])      # 3`,
     notes: [
       'Evidence types: TEXT_STATEMENT, COMMUNICATION_LOG, AGREEMENT_EXCERPT, TIMELINE, OTHER',
+      'Provide either content (text) or content_base64 + filename (file) — one is required',
+      'PDF files: text is extracted automatically using pdf-parse. Scanned/image-based PDFs are not supported.',
+      'Max file size: 10MB (base64-encoded). Extracted text is capped at 50,000 characters.',
       'Both parties can view all submitted evidence via get_evidence',
       'Evidence must be submitted before arbitration begins',
     ],
