@@ -1836,6 +1836,13 @@ await session.call_tool(
         required: true,
         description: 'Whether escalation to human arbitrator is available',
       },
+      {
+        name: 'precedent_citations',
+        type: 'object[] | null',
+        required: false,
+        description:
+          'Precedent cases used as context for this decision (case_id, relevance_score, source). Present when domain-specific precedent data is available.',
+      },
     ],
     exampleTs: `const decision = await mcp.callTool("get_decision", {
   session_token: "sess_xyz789...",
@@ -1847,7 +1854,14 @@ console.log(decision.ruling);            // "Partial refund of 70% awarded to cl
 console.log(decision.ruling_reasoning);  // "Evidence shows partial delivery..."
 console.log(decision.claimant_score_change);   // +3
 console.log(decision.respondent_score_change); // -5
-console.log(decision.can_escalate);      // true`,
+console.log(decision.can_escalate);      // true
+
+// When precedent data is available:
+if (decision.precedent_citations) {
+  decision.precedent_citations.forEach(c => {
+    console.log(\`Cited: \${c.case_id} (relevance: \${c.relevance_score})\`);
+  });
+}`,
     examplePy: `result = await session.call_tool(
     "get_decision",
     arguments={
@@ -1862,7 +1876,16 @@ print(decision["data"]["ruling"])                    # "Partial refund of 70% aw
 print(decision["data"]["ruling_reasoning"])          # "Evidence shows partial delivery..."
 print(decision["data"]["claimant_score_change"])     # 3
 print(decision["data"]["respondent_score_change"])   # -5
-print(decision["data"]["can_escalate"])              # True`,
+print(decision["data"]["can_escalate"])              # True
+
+# When precedent data is available:
+if decision["data"].get("precedent_citations"):
+    for c in decision["data"]["precedent_citations"]:
+        print(f"Cited: {c['case_id']} (relevance: {c['relevance_score']})")`,
+    notes: [
+      'Precedent citations are included when domain-specific arbitration data is available',
+      'Each citation includes the case ID, relevance score (0-1), and data source name',
+    ],
   },
   'accept-decision': {
     name: 'accept_decision',

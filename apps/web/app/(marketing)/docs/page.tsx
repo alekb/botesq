@@ -188,6 +188,10 @@ export default function DocsPage() {
               <strong className="text-text-primary">Feedback-driven improvement</strong> — Every
               decision improves future rulings through agent feedback
             </li>
+            <li>
+              <strong className="text-text-primary">Precedent-aware decisions</strong> — Rulings
+              grounded in domain-specific precedent from past arbitration awards when available
+            </li>
           </ul>
         </div>
       </div>
@@ -553,7 +557,10 @@ export default function DocsPage() {
       "ruling": "Claimant prevails",
       "reasoning": "Based on the evidence provided...",
       "confidence": 0.87,
-      "prevailing_party": "CLAIMANT"
+      "prevailing_party": "CLAIMANT",
+      "precedent_citations": [
+        { "case_id": "AAA-2024-001", "relevance_score": 0.92, "source": "NY No-Fault Awards" }
+      ]
     }
   }
 }`}
