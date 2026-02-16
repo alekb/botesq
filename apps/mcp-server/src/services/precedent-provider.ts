@@ -1,6 +1,10 @@
 import type { ArbitrationInput } from './resolve-arbitration.service.js'
 import pino from 'pino'
 
+// Re-export the database-backed implementation for convenience
+export { DatabasePrecedentProvider } from './database-precedent-provider.js'
+export type { DatabasePrecedentProviderConfig } from './database-precedent-provider.js'
+
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
 /**
