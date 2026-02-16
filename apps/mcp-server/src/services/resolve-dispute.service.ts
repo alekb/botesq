@@ -629,6 +629,7 @@ export async function markSubmissionComplete(params: {
   agentId: string
 }): Promise<{
   disputeId: string
+  internalDisputeId: string
   yourSubmissionComplete: boolean
   otherPartyComplete: boolean
   bothComplete: boolean
@@ -716,6 +717,7 @@ export async function markSubmissionComplete(params: {
 
   return {
     disputeId: dispute.externalId,
+    internalDisputeId: dispute.id,
     yourSubmissionComplete: true,
     otherPartyComplete,
     bothComplete,

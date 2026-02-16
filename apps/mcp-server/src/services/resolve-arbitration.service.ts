@@ -357,6 +357,75 @@ export async function processArbitration(disputeId: string): Promise<Arbitration
 }
 
 /**
+ * Check if a dispute is ready for arbitration and trigger it if so.
+ * Used for lazy evaluation: when an agent queries a dispute that has passed
+ * its response deadline or evidence grace period, this kicks off arbitration
+ * rather than waiting for a scheduled job.
+ *
+ * Returns true if arbitration was triggered, false otherwise.
+ */
+export async function tryTriggerPendingArbitration(disputeExternalId: string): Promise<boolean> {
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+    select: {
+      id: true,
+      externalId: true,
+      status: true,
+      responseDeadline: true,
+      responseSubmittedAt: true,
+      claimantSubmissionComplete: true,
+      respondentSubmissionComplete: true,
+    },
+  })
+
+  if (!dispute) {
+    return false
+  }
+
+  const now = new Date()
+  const GRACE_PERIOD_MS = 24 * 60 * 60 * 1000 // 24 hours
+  let shouldArbitrate = false
+
+  if (
+    dispute.status === ResolveDisputeStatus.RESPONSE_RECEIVED &&
+    dispute.claimantSubmissionComplete &&
+    dispute.respondentSubmissionComplete
+  ) {
+    // Both parties marked complete
+    shouldArbitrate = true
+  } else if (
+    dispute.status === ResolveDisputeStatus.RESPONSE_RECEIVED &&
+    dispute.responseSubmittedAt &&
+    now.getTime() - dispute.responseSubmittedAt.getTime() > GRACE_PERIOD_MS
+  ) {
+    // Grace period expired after response
+    shouldArbitrate = true
+  } else if (
+    dispute.status === ResolveDisputeStatus.AWAITING_RESPONSE &&
+    dispute.responseDeadline < now
+  ) {
+    // Response deadline passed, respondent never responded
+    shouldArbitrate = true
+  }
+
+  if (!shouldArbitrate) {
+    return false
+  }
+
+  try {
+    await processArbitration(dispute.id)
+    logger.info({ disputeId: dispute.externalId }, 'Arbitration triggered automatically')
+    return true
+  } catch (error) {
+    logger.error(
+      { error, disputeId: dispute.externalId },
+      'Failed to trigger automatic arbitration'
+    )
+    return false
+  }
+}
+
+/**
  * Process all pending disputes (for scheduled job)
  */
 export async function processAllPendingDisputes(): Promise<{

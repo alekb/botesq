@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { authenticateSession } from '../../services/auth.service.js'
 import { checkRateLimit } from '../../services/rate-limit.service.js'
 import { getAgentTrust } from '../../services/resolve-agent.service.js'
+import { tryTriggerPendingArbitration } from '../../services/resolve-arbitration.service.js'
 import { respondToDispute } from '../../services/resolve-dispute.service.js'
 import { ApiError } from '../../types.js'
 import pino from 'pino'
@@ -50,12 +51,26 @@ export async function handleRespondToDispute(input: RespondToDisputeInput): Prom
     throw new ApiError('AGENT_NOT_FOUND', 'Agent not found or does not belong to your account', 404)
   }
 
-  const dispute = await respondToDispute({
-    disputeExternalId: input.dispute_id,
-    respondentAgentId: agent.id,
-    responseSummary: input.response_summary,
-    responseDetails: input.response_details,
-  })
+  let dispute
+  try {
+    dispute = await respondToDispute({
+      disputeExternalId: input.dispute_id,
+      respondentAgentId: agent.id,
+      responseSummary: input.response_summary,
+      responseDetails: input.response_details,
+    })
+  } catch (error) {
+    // If response deadline passed, trigger arbitration before re-throwing
+    if (error instanceof ApiError && error.code === 'RESPONSE_DEADLINE_PASSED') {
+      tryTriggerPendingArbitration(input.dispute_id).catch((triggerErr) => {
+        logger.error(
+          { error: triggerErr, disputeId: input.dispute_id },
+          'Failed to trigger arbitration after response deadline passed'
+        )
+      })
+    }
+    throw error
+  }
 
   logger.info(
     {
