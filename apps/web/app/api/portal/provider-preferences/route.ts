@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@botesq/database'
 import { getCurrentSession } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -17,7 +18,7 @@ export async function GET() {
 
     return NextResponse.json(preferences)
   } catch (error) {
-    console.error('Failed to list provider preferences:', error)
+    logger.error('Failed to list provider preferences', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

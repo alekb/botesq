@@ -4,6 +4,7 @@ import { prisma } from '@botesq/database'
 import { hashPassword } from '@/lib/auth/password'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
 import { logAdminAction, AdminActions } from '@/lib/admin-auth/audit'
+import { logger } from '@/lib/logger'
 
 const createSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Failed to list attorneys:', error)
+    logger.error('Failed to list attorneys', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ attorney }, { status: 201 })
   } catch (error) {
-    console.error('Failed to create attorney:', error)
+    logger.error('Failed to create attorney', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -6,6 +6,7 @@ import {
   generateMonthlySettlements,
   getSettlementStats,
 } from '@botesq/mcp-server/services/settlement.service'
+import { logger } from '@/lib/logger'
 import type { SettlementStatus } from '@botesq/database'
 
 export async function GET(request: NextRequest) {
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Failed to list settlements:', error)
+    logger.error('Failed to list settlements', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       errors: result.errors,
     })
   } catch (error) {
-    console.error('Failed to generate settlements:', error)
+    logger.error('Failed to generate settlements', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

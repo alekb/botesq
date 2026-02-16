@@ -1,6 +1,7 @@
 import { resend, EMAIL_FROM, getBaseUrl } from './client'
 import { VerificationEmail, getVerificationEmailText } from './templates/verification'
 import { PasswordResetEmail, getPasswordResetEmailText } from './templates/password-reset'
+import { logger } from '@/lib/logger'
 import {
   ContactNotificationEmail,
   getContactNotificationEmailText,
@@ -35,7 +36,7 @@ export async function sendVerificationEmail(
       text: getVerificationEmailText(companyName, verificationUrl),
     })
   } catch (error) {
-    console.error('Failed to send verification email:', error)
+    logger.error('Failed to send verification email', { error: String(error) })
     // Don't throw - we don't want to block signup on email failure
     // The user can request a new verification email
   }
@@ -61,7 +62,7 @@ export async function sendPasswordResetEmail(
       text: getPasswordResetEmailText(companyName, resetUrl),
     })
   } catch (error) {
-    console.error('Failed to send password reset email:', error)
+    logger.error('Failed to send password reset email', { error: String(error) })
     // Don't throw - we don't want to reveal email existence via timing
   }
 }
@@ -87,7 +88,7 @@ export async function sendContactEmail(
       text: getContactNotificationEmailText(name, email, inquiryType, message),
     })
   } catch (error) {
-    console.error('Failed to send contact email:', error)
+    logger.error('Failed to send contact email', { error: String(error) })
     // Don't throw - we show a generic success to the user regardless
   }
 }
