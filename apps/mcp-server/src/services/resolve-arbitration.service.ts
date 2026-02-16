@@ -396,9 +396,10 @@ export async function tryTriggerPendingArbitration(disputeExternalId: string): P
   } else if (
     dispute.status === ResolveDisputeStatus.RESPONSE_RECEIVED &&
     dispute.responseSubmittedAt &&
-    now.getTime() - dispute.responseSubmittedAt.getTime() > GRACE_PERIOD_MS
+    now.getTime() - dispute.responseSubmittedAt.getTime() > GRACE_PERIOD_MS &&
+    dispute.responseDeadline < now // Respect claimant-extended deadline
   ) {
-    // Grace period expired after response
+    // Grace period expired after response AND extended deadline has passed
     shouldArbitrate = true
   } else if (
     dispute.status === ResolveDisputeStatus.AWAITING_RESPONSE &&

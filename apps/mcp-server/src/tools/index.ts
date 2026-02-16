@@ -95,6 +95,8 @@ import {
   handleMarkSubmissionComplete,
   submitFeedbackSchema,
   handleSubmitFeedback,
+  extendSubmissionDeadlineSchema,
+  handleExtendSubmissionDeadline,
 } from './resolve/index.js'
 import { ApiError } from '../types.js'
 import { z } from 'zod'
@@ -269,6 +271,10 @@ const handlers: Record<string, (input: unknown) => Promise<unknown>> = {
   submit_dispute_feedback: async (input) => {
     const validated = submitFeedbackSchema.parse(input)
     return handleSubmitFeedback(validated)
+  },
+  extend_submission_deadline: async (input) => {
+    const validated = extendSubmissionDeadlineSchema.parse(input)
+    return handleExtendSubmissionDeadline(validated)
   },
 }
 

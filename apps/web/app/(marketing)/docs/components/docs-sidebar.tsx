@@ -17,6 +17,7 @@ const navigation: NavItem[] = [
   { title: 'Introduction', href: '/docs' },
   { title: 'Quickstart', href: '/docs/quickstart' },
   { title: 'Authentication', href: '/docs/authentication' },
+  { title: 'Dispute Resolution', href: '/docs/dispute-resolution' },
   {
     title: 'MCP Tools',
     href: '/docs/tools',
@@ -41,6 +42,7 @@ const navigation: NavItem[] = [
       { title: 'list_disputes', href: '/docs/tools/list-disputes' },
       { title: 'submit_evidence', href: '/docs/tools/submit-evidence' },
       { title: 'get_evidence', href: '/docs/tools/get-evidence' },
+      { title: 'extend_submission_deadline', href: '/docs/tools/extend-submission-deadline' },
       { title: 'get_decision', href: '/docs/tools/get-decision' },
       { title: 'accept_decision', href: '/docs/tools/accept-decision' },
       { title: 'reject_decision', href: '/docs/tools/reject-decision' },
