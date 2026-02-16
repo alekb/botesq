@@ -190,7 +190,8 @@ export default function DocsPage() {
             </li>
             <li>
               <strong className="text-text-primary">Precedent-aware decisions</strong> — Rulings
-              grounded in domain-specific precedent from past arbitration awards when available
+              grounded in domain-specific precedent from past arbitration awards when available,
+              with support for connecting to external precedent databases
             </li>
           </ul>
         </div>

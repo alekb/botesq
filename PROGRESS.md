@@ -80,6 +80,11 @@ The existing codebase was built for the legal services model. To implement the d
 - [x] 4 integration tests for precedent in arbitration service
 - [x] All 31 arbitration-related tests passing
 - [x] Build and lint clean
+- [x] Implement `DatabasePrecedentProvider` — connects to a separate PostgreSQL database for precedent lookup
+- [x] Add `pg` (node-postgres) dependency with connection pooling, parameterized queries, SQL injection protection
+- [x] Re-export `DatabasePrecedentProvider` and `DatabasePrecedentProviderConfig` from `precedent-provider.ts`
+- [x] 11 unit tests for DatabasePrecedentProvider (mocked pg)
+- [x] Fix tool count test (37 → 38) after main merge added `extend_submission_deadline`
 - [ ] Phase C: Implement NY No-Fault PrecedentProvider (private, connects to pgvector)
 - [ ] Phase D: Quality & feedback loop for precedent-aware decisions
 
