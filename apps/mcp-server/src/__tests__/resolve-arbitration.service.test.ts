@@ -8,6 +8,7 @@ vi.mock('@botesq/database', async () => {
     ...actual,
     prisma: {
       resolveDispute: {
+        findUnique: vi.fn(),
         update: vi.fn(),
       },
     },
@@ -50,6 +51,7 @@ import {
   arbitrateDispute,
   processArbitration,
   processAllPendingDisputes,
+  tryTriggerPendingArbitration,
 } from '../services/resolve-arbitration.service'
 
 describe('resolve-arbitration.service', () => {
@@ -354,6 +356,218 @@ describe('resolve-arbitration.service', () => {
       )
       // Respondent should NOT have trust updated (score change is 0 for dismissed)
       // Note: respondentScoreChange = 0 because isDismissed, so updateTrustScore not called for respondent
+    })
+  })
+
+  describe('tryTriggerPendingArbitration', () => {
+    it('should return false when dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      const result = await tryTriggerPendingArbitration('nonexistent')
+
+      expect(result).toBe(false)
+    })
+
+    it('should trigger when both parties marked complete', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        responseDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        responseSubmittedAt: new Date(),
+        claimantSubmissionComplete: true,
+        respondentSubmissionComplete: true,
+      } as never)
+      vi.mocked(getDisputeById).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        claimType: 'NON_DELIVERY',
+        claimSummary: 'Test',
+        claimDetails: null,
+        requestedResolution: 'Refund',
+        responseSummary: null,
+        responseDetails: null,
+        statedValue: 100,
+        claimantAgentId: 'a1',
+        respondentAgentId: 'a2',
+        claimantAgent: { trustScore: 85 },
+        respondentAgent: { trustScore: 90 },
+        transaction: { title: 'T', description: null, terms: {} },
+        evidence: [],
+      } as never)
+      vi.mocked(isLLMAvailable).mockReturnValue(true)
+      vi.mocked(chatCompletion).mockResolvedValue({
+        content: JSON.stringify({
+          ruling: 'SPLIT',
+          reasoning: 'Split.',
+          details: { confidence: 0.7 },
+        }),
+      } as never)
+      vi.mocked(calculateTrustImpact).mockReturnValue(0)
+
+      const result = await tryTriggerPendingArbitration('RDISP-123')
+
+      expect(result).toBe(true)
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith({
+        where: { id: 'dispute_123' },
+        data: { status: ResolveDisputeStatus.IN_ARBITRATION },
+      })
+    })
+
+    it('should trigger when response deadline passed and no response', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.AWAITING_RESPONSE,
+        responseDeadline: new Date(Date.now() - 1000), // Past
+        responseSubmittedAt: null,
+        claimantSubmissionComplete: false,
+        respondentSubmissionComplete: false,
+      } as never)
+      vi.mocked(getDisputeById).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.AWAITING_RESPONSE,
+        claimType: 'NON_DELIVERY',
+        claimSummary: 'Test',
+        claimDetails: null,
+        requestedResolution: 'Refund',
+        responseSummary: null,
+        responseDetails: null,
+        statedValue: 100,
+        claimantAgentId: 'a1',
+        respondentAgentId: 'a2',
+        claimantAgent: { trustScore: 85 },
+        respondentAgent: { trustScore: 90 },
+        transaction: { title: 'T', description: null, terms: {} },
+        evidence: [],
+      } as never)
+      vi.mocked(isLLMAvailable).mockReturnValue(true)
+      vi.mocked(chatCompletion).mockResolvedValue({
+        content: JSON.stringify({
+          ruling: 'CLAIMANT',
+          reasoning: 'No response.',
+          details: { confidence: 0.9 },
+        }),
+      } as never)
+      vi.mocked(calculateTrustImpact).mockReturnValue(5)
+
+      const result = await tryTriggerPendingArbitration('RDISP-123')
+
+      expect(result).toBe(true)
+    })
+
+    it('should trigger when grace period expired AND extended deadline passed', async () => {
+      const pastDate = new Date(Date.now() - 48 * 60 * 60 * 1000) // 48h ago
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        responseDeadline: new Date(Date.now() - 1000), // Past
+        responseSubmittedAt: pastDate, // 48h ago (grace period expired)
+        claimantSubmissionComplete: false,
+        respondentSubmissionComplete: false,
+      } as never)
+      vi.mocked(getDisputeById).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        claimType: 'NON_DELIVERY',
+        claimSummary: 'Test',
+        claimDetails: null,
+        requestedResolution: 'Refund',
+        responseSummary: null,
+        responseDetails: null,
+        statedValue: 100,
+        claimantAgentId: 'a1',
+        respondentAgentId: 'a2',
+        claimantAgent: { trustScore: 85 },
+        respondentAgent: { trustScore: 90 },
+        transaction: { title: 'T', description: null, terms: {} },
+        evidence: [],
+      } as never)
+      vi.mocked(isLLMAvailable).mockReturnValue(true)
+      vi.mocked(chatCompletion).mockResolvedValue({
+        content: JSON.stringify({
+          ruling: 'SPLIT',
+          reasoning: 'Split.',
+          details: { confidence: 0.7 },
+        }),
+      } as never)
+      vi.mocked(calculateTrustImpact).mockReturnValue(0)
+
+      const result = await tryTriggerPendingArbitration('RDISP-123')
+
+      expect(result).toBe(true)
+    })
+
+    it('should NOT trigger when grace period expired but extended deadline is still in future', async () => {
+      const pastDate = new Date(Date.now() - 48 * 60 * 60 * 1000) // 48h ago
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        responseDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000), // Extended to future
+        responseSubmittedAt: pastDate, // 48h ago (grace period expired)
+        claimantSubmissionComplete: false,
+        respondentSubmissionComplete: false,
+      } as never)
+
+      const result = await tryTriggerPendingArbitration('RDISP-123')
+
+      expect(result).toBe(false)
+      expect(getDisputeById).not.toHaveBeenCalled()
+    })
+
+    it('should NOT trigger when status is RULED', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.RULED,
+        responseDeadline: new Date(Date.now() - 1000),
+        responseSubmittedAt: new Date(Date.now() - 48 * 60 * 60 * 1000),
+        claimantSubmissionComplete: true,
+        respondentSubmissionComplete: true,
+      } as never)
+
+      const result = await tryTriggerPendingArbitration('RDISP-123')
+
+      expect(result).toBe(false)
+    })
+
+    it('should NOT trigger when response deadline has not passed yet', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.AWAITING_RESPONSE,
+        responseDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000), // Future
+        responseSubmittedAt: null,
+        claimantSubmissionComplete: false,
+        respondentSubmissionComplete: false,
+      } as never)
+
+      const result = await tryTriggerPendingArbitration('RDISP-123')
+
+      expect(result).toBe(false)
+    })
+
+    it('should return false and log error when processArbitration fails', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        id: 'dispute_123',
+        externalId: 'RDISP-123',
+        status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+        responseDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        responseSubmittedAt: new Date(),
+        claimantSubmissionComplete: true,
+        respondentSubmissionComplete: true,
+      } as never)
+      // processArbitration fails because dispute not found by getDisputeById
+      vi.mocked(getDisputeById).mockResolvedValue(null)
+
+      const result = await tryTriggerPendingArbitration('RDISP-123')
+
+      expect(result).toBe(false)
     })
   })
 

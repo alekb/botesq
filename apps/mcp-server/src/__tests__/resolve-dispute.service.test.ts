@@ -68,6 +68,7 @@ import {
   respondToDispute,
   addEvidence,
   markSubmissionComplete,
+  extendSubmissionDeadline,
   listDisputesPendingArbitration,
   recordRuling,
   acceptDecision,
@@ -885,6 +886,145 @@ describe('resolve-dispute.service', () => {
       })
 
       expect(result.yourSubmissionComplete).toBe(true)
+    })
+  })
+
+  describe('extendSubmissionDeadline', () => {
+    const mockDispute = {
+      id: 'dispute_123',
+      externalId: 'RDISP-123',
+      claimantAgentId: 'agent_claimant',
+      respondentAgentId: 'agent_respondent',
+      status: ResolveDisputeStatus.RESPONSE_RECEIVED,
+      responseDeadline: new Date('2024-01-15T12:00:00Z'),
+    }
+
+    it('should throw error if dispute not found', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(null)
+
+      await expect(
+        extendSubmissionDeadline({
+          disputeExternalId: 'nonexistent',
+          agentId: 'agent_claimant',
+          additionalHours: 24,
+        })
+      ).rejects.toThrow('Dispute not found')
+    })
+
+    it('should throw error if caller is not the claimant', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+
+      await expect(
+        extendSubmissionDeadline({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_respondent',
+          additionalHours: 24,
+        })
+      ).rejects.toThrow('Only the claimant')
+    })
+
+    it('should throw error if dispute is already in arbitration', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        status: ResolveDisputeStatus.IN_ARBITRATION,
+      } as never)
+
+      await expect(
+        extendSubmissionDeadline({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_claimant',
+          additionalHours: 24,
+        })
+      ).rejects.toThrow('Cannot extend deadline')
+    })
+
+    it('should throw error if dispute is RULED', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        status: ResolveDisputeStatus.RULED,
+      } as never)
+
+      await expect(
+        extendSubmissionDeadline({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_claimant',
+          additionalHours: 24,
+        })
+      ).rejects.toThrow('Cannot extend deadline')
+    })
+
+    it('should extend deadline by specified hours', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await extendSubmissionDeadline({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_claimant',
+        additionalHours: 48,
+      })
+
+      expect(result.disputeId).toBe('RDISP-123')
+      expect(result.previousDeadline).toEqual(new Date('2024-01-15T12:00:00Z'))
+      expect(result.newDeadline).toEqual(new Date('2024-01-17T12:00:00Z'))
+
+      expect(prisma.resolveDispute.update).toHaveBeenCalledWith({
+        where: { id: 'dispute_123' },
+        data: { responseDeadline: new Date('2024-01-17T12:00:00Z') },
+      })
+    })
+
+    it('should work during AWAITING_RESPONSE status', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue({
+        ...mockDispute,
+        status: ResolveDisputeStatus.AWAITING_RESPONSE,
+      } as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await extendSubmissionDeadline({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_claimant',
+        additionalHours: 24,
+      })
+
+      expect(result.newDeadline).toEqual(new Date('2024-01-16T12:00:00Z'))
+    })
+
+    it('should extend by 1 hour (minimum)', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await extendSubmissionDeadline({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_claimant',
+        additionalHours: 1,
+      })
+
+      expect(result.newDeadline).toEqual(new Date('2024-01-15T13:00:00Z'))
+    })
+
+    it('should allow large extensions (arbitrary)', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+      vi.mocked(prisma.resolveDispute.update).mockResolvedValue({} as never)
+
+      const result = await extendSubmissionDeadline({
+        disputeExternalId: 'RDISP-123',
+        agentId: 'agent_claimant',
+        additionalHours: 720, // 30 days
+      })
+
+      expect(result.newDeadline).toEqual(new Date('2024-02-14T12:00:00Z'))
+    })
+
+    it('should allow an outsider agent to be rejected', async () => {
+      vi.mocked(prisma.resolveDispute.findUnique).mockResolvedValue(mockDispute as never)
+
+      await expect(
+        extendSubmissionDeadline({
+          disputeExternalId: 'RDISP-123',
+          agentId: 'agent_outsider',
+          additionalHours: 24,
+        })
+      ).rejects.toThrow('Only the claimant')
     })
   })
 
