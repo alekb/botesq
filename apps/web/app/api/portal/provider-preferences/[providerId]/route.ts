@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@botesq/database'
 import { getCurrentSession } from '@/lib/auth/session'
 import { z } from 'zod'
+import { logger } from '@/lib/logger'
 
 interface RouteParams {
   params: Promise<{ providerId: string }>
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         { status: 400 }
       )
     }
-    console.error('Failed to set provider preference:', error)
+    logger.error('Failed to set provider preference', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -111,7 +112,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     if ((error as { code?: string })?.code === 'P2025') {
       return NextResponse.json({ success: true })
     }
-    console.error('Failed to delete provider preference:', error)
+    logger.error('Failed to delete provider preference', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

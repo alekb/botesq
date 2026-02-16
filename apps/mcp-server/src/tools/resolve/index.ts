@@ -120,6 +120,16 @@ import type {
   MarkSubmissionCompleteOutput,
 } from './mark-submission-complete.js'
 
+import {
+  extendSubmissionDeadlineTool,
+  handleExtendSubmissionDeadline,
+  extendSubmissionDeadlineSchema,
+} from './extend-submission-deadline.js'
+import type {
+  ExtendSubmissionDeadlineInput,
+  ExtendSubmissionDeadlineOutput,
+} from './extend-submission-deadline.js'
+
 // Re-export all
 export {
   registerAgentTool,
@@ -185,6 +195,9 @@ export {
   markSubmissionCompleteTool,
   handleMarkSubmissionComplete,
   markSubmissionCompleteSchema,
+  extendSubmissionDeadlineTool,
+  handleExtendSubmissionDeadline,
+  extendSubmissionDeadlineSchema,
 }
 
 export type {
@@ -230,6 +243,8 @@ export type {
   SubmitFeedbackOutput,
   MarkSubmissionCompleteInput,
   MarkSubmissionCompleteOutput,
+  ExtendSubmissionDeadlineInput,
+  ExtendSubmissionDeadlineOutput,
 }
 
 // All resolve tools for easy registration
@@ -255,4 +270,5 @@ export const resolveTools = [
   getEscrowStatusTool,
   submitFeedbackTool,
   markSubmissionCompleteTool,
+  extendSubmissionDeadlineTool,
 ]

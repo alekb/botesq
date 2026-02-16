@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@botesq/database'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
 import { logAdminAction, AdminActions } from '@/lib/admin-auth/audit'
+import { logger } from '@/lib/logger'
 
 const updateSchema = z.object({
   status: z.enum(['ACTIVE', 'SUSPENDED', 'INACTIVE']).optional(),
@@ -74,7 +75,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({ provider })
   } catch (error) {
-    console.error('Failed to get provider:', error)
+    logger.error('Failed to get provider', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -151,7 +152,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json({ provider })
   } catch (error) {
-    console.error('Failed to update provider:', error)
+    logger.error('Failed to update provider', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

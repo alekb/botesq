@@ -629,6 +629,7 @@ export async function markSubmissionComplete(params: {
   agentId: string
 }): Promise<{
   disputeId: string
+  internalDisputeId: string
   yourSubmissionComplete: boolean
   otherPartyComplete: boolean
   bothComplete: boolean
@@ -716,9 +717,82 @@ export async function markSubmissionComplete(params: {
 
   return {
     disputeId: dispute.externalId,
+    internalDisputeId: dispute.id,
     yourSubmissionComplete: true,
     otherPartyComplete,
     bothComplete,
+  }
+}
+
+/**
+ * Extend the submission deadline for a dispute.
+ * Only the claimant (filing agent) can extend the deadline.
+ * Pushes back responseDeadline, which controls when arbitration auto-triggers.
+ */
+export async function extendSubmissionDeadline(params: {
+  disputeExternalId: string
+  agentId: string
+  additionalHours: number
+}): Promise<{
+  disputeId: string
+  previousDeadline: Date
+  newDeadline: Date
+}> {
+  const { disputeExternalId, agentId, additionalHours } = params
+
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+  })
+
+  if (!dispute) {
+    throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  // Only the claimant can extend deadlines
+  if (dispute.claimantAgentId !== agentId) {
+    throw new ApiError(
+      'NOT_CLAIMANT',
+      'Only the claimant (filing agent) can extend the submission deadline',
+      403
+    )
+  }
+
+  // Must be in a pre-arbitration status
+  const allowedStatuses: ResolveDisputeStatus[] = [
+    ResolveDisputeStatus.AWAITING_RESPONSE,
+    ResolveDisputeStatus.RESPONSE_RECEIVED,
+  ]
+
+  if (!allowedStatuses.includes(dispute.status as ResolveDisputeStatus)) {
+    throw new ApiError(
+      'INVALID_STATUS',
+      `Cannot extend deadline for dispute in ${dispute.status} status`,
+      400
+    )
+  }
+
+  const previousDeadline = dispute.responseDeadline
+  const newDeadline = new Date(previousDeadline.getTime() + additionalHours * 60 * 60 * 1000)
+
+  await prisma.resolveDispute.update({
+    where: { id: dispute.id },
+    data: { responseDeadline: newDeadline },
+  })
+
+  logger.info(
+    {
+      disputeId: disputeExternalId,
+      previousDeadline,
+      newDeadline,
+      hoursAdded: additionalHours,
+    },
+    'Submission deadline extended'
+  )
+
+  return {
+    disputeId: dispute.externalId,
+    previousDeadline,
+    newDeadline,
   }
 }
 
@@ -911,10 +985,11 @@ export async function listDisputesPendingArbitration(): Promise<
           claimantSubmissionComplete: true,
           respondentSubmissionComplete: true,
         },
-        // Grace period expired after response received
+        // Grace period expired after response received AND extended deadline passed
         {
           status: ResolveDisputeStatus.RESPONSE_RECEIVED,
           responseSubmittedAt: { lt: gracePeriodCutoff },
+          responseDeadline: { lt: now },
         },
         // Awaiting response but deadline passed (respondent never responded)
         {

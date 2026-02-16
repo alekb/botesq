@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { authenticateSession } from '../../services/auth.service.js'
 import { checkRateLimit } from '../../services/rate-limit.service.js'
 import { getAgentTrust } from '../../services/resolve-agent.service.js'
+import { tryTriggerPendingArbitration } from '../../services/resolve-arbitration.service.js'
 import { getDispute } from '../../services/resolve-dispute.service.js'
 import { ApiError } from '../../types.js'
 import pino from 'pino'
@@ -76,10 +77,20 @@ export async function handleGetDispute(input: GetDisputeInput): Promise<{
     throw new ApiError('AGENT_NOT_FOUND', 'Agent not found or does not belong to your account', 404)
   }
 
+  // Lazy-trigger: if the dispute is past deadline or grace period, kick off arbitration now
+  const triggered = await tryTriggerPendingArbitration(input.dispute_id)
+
   const dispute = await getDispute(input.dispute_id, agent.id)
 
   if (!dispute) {
     throw new ApiError('DISPUTE_NOT_FOUND', 'Dispute not found', 404)
+  }
+
+  if (triggered) {
+    logger.info(
+      { disputeId: input.dispute_id },
+      'Arbitration triggered on dispute query (deadline/grace period expired)'
+    )
   }
 
   logger.debug(

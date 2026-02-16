@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
+import { logger } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -11,7 +12,7 @@ export async function GET() {
 
     return NextResponse.json({ admin })
   } catch (error) {
-    console.error('Failed to get admin:', error)
+    logger.error('Failed to get admin', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@botesq/database'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
       pendingCount,
     })
   } catch (error) {
-    console.error('Failed to list providers:', error)
+    logger.error('Failed to list providers', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

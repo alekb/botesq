@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@botesq/database'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
 import { logAdminAction, AdminActions } from '@/lib/admin-auth/audit'
+import { logger } from '@/lib/logger'
 
 const updateSchema = z.object({
   firstName: z.string().min(1).optional(),
@@ -68,7 +69,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({ attorney })
   } catch (error) {
-    console.error('Failed to get attorney:', error)
+    logger.error('Failed to get attorney', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -159,7 +160,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json({ attorney })
   } catch (error) {
-    console.error('Failed to update attorney:', error)
+    logger.error('Failed to update attorney', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
