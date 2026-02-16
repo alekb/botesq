@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
 import { logAdminAction, AdminActions } from '@/lib/admin-auth/audit'
+import { logger } from '@/lib/logger'
 import {
   processSettlement,
   retryFailedSettlement,
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       transferId: result.transferId,
     })
   } catch (error) {
-    console.error('Failed to process settlement:', error)
+    logger.error('Failed to process settlement', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

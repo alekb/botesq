@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@botesq/database'
 import { getCurrentAttorneySession } from './session'
+import { logger } from '@/lib/logger'
 
 /**
  * Send webhook notification to operator
@@ -49,7 +50,7 @@ async function sendOperatorWebhook(
     })
   } catch (error) {
     // Log but don't fail the main operation
-    console.error('Failed to send webhook:', error)
+    logger.error('Failed to send webhook', { error: String(error) })
   }
 }
 
@@ -103,7 +104,7 @@ export async function claimConsultation(consultationId: string): Promise<Consult
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to claim consultation:', error)
+    logger.error('Failed to claim consultation', { error: String(error) })
     return { success: false, error: 'Failed to claim consultation' }
   }
 }
@@ -148,7 +149,7 @@ export async function releaseConsultation(
     revalidatePath('/attorney/queue')
     redirect('/attorney/queue')
   } catch (error) {
-    console.error('Failed to release consultation:', error)
+    logger.error('Failed to release consultation', { error: String(error) })
     return { success: false, error: 'Failed to release consultation' }
   }
 }
@@ -231,7 +232,7 @@ export async function submitConsultationResponse(
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to submit consultation response:', error)
+    logger.error('Failed to submit consultation response', { error: String(error) })
     return { success: false, error: 'Failed to submit response' }
   }
 }
@@ -275,7 +276,7 @@ export async function saveDraftResponse(
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to save draft:', error)
+    logger.error('Failed to save draft', { error: String(error) })
     return { success: false, error: 'Failed to save draft' }
   }
 }

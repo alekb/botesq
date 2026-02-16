@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@botesq/database'
 import { getCurrentSession } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       preference: preference ?? undefined,
     })
   } catch (error) {
-    console.error('Failed to get provider:', error)
+    logger.error('Failed to get provider', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

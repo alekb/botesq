@@ -1,9 +1,10 @@
 import { Resend } from 'resend'
+import { logger } from '@/lib/logger'
 
 const apiKey = process.env.RESEND_API_KEY
 
 if (!apiKey) {
-  console.warn('RESEND_API_KEY not set - emails will not be sent')
+  logger.warn('RESEND_API_KEY not set - emails will not be sent')
 }
 
 // Only create Resend client if API key is available

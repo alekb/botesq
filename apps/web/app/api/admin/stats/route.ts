@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@botesq/database'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
+import { logger } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -114,7 +115,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error('Failed to get admin stats:', error)
+    logger.error('Failed to get admin stats', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

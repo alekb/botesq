@@ -1,7 +1,7 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@botesq/database'
+import { logger } from '@/lib/logger'
 
 // Lazy initialization to avoid build-time errors
 let stripeClient: Stripe | null = null
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err) {
-    console.error('Webhook signature verification failed:', err)
+    logger.error('Webhook signature verification failed', { error: String(err) })
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -65,12 +65,12 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        logger.info('Unhandled Stripe event type', { eventType: event.type })
     }
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('Webhook handler error:', error)
+    logger.error('Webhook handler error', { error: String(error) })
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }
@@ -82,7 +82,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   const credits = parseInt(session.metadata?.credits ?? '0', 10)
 
   if (!operatorId || !credits) {
-    console.error('Missing metadata in checkout session:', session.id)
+    logger.error('Missing metadata in checkout session', { sessionId: session.id })
     return
   }
 
@@ -92,7 +92,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   })
 
   if (!payment) {
-    console.error('Payment record not found for session:', session.id)
+    logger.error('Payment record not found for session', { sessionId: session.id })
     return
   }
 
@@ -142,7 +142,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     })
   })
 
-  console.log(`Credits added: ${credits} to operator ${operatorId}`)
+  logger.info('Credits added to operator', { credits, operatorId })
 }
 
 async function handleCheckoutExpired(session: Stripe.Checkout.Session): Promise<void> {
@@ -179,7 +179,7 @@ async function handleTransferCreated(transfer: Stripe.Transfer): Promise<void> {
     },
   })
 
-  console.log(`Settlement ${settlementId} marked as PAID via webhook`)
+  logger.info('Settlement marked as PAID via webhook', { settlementId })
 }
 
 async function handleTransferReversed(transfer: Stripe.Transfer): Promise<void> {
@@ -200,7 +200,7 @@ async function handleTransferReversed(transfer: Stripe.Transfer): Promise<void> 
     },
   })
 
-  console.log(`Settlement ${settlementId} marked as FAILED (transfer reversed)`)
+  logger.warn('Settlement marked as FAILED (transfer reversed)', { settlementId })
 }
 
 async function handleTransferUpdated(transfer: Stripe.Transfer): Promise<void> {
@@ -223,6 +223,6 @@ async function handleTransferUpdated(transfer: Stripe.Transfer): Promise<void> {
       },
     })
 
-    console.log(`Settlement ${settlementId} marked as FAILED (transfer reversed)`)
+    logger.warn('Settlement marked as FAILED (transfer update reversed)', { settlementId })
   }
 }
