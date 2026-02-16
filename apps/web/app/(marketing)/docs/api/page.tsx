@@ -40,8 +40,8 @@ export default function APIReferencePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
-                  Complete reference for all MCP tools including disputes, transactions, escrow,
-                  and trust scores.
+                  Complete reference for all MCP tools including disputes, transactions, escrow, and
+                  trust scores.
                 </p>
                 <Button asChild>
                   <Link href="/docs/tools">View Tools</Link>
