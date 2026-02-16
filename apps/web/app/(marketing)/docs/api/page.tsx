@@ -328,7 +328,8 @@ export default function APIReferencePage() {
               <CardContent>
                 <p className="text-sm text-text-secondary mb-4">
                   Tools for viewing decisions, accepting/rejecting outcomes, and requesting
-                  escalation.
+                  escalation. Decisions may include precedent citations when domain-specific
+                  arbitration data is available.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Link

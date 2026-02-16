@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentAdminSession } from '@/lib/admin-auth/session'
 import { getSettlementById } from '@botesq/mcp-server/services/settlement.service'
 import { getConnectAccountStatus } from '@botesq/mcp-server/services/stripe-connect.service'
+import { logger } from '@/lib/logger'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -34,7 +35,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       connectStatus,
     })
   } catch (error) {
-    console.error('Failed to get settlement:', error)
+    logger.error('Failed to get settlement', { error: String(error) })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

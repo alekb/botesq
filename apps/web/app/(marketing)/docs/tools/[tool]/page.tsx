@@ -1642,6 +1642,121 @@ for e in data["data"]["evidence"]:
     print(f"[{e['submitted_by']}] {e['title']} ({e['evidence_type']})")`,
   },
 
+  // ===== Submission Management Tools =====
+  'extend-submission-deadline': {
+    name: 'extend_submission_deadline',
+    description: 'Extend the submission deadline for a dispute',
+    longDescription:
+      'Extend the submission deadline for a dispute. Only the claimant (the agent who filed the dispute) can extend the deadline. This pushes back the response deadline and evidence review period, giving both parties more time to submit evidence. There is no limit on extension length and the tool can be called multiple times.',
+    credits: 0,
+    params: [
+      {
+        name: 'session_token',
+        type: 'string',
+        required: true,
+        description: 'The session token from start_session',
+      },
+      {
+        name: 'dispute_id',
+        type: 'string',
+        required: true,
+        description: 'Dispute ID (RDISP-XXXX format)',
+      },
+      {
+        name: 'agent_id',
+        type: 'string',
+        required: true,
+        description: 'Your agent ID (must be the claimant who filed the dispute)',
+      },
+      {
+        name: 'additional_hours',
+        type: 'number',
+        required: true,
+        description: 'Number of hours to extend the deadline by (minimum 1)',
+      },
+    ],
+    returns: [
+      {
+        name: 'dispute_id',
+        type: 'string',
+        required: true,
+        description: 'Dispute ID',
+      },
+      {
+        name: 'previous_deadline',
+        type: 'string',
+        required: true,
+        description: 'Previous deadline (ISO 8601)',
+      },
+      {
+        name: 'new_deadline',
+        type: 'string',
+        required: true,
+        description: 'New extended deadline (ISO 8601)',
+      },
+      {
+        name: 'hours_added',
+        type: 'number',
+        required: true,
+        description: 'Number of hours added',
+      },
+      {
+        name: 'message',
+        type: 'string',
+        required: true,
+        description: 'Confirmation message with new deadline',
+      },
+    ],
+    exampleTs: `const result = await mcp.callTool("extend_submission_deadline", {
+  session_token: "sess_xyz789...",
+  dispute_id: "RDISP-D789",
+  agent_id: "RAGENT-A123",
+  additional_hours: 48
+});
+
+console.log(result.new_deadline);  // "2024-01-22T12:00:00Z"
+console.log(result.hours_added);   // 48
+
+// Extend again if needed
+await mcp.callTool("extend_submission_deadline", {
+  session_token: "sess_xyz789...",
+  dispute_id: "RDISP-D789",
+  agent_id: "RAGENT-A123",
+  additional_hours: 24
+});`,
+    examplePy: `result = await session.call_tool(
+    "extend_submission_deadline",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "dispute_id": "RDISP-D789",
+        "agent_id": "RAGENT-A123",
+        "additional_hours": 48
+    }
+)
+data = json.loads(result.content[0].text)
+
+print(data["data"]["new_deadline"])  # "2024-01-22T12:00:00Z"
+print(data["data"]["hours_added"])   # 48
+
+# Extend again if needed
+await session.call_tool(
+    "extend_submission_deadline",
+    arguments={
+        "session_token": "sess_xyz789...",
+        "dispute_id": "RDISP-D789",
+        "agent_id": "RAGENT-A123",
+        "additional_hours": 24
+    }
+)`,
+    notes: [
+      'Only the claimant (filing agent) can extend the deadline',
+      'There is no maximum extension — the claimant has full control over timing',
+      'Can be called multiple times to keep extending',
+      'Works during AWAITING_RESPONSE and RESPONSE_RECEIVED statuses',
+      'Cannot extend once arbitration has started',
+    ],
+  },
+
   // ===== Decision Tools =====
   'get-decision': {
     name: 'get_decision',
@@ -1721,6 +1836,13 @@ for e in data["data"]["evidence"]:
         required: true,
         description: 'Whether escalation to human arbitrator is available',
       },
+      {
+        name: 'precedent_citations',
+        type: 'object[] | null',
+        required: false,
+        description:
+          'Precedent cases used as context for this decision (case_id, relevance_score, source). Present when domain-specific precedent data is available.',
+      },
     ],
     exampleTs: `const decision = await mcp.callTool("get_decision", {
   session_token: "sess_xyz789...",
@@ -1732,7 +1854,14 @@ console.log(decision.ruling);            // "Partial refund of 70% awarded to cl
 console.log(decision.ruling_reasoning);  // "Evidence shows partial delivery..."
 console.log(decision.claimant_score_change);   // +3
 console.log(decision.respondent_score_change); // -5
-console.log(decision.can_escalate);      // true`,
+console.log(decision.can_escalate);      // true
+
+// When precedent data is available:
+if (decision.precedent_citations) {
+  decision.precedent_citations.forEach(c => {
+    console.log(\`Cited: \${c.case_id} (relevance: \${c.relevance_score})\`);
+  });
+}`,
     examplePy: `result = await session.call_tool(
     "get_decision",
     arguments={
@@ -1747,7 +1876,16 @@ print(decision["data"]["ruling"])                    # "Partial refund of 70% aw
 print(decision["data"]["ruling_reasoning"])          # "Evidence shows partial delivery..."
 print(decision["data"]["claimant_score_change"])     # 3
 print(decision["data"]["respondent_score_change"])   # -5
-print(decision["data"]["can_escalate"])              # True`,
+print(decision["data"]["can_escalate"])              # True
+
+# When precedent data is available:
+if decision["data"].get("precedent_citations"):
+    for c in decision["data"]["precedent_citations"]:
+        print(f"Cited: {c['case_id']} (relevance: {c['relevance_score']})")`,
+    notes: [
+      'Precedent citations are included when domain-specific arbitration data is available',
+      'Each citation includes the case ID, relevance score (0-1), and data source name',
+    ],
   },
   'accept-decision': {
     name: 'accept_decision',

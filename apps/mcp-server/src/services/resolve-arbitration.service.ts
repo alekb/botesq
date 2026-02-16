@@ -15,6 +15,7 @@ import {
 } from './resolve-agent.service.js'
 import { prisma } from '@botesq/database'
 import { getCalibrationContext } from './feedback.service.js'
+import { getPrecedentProvider, formatPrecedentContext } from './precedent-provider.js'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
 
@@ -48,6 +49,12 @@ export interface ArbitrationResult {
     mitigatingFactors: string[]
     recommendation: string
   }
+  /** Precedent cases that were provided as context for this decision */
+  precedentCitations?: Array<{
+    caseId: string
+    relevanceScore: number
+    source: string
+  }>
 }
 
 const ARBITRATION_SYSTEM_PROMPT = `You are an AI arbitrator for BotEsq, a neutral dispute resolution service for AI agent transactions.
@@ -107,6 +114,43 @@ export async function arbitrateDispute(input: ArbitrationInput): Promise<Arbitra
     logger.warn({ error: err }, 'Failed to fetch calibration context, proceeding without it')
   }
 
+  // Retrieve relevant precedent from the configured provider
+  let precedentContext = ''
+  let precedentCitations: ArbitrationResult['precedentCitations']
+  const provider = getPrecedentProvider()
+  try {
+    const isAvailable = await provider.isAvailable()
+    if (isAvailable) {
+      const precedentResult = await provider.findRelevantPrecedent(input, 5)
+      precedentContext = formatPrecedentContext(precedentResult)
+      if (precedentResult.cases.length > 0) {
+        precedentCitations = precedentResult.cases.map((c) => ({
+          caseId: c.caseId,
+          relevanceScore: c.relevanceScore,
+          source: precedentResult.source,
+        }))
+        logger.info(
+          {
+            disputeId: input.disputeId,
+            provider: provider.name,
+            precedentCount: precedentResult.cases.length,
+          },
+          'Precedent retrieved for arbitration'
+        )
+      }
+    }
+  } catch (err) {
+    logger.warn(
+      { error: err, provider: provider.name },
+      'Failed to retrieve precedent, proceeding without it'
+    )
+  }
+
+  // Append precedent context to the system prompt (after calibration notes)
+  if (precedentContext) {
+    systemPrompt += precedentContext
+  }
+
   try {
     const response = await chatCompletion(
       [
@@ -123,11 +167,17 @@ export async function arbitrateDispute(input: ArbitrationInput): Promise<Arbitra
 
     const result = parseArbitrationResponse(response.content)
 
+    // Attach precedent citations to the result
+    if (precedentCitations && precedentCitations.length > 0) {
+      result.precedentCitations = precedentCitations
+    }
+
     logger.info(
       {
         disputeId: input.disputeId,
         ruling: result.ruling,
         confidence: result.details.confidence,
+        precedentUsed: precedentCitations?.length ?? 0,
       },
       'Arbitration completed'
     )
@@ -354,6 +404,76 @@ export async function processArbitration(disputeId: string): Promise<Arbitration
   )
 
   return result
+}
+
+/**
+ * Check if a dispute is ready for arbitration and trigger it if so.
+ * Used for lazy evaluation: when an agent queries a dispute that has passed
+ * its response deadline or evidence grace period, this kicks off arbitration
+ * rather than waiting for a scheduled job.
+ *
+ * Returns true if arbitration was triggered, false otherwise.
+ */
+export async function tryTriggerPendingArbitration(disputeExternalId: string): Promise<boolean> {
+  const dispute = await prisma.resolveDispute.findUnique({
+    where: { externalId: disputeExternalId },
+    select: {
+      id: true,
+      externalId: true,
+      status: true,
+      responseDeadline: true,
+      responseSubmittedAt: true,
+      claimantSubmissionComplete: true,
+      respondentSubmissionComplete: true,
+    },
+  })
+
+  if (!dispute) {
+    return false
+  }
+
+  const now = new Date()
+  const GRACE_PERIOD_MS = 24 * 60 * 60 * 1000 // 24 hours
+  let shouldArbitrate = false
+
+  if (
+    dispute.status === ResolveDisputeStatus.RESPONSE_RECEIVED &&
+    dispute.claimantSubmissionComplete &&
+    dispute.respondentSubmissionComplete
+  ) {
+    // Both parties marked complete
+    shouldArbitrate = true
+  } else if (
+    dispute.status === ResolveDisputeStatus.RESPONSE_RECEIVED &&
+    dispute.responseSubmittedAt &&
+    now.getTime() - dispute.responseSubmittedAt.getTime() > GRACE_PERIOD_MS &&
+    dispute.responseDeadline < now // Respect claimant-extended deadline
+  ) {
+    // Grace period expired after response AND extended deadline has passed
+    shouldArbitrate = true
+  } else if (
+    dispute.status === ResolveDisputeStatus.AWAITING_RESPONSE &&
+    dispute.responseDeadline < now
+  ) {
+    // Response deadline passed, respondent never responded
+    shouldArbitrate = true
+  }
+
+  if (!shouldArbitrate) {
+    return false
+  }
+
+  try {
+    await processArbitration(dispute.id)
+    logger.info({ disputeId: dispute.externalId }, 'Arbitration triggered automatically')
+    return true
+  } catch (error) {
+    logger.error(
+      { error, disputeId: dispute.externalId },
+      'Failed to trigger automatic arbitration'
+    )
+    return false
+  }
 }
 
 /**

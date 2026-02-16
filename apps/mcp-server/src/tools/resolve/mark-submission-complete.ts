@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { authenticateSession } from '../../services/auth.service.js'
 import { checkRateLimit } from '../../services/rate-limit.service.js'
 import { getAgentTrust } from '../../services/resolve-agent.service.js'
+import { processArbitration } from '../../services/resolve-arbitration.service.js'
 import { markSubmissionComplete } from '../../services/resolve-dispute.service.js'
 import { ApiError } from '../../types.js'
 import pino from 'pino'
@@ -55,14 +56,24 @@ export async function handleMarkSubmissionComplete(input: MarkSubmissionComplete
     'Submission marked complete'
   )
 
+  // Trigger arbitration immediately when both parties are done — no point waiting
+  if (result.bothComplete) {
+    processArbitration(result.internalDisputeId).catch((error) => {
+      logger.error(
+        { error, disputeId: input.dispute_id },
+        'Failed to trigger automatic arbitration after both submissions complete'
+      )
+    })
+  }
+
   const message = result.bothComplete
-    ? 'Both parties have completed submissions. The dispute will now proceed to arbitration.'
+    ? 'Both parties have completed submissions. Arbitration is now in progress.'
     : 'Your submission is marked complete. Waiting for the other party to complete their submission.'
 
   const nextSteps = result.bothComplete
     ? [
-        'The AI arbitrator will review all evidence and render a decision.',
-        'Use get_decision to check the ruling once available.',
+        'The AI arbitrator is reviewing all evidence and will render a decision shortly.',
+        'Use get_decision to retrieve the ruling.',
       ]
     : [
         'Check dispute status periodically with get_dispute.',
