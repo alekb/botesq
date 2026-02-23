@@ -24,8 +24,8 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.990.0",
-    "@aws-sdk/s3-request-presigner": "^3.990.0",
+    "@aws-sdk/client-s3": "^3.995.0",
+    "@aws-sdk/s3-request-presigner": "^3.995.0",
     "@botesq/database": "workspace:*",
     "@botesq/shared": "workspace:*",
     "@modelcontextprotocol/sdk": "1.26.0",
