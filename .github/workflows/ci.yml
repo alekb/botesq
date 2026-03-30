@@ -213,7 +213,7 @@ jobs:
         run: pnpm test -- -- --coverage
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./apps/mcp-server/coverage/coverage-final.json,./apps/web/coverage/coverage-final.json
