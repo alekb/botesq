@@ -141,7 +141,7 @@ jobs:
           echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREV_TAG...${{ needs.validate.outputs.version }}" >> CHANGELOG.md
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.validate.outputs.version }}
           name: BotEsq ${{ needs.validate.outputs.version }}
