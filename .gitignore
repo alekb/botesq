@@ -47,3 +47,6 @@ packages/database/prisma/*.db-journal
 
 # Secrets that must never be committed
 admin-totp-qr.png
+
+# Vite/Vitest temp config bundles
+*.timestamp-*.mjs
