@@ -13,7 +13,7 @@ import { logger } from '../logger.js'
 const importanceEnum = z.enum(['high', 'medium', 'low']).catch('medium')
 const severityEnum = z.enum(['high', 'medium', 'low']).catch('medium')
 
-const analysisSchema = z.object({
+export const analysisSchema = z.object({
   documentType: z.string().catch('Unknown'),
   summary: z.string().catch(''),
   parties: z.array(z.object({ name: z.string().catch(''), role: z.string().catch('') })).catch([]),
@@ -34,7 +34,11 @@ const analysisSchema = z.object({
       z.object({
         item: z.string().catch(''),
         amount: z.string().catch(''),
-        frequency: z.string().optional(),
+        // Models often emit null when there's no recurring frequency.
+        frequency: z
+          .string()
+          .nullish()
+          .transform((v) => v ?? undefined),
       })
     )
     .catch([]),
@@ -50,9 +54,15 @@ const analysisSchema = z.object({
   missingElements: z.array(z.string()).catch([]),
   recommendations: z.array(z.string()).catch([]),
   confidence: z.enum(['HIGH', 'MEDIUM', 'LOW', 'REQUIRES_REVIEW']).catch('LOW'),
-  confidenceScore: z.number().catch(50),
+  confidenceScore: z.coerce.number().catch(50),
   attorneyReviewRecommended: z.boolean().catch(true),
-  attorneyReviewReason: z.string().optional(),
+  // The prompt shows this key as "string (if recommended)", so models emit
+  // null when review isn't recommended; accept it rather than discarding the
+  // whole (valid, paid-for) analysis.
+  attorneyReviewReason: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
 })
 
 const DOCUMENT_ANALYSIS_PROMPT = `You are BotEsq's document analysis AI. Analyze the provided document and extract key legal information.
@@ -126,12 +136,12 @@ export async function analyzeDocument(params: {
     return null
   }
 
-  // Mark as processing
-  await updateDocumentAnalysis(documentId, {
-    status: DocumentAnalysisStatus.PROCESSING,
-  })
-
   try {
+    // Mark as processing inside the try so a failure here still refunds.
+    await updateDocumentAnalysis(documentId, {
+      status: DocumentAnalysisStatus.PROCESSING,
+    })
+
     const userMessage = `Analyze this document:
 
 Filename: ${filename}
@@ -311,9 +321,17 @@ export async function getAnalysisStatus(
     return null
   }
 
+  // Sanitize on read too: rows written before the coercion schema existed may
+  // have missing array fields that would crash the tool's formatAnalysis map().
+  let analysis: DocumentAnalysisResult | undefined
+  if (document.analysis) {
+    const parsed = analysisSchema.safeParse(document.analysis)
+    analysis = parsed.success ? parsed.data : undefined
+  }
+
   return {
     status: document.analysisStatus,
-    analysis: document.analysis as DocumentAnalysisResult | undefined,
+    analysis,
     analyzedAt: document.analyzedAt ?? undefined,
   }
 }

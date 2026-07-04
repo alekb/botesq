@@ -45,11 +45,11 @@ export async function handleGetRetainerTerms(input: GetRetainerTermsInput): Prom
     throw new ApiError('MATTER_NOT_FOUND', 'Matter not found', 404)
   }
 
-  // Get or create retainer for the matter
+  // Get or create retainer for the matter. A dead retainer (EXPIRED/REVOKED)
+  // is reissued so the matter isn't stuck without a way to obtain fresh terms.
   let retainer = await getRetainerForMatter(input.matter_id, operator.id)
 
-  if (!retainer) {
-    // Create a retainer for this matter
+  if (!retainer || retainer.status === 'EXPIRED' || retainer.status === 'REVOKED') {
     retainer = await createRetainer({
       operatorId: operator.id,
       matterId: matter.id,

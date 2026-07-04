@@ -17,8 +17,11 @@ const PRICING = {
   max: 10000,
 }
 
-// Bound the payload before decoding: base64 inflates content by 4/3.
-const MAX_BASE64_LENGTH = Math.ceil((MAX_FILE_SIZE * 4) / 3) + 4
+// Cheap pre-decode guard against giant payloads. base64 inflates content by
+// 4/3; add 10% headroom so MIME-wrapped base64 (newline every 76 chars, which
+// Buffer.from ignores) isn't rejected. The authoritative 10MB limit is the
+// decoded-size check in validateFile.
+const MAX_BASE64_LENGTH = Math.ceil(((MAX_FILE_SIZE * 4) / 3) * 1.1) + 16
 
 export const submitDocumentSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),

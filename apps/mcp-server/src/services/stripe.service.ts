@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { prisma } from '@botesq/database'
 import { config } from '../config.js'
+import { logger } from '../logger.js'
 import { PaymentError } from '../types.js'
 import {
   addCreditsInTx,
@@ -69,7 +70,14 @@ export async function getOrCreateStripeCustomer(operatorId: string): Promise<str
       where: { id: operatorId },
       select: { stripeCustomerId: true },
     })
-    await stripe.customers.del(customer.id).catch(() => undefined)
+    await stripe.customers.del(customer.id).catch((err) => {
+      // Duplicate is harmless (checkout uses the winner's id) but log it for
+      // manual cleanup since it carries operator PII.
+      logger.warn(
+        { err, duplicateCustomerId: customer.id, operatorId },
+        'Failed to delete duplicate Stripe customer'
+      )
+    })
     return winner.stripeCustomerId!
   }
 
@@ -196,7 +204,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session):
   })
 
   if (!payment) {
-    console.error('Payment record not found for session:', session.id)
+    logger.error({ sessionId: session.id }, 'Payment record not found for checkout session')
     return
   }
 

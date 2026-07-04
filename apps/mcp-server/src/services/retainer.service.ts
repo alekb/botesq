@@ -108,15 +108,22 @@ export async function createRetainer(params: {
       throw new ApiError('MATTER_NOT_FOUND', 'Matter not found', 404)
     }
 
-    // Already has a retainer — return it, create nothing.
+    // A still-live retainer (pending offer or accepted engagement) is returned
+    // as-is. A dead one (EXPIRED/REVOKED) is replaceable — otherwise the matter
+    // would be stuck in PENDING_RETAINER with no way to issue fresh terms.
+    let replaceableRetainerId: string | null = null
     if (matter.retainerId) {
       const existing = await tx.retainer.findUnique({
         where: { id: matter.retainerId },
         include: matterInclude,
       })
-      if (existing) {
+      if (
+        existing &&
+        (existing.status === RetainerStatus.PENDING || existing.status === RetainerStatus.ACCEPTED)
+      ) {
         return { retainer: existing, created: false }
       }
+      replaceableRetainerId = matter.retainerId
     }
 
     const retainer = await tx.retainer.create({
@@ -132,10 +139,11 @@ export async function createRetainer(params: {
       },
     })
 
-    // Link only if the matter is still unlinked; the conditional update takes
-    // the row lock so a concurrent create loses here.
+    // Link only if the matter still points where we expect (null, or the dead
+    // retainer we're replacing); the conditional update takes the row lock so a
+    // concurrent create loses here.
     const linked = await tx.matter.updateMany({
-      where: { id: matter.id, retainerId: null },
+      where: { id: matter.id, retainerId: replaceableRetainerId },
       data: { retainerId: retainer.id },
     })
 
@@ -259,8 +267,10 @@ export async function acceptRetainer(params: {
     throw new ApiError('RETAINER_NOT_FOUND', 'Retainer not found', 404)
   }
 
-  if (new Date() > retainer.expiresAt) {
-    // Mark as expired (only if still pending)
+  // Only a still-pending offer can expire. An already-ACCEPTED retainer that is
+  // now past its offer date is a live engagement; re-accepting it must report
+  // RETAINER_NOT_PENDING (via the claim below), not a misleading "expired".
+  if (retainer.status === RetainerStatus.PENDING && new Date() > retainer.expiresAt) {
     await prisma.retainer.updateMany({
       where: { id: retainer.id, status: RetainerStatus.PENDING },
       data: { status: RetainerStatus.EXPIRED },

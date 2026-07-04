@@ -87,7 +87,10 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
   AWS_REGION: z.string().default('us-east-1'),
   S3_BUCKET: z.preprocess(emptyToUndefined, z.string().optional()),
-  S3_PRESIGNED_URL_EXPIRY: z.coerce.number().default(900),
+  S3_PRESIGNED_URL_EXPIRY: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().positive().default(900)
+  ),
 
   // Application
   PORT: z.coerce.number().default(3000),

@@ -108,7 +108,7 @@ export async function chatCompletion(
     }
 
     if (error instanceof OpenAI.APIError) {
-      logger.error({ error: error.message, status: error.status }, 'OpenAI API error')
+      logger.error({ err: error, status: error.status }, 'OpenAI API error')
 
       if (error.status === 429) {
         throw new ApiError('LLM_RATE_LIMITED', 'LLM rate limit exceeded', 429)
