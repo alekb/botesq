@@ -40,7 +40,9 @@ _None_
 
 ### Security Remediation — Code Review Findings (2026-07-04)
 
-Branch `fix/code-review-2026-07-04`. Full review in `docs/CODE_REVIEW_2026-07-04.md`; all 13 findings fixed, adversarially verified by a 13-agent pass, then re-reviewed.
+Branch `fix/code-review-2026-07-04`. Full review in `docs/CODE_REVIEW_2026-07-04.md`. Three verification loops: (1) fixed the 13 documented findings, verified by a 13-agent adversarial pass that caught a missed 5th credit-deduction site; (2) a full 5-dimension re-review surfaced 25 more confirmed findings (≈19 distinct) incl. two guaranteed crashes, four cross-transaction crash windows, and loggers polluting the MCP stdio channel — all fixed; (3) verified the re-review fixes + regression-scanned the new code, which found only P2 regressions (all fixed). Build/lint clean, 59 unit tests, 3 migrations added.
+
+Round-2/3 additions on top of the round-1 list below:
 
 - [x] Single atomic credit deduction (conditional decrement + row lock) replacing five race-prone implementations; DB CHECK constraint `credit_balance >= 0`
 - [x] Stripe webhook: atomic claim + credit in one transaction, amount reconciliation, credits from own payment record
@@ -53,7 +55,9 @@ Branch `fix/code-review-2026-07-04`. Full review in `docs/CODE_REVIEW_2026-07-04
 - [x] Session `endedAt` enforced in auth; dead `endSession` removed
 - [x] Unified env validation (`@botesq/shared` validateEnv consumed by mcp-server config; prod-required secrets)
 - [x] `besq_live_` API key prefix; `Payment.amountCents` rename; instant-answer audit trail
-- [x] 52 unit tests incl. atomic-deduction semantics, webhook idempotent claim, pre-auth gate, magic bytes
+- [x] All five charging paths + retainer create/accept + webhook + failed-analysis refund now commit the row/state and the money in a single transaction (crash-safe); guaranteed crashes fixed (`create_matter` enum parity via `z.nativeEnum`, `submit_document` matter-id FK resolution)
+- [x] All logging moved to a shared stderr logger (stdout was corrupting the MCP stdio protocol); session bearer tokens hashed; API-key expiry enforced; LLM analysis JSON coerced (can't crash the read path); config/env hardening (LOG_LEVEL, S3 URL expiry, mock-key prod guard)
+- [x] 59 unit tests incl. atomic-deduction semantics, webhook idempotent claim, pre-auth gate, magic bytes, matter-type parity, analysis null-coercion, wrapped-base64
 - Deferred to user: delete/rotate `admin-totp-qr.png` (2FA secret in Dropbox-synced folder; now gitignored)
 - Known gap: no live-DB concurrency integration tests (no postgres in dev env)
 
