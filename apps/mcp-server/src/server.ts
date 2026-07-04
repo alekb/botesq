@@ -93,7 +93,7 @@ export function createServer() {
         ],
       }
     } catch (error) {
-      logger.error({ tool: name, error }, 'Tool execution failed')
+      logger.error({ tool: name, err: error }, 'Tool execution failed')
 
       if (error instanceof AuthError) {
         return {

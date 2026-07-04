@@ -1,7 +1,8 @@
 import { chatCompletion, type ChatMessage } from './llm.service.js'
 import { isLLMAvailable } from './llm.service.js'
 import { updateDocumentAnalysis, getDocument } from './document.service.js'
-import { DocumentAnalysisStatus } from '@botesq/database'
+import { refundCredits } from './credit.service.js'
+import { DocumentAnalysisStatus, prisma } from '@botesq/database'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
@@ -73,6 +74,7 @@ export async function analyzeDocument(params: {
 
   if (!isLLMAvailable()) {
     logger.warn({ documentId }, 'LLM not available for document analysis')
+    await markFailedAndRefund(documentId, operatorId)
     return null
   }
 
@@ -162,14 +164,49 @@ Provide your analysis in the JSON format specified.`
 
     return analysis
   } catch (error) {
-    logger.error({ documentId, error }, 'Document analysis failed')
+    logger.error({ documentId, err: error }, 'Document analysis failed')
 
-    // Mark as failed
+    await markFailedAndRefund(documentId, operatorId)
+
+    return null
+  }
+}
+
+/**
+ * Mark a document's analysis FAILED and refund the submission charge —
+ * the operator must not pay for undelivered analysis.
+ */
+async function markFailedAndRefund(documentId: string, operatorId: string): Promise<void> {
+  try {
     await updateDocumentAnalysis(documentId, {
       status: DocumentAnalysisStatus.FAILED,
     })
 
-    return null
+    const deduction = await prisma.creditTransaction.findFirst({
+      where: { operatorId, referenceType: 'document', referenceId: documentId, type: 'DEDUCTION' },
+    })
+    if (!deduction) {
+      return
+    }
+
+    // Idempotency guard: never refund the same document twice.
+    const alreadyRefunded = await prisma.creditTransaction.findFirst({
+      where: { operatorId, referenceType: 'document', referenceId: documentId, type: 'REFUND' },
+    })
+    if (alreadyRefunded) {
+      return
+    }
+
+    await refundCredits(
+      operatorId,
+      Math.abs(deduction.amount),
+      'Document analysis failed',
+      'document',
+      documentId
+    )
+    logger.info({ documentId, credits: Math.abs(deduction.amount) }, 'Refunded failed analysis')
+  } catch (error) {
+    logger.error({ documentId, err: error }, 'Failed to mark/refund failed analysis')
   }
 }
 
@@ -190,7 +227,7 @@ export function queueDocumentAnalysis(params: {
   logger.info({ documentId: params.documentId }, 'Document queued for analysis')
 
   void analyzeDocument(params).catch((error) => {
-    logger.error({ documentId: params.documentId, error }, 'Async document analysis failed')
+    logger.error({ documentId: params.documentId, err: error }, 'Async document analysis failed')
   })
 }
 

@@ -39,6 +39,7 @@ export async function queueForHumanReview(params: {
   aiDraft?: string
   aiConfidence?: number
   complexity: 'simple' | 'moderate' | 'complex'
+  creditsCharged?: number
 }): Promise<QueuedConsultation> {
   const {
     operatorId,
@@ -49,6 +50,7 @@ export async function queueForHumanReview(params: {
     aiDraft,
     aiConfidence,
     complexity,
+    creditsCharged,
   } = params
 
   // Calculate SLA based on complexity
@@ -77,6 +79,7 @@ export async function queueForHumanReview(params: {
       status: aiDraft ? 'PENDING_REVIEW' : 'QUEUED',
       aiDraft,
       aiConfidence,
+      creditsCharged: creditsCharged ?? 0,
       slaDeadline,
     },
   })

@@ -44,7 +44,8 @@ export interface ConsultationResult {
   disclaimers?: string[]
   completedAt?: Date
   estimatedWaitMinutes?: number
-  slaDeadline: Date
+  // Null for instant-answer (ANS-) records, which have no SLA
+  slaDeadline: Date | null
 }
 
 /**
@@ -52,7 +53,7 @@ export interface ConsultationResult {
  */
 export async function createConsultation(
   params: CreateConsultationParams
-): Promise<{ consultation: ConsultationResult; creditsUsed: number }> {
+): Promise<{ consultation: ConsultationResult & { slaDeadline: Date }; creditsUsed: number }> {
   const { operatorId, matterId, question, context, jurisdiction, urgency } = params
 
   // Validate matter exists and belongs to operator if provided
@@ -103,6 +104,7 @@ export async function createConsultation(
       jurisdiction,
       complexity,
       status: 'QUEUED',
+      creditsCharged: CONSULTATION_PRICING[urgency],
       slaDeadline,
     },
   })
@@ -125,7 +127,7 @@ export async function createConsultation(
       status: consultation.status,
       question: consultation.question,
       attorneyReviewed: false,
-      slaDeadline: consultation.slaDeadline!,
+      slaDeadline,
       estimatedWaitMinutes,
     },
     creditsUsed: CONSULTATION_PRICING[urgency],
@@ -185,7 +187,7 @@ export async function getConsultation(
     citations,
     attorneyReviewed: !!consultation.attorneyId,
     completedAt: consultation.completedAt ?? undefined,
-    slaDeadline: consultation.slaDeadline!,
+    slaDeadline: consultation.slaDeadline,
     estimatedWaitMinutes,
     disclaimers:
       consultation.status === 'COMPLETED'
@@ -264,7 +266,7 @@ export async function listConsultations(
       response: c.finalResponse ?? undefined,
       attorneyReviewed: !!c.attorneyId,
       completedAt: c.completedAt ?? undefined,
-      slaDeadline: c.slaDeadline!,
+      slaDeadline: c.slaDeadline,
     })),
     total,
   }

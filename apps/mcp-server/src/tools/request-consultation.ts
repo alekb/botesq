@@ -29,9 +29,7 @@ export interface RequestConsultationOutput {
   credits_remaining: number
 }
 
-export async function handleRequestConsultation(
-  input: RequestConsultationInput
-): Promise<{
+export async function handleRequestConsultation(input: RequestConsultationInput): Promise<{
   success: boolean
   data?: RequestConsultationOutput
   error?: { code: string; message: string }
@@ -78,16 +76,18 @@ export async function handleRequestConsultation(
     newBalance = result.newBalance
   } catch (error) {
     await prisma.consultation
-      .update({ where: { id: consultation.id }, data: { status: 'FAILED' } })
-      .catch(() => undefined)
+      .update({
+        where: { id: consultation.id },
+        data: { status: 'FAILED', creditsCharged: 0 },
+      })
+      .catch((cleanupError) => {
+        logger.error(
+          { err: cleanupError, consultationId: consultation.externalId },
+          'Failed to withdraw unpaid consultation'
+        )
+      })
     throw error
   }
-
-  // Record what was charged
-  await prisma.consultation.update({
-    where: { id: consultation.id },
-    data: { creditsCharged: creditsUsed },
-  })
 
   logger.info(
     {

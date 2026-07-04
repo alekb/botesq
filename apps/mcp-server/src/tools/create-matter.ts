@@ -3,6 +3,7 @@ import { MatterType, MatterUrgency } from '@botesq/database'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { createMatter } from '../services/matter.service.js'
+import { deductCredits } from '../services/credit.service.js'
 import { PaymentError } from '../types.js'
 import { prisma } from '@botesq/database'
 import pino from 'pino'
@@ -60,9 +61,7 @@ function mapUrgency(urgency?: string): MatterUrgency | undefined {
   return map[urgency]
 }
 
-export async function handleCreateMatter(
-  input: CreateMatterInput
-): Promise<{
+export async function handleCreateMatter(input: CreateMatterInput): Promise<{
   success: boolean
   data?: CreateMatterOutput
   error?: { code: string; message: string }
@@ -74,7 +73,7 @@ export async function handleCreateMatter(
   // Check rate limits
   checkRateLimit(session.apiKey.operator.id)
 
-  // Check credits
+  // Cheap fast-fail; deductCredits below is the authoritative, atomic check.
   if (operator.creditBalance < CREATE_MATTER_COST) {
     throw new PaymentError('INSUFFICIENT_CREDITS', 'Not enough credits to create a matter')
   }
@@ -89,26 +88,27 @@ export async function handleCreateMatter(
     urgency: mapUrgency(input.urgency),
   })
 
-  // Deduct credits
-  await prisma.$transaction(async (tx) => {
-    await tx.operator.update({
-      where: { id: operator.id },
-      data: { creditBalance: { decrement: CREATE_MATTER_COST } },
+  // Deduct credits (atomic); on failure withdraw the matter so there's no
+  // unpaid service.
+  let newBalance: number
+  try {
+    const result = await deductCredits(
+      operator.id,
+      CREATE_MATTER_COST,
+      `Create matter: ${matter.externalId}`,
+      'matter',
+      matter.id
+    )
+    newBalance = result.newBalance
+  } catch (error) {
+    await prisma.matter.delete({ where: { id: matter.id } }).catch((cleanupError) => {
+      logger.error(
+        { err: cleanupError, matterId: matter.externalId },
+        'Failed to withdraw unpaid matter'
+      )
     })
-
-    await tx.creditTransaction.create({
-      data: {
-        operatorId: operator.id,
-        type: 'DEDUCTION',
-        amount: -CREATE_MATTER_COST,
-        balanceBefore: operator.creditBalance,
-        balanceAfter: operator.creditBalance - CREATE_MATTER_COST,
-        description: `Create matter: ${matter.externalId}`,
-        referenceType: 'matter',
-        referenceId: matter.id,
-      },
-    })
-  })
+    throw error
+  }
 
   logger.info(
     {
@@ -136,7 +136,7 @@ export async function handleCreateMatter(
         : undefined,
       created_at: matter.createdAt.toISOString(),
       credits_used: CREATE_MATTER_COST,
-      credits_remaining: operator.creditBalance - CREATE_MATTER_COST,
+      credits_remaining: newBalance,
     },
   }
 }

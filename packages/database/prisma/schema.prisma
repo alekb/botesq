@@ -31,7 +31,7 @@ model Operator {
 
   creditBalance   Int       @default(0) @map("credit_balance")
 
-  preAuthToken    String?   @unique @map("pre_auth_token")
+  preAuthTokenHash String?  @unique @map("pre_auth_token_hash") // sha256 hex of the token
   preAuthScope    Json?     @map("pre_auth_scope")
   preAuthMaxCredits Int?    @map("pre_auth_max_credits")
 

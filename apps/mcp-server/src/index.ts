@@ -12,7 +12,7 @@ async function main() {
   try {
     await runServer()
   } catch (error) {
-    logger.fatal({ error }, 'Failed to start server')
+    logger.fatal({ err: error }, 'Failed to start server')
     process.exit(1)
   }
 }

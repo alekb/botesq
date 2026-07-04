@@ -84,9 +84,7 @@ function detectMimeType(filename: string): string {
   return mimeMap[ext ?? ''] ?? 'application/octet-stream'
 }
 
-export async function handleSubmitDocument(
-  input: SubmitDocumentInput
-): Promise<{
+export async function handleSubmitDocument(input: SubmitDocumentInput): Promise<{
   success: boolean
   data?: SubmitDocumentOutput
   error?: { code: string; message: string }
@@ -139,7 +137,12 @@ export async function handleSubmitDocument(
         where: { id: document.id },
         data: { status: 'DELETED', deletedAt: new Date() },
       })
-      .catch(() => undefined)
+      .catch((cleanupError) => {
+        logger.error(
+          { err: cleanupError, documentId: document.externalId },
+          'Failed to withdraw unpaid document'
+        )
+      })
     throw error
   }
 

@@ -27,9 +27,7 @@ export interface GetRetainerTermsOutput {
   manual_signing_url: string
 }
 
-export async function handleGetRetainerTerms(
-  input: GetRetainerTermsInput
-): Promise<{
+export async function handleGetRetainerTerms(input: GetRetainerTermsInput): Promise<{
   success: boolean
   data?: GetRetainerTermsOutput
   error?: { code: string; message: string }
@@ -60,7 +58,7 @@ export async function handleGetRetainerTerms(
   }
 
   // Check if operator has pre-auth configured
-  const canAcceptViaPreauth = !!operator.preAuthToken
+  const canAcceptViaPreauth = !!operator.preAuthTokenHash
 
   return {
     success: true,

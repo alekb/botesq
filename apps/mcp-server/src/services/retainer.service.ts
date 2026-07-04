@@ -92,7 +92,7 @@ export async function createRetainer(params: {
   })
 
   if (!matter) {
-    throw new Error('Matter not found')
+    throw new ApiError('MATTER_NOT_FOUND', 'Matter not found', 404)
   }
 
   // Check if matter already has a retainer
@@ -284,13 +284,13 @@ export async function acceptRetainer(params: {
   if (signatureMethod !== 'manual') {
     const operator = await prisma.operator.findUnique({
       where: { id: operatorId },
-      select: { preAuthToken: true },
+      select: { preAuthTokenHash: true },
     })
 
     if (
-      !operator?.preAuthToken ||
+      !operator?.preAuthTokenHash ||
       !preAuthToken ||
-      !tokensMatch(operator.preAuthToken, preAuthToken)
+      !tokenMatchesHash(operator.preAuthTokenHash, preAuthToken)
     ) {
       throw new ApiError('INVALID_PREAUTH', 'Invalid pre-authorization token', 403)
     }
@@ -388,10 +388,11 @@ export function generateSigningUrl(retainerId: string): string {
 }
 
 /**
- * Constant-time token comparison (hash both sides to equalize length)
+ * Constant-time comparison of a provided token against its stored sha256 hex
+ * hash. Exported for tests.
  */
-function tokensMatch(expected: string, provided: string): boolean {
-  const a = createHash('sha256').update(expected).digest()
-  const b = createHash('sha256').update(provided).digest()
-  return timingSafeEqual(a, b)
+export function tokenMatchesHash(storedHashHex: string, providedToken: string): boolean {
+  const stored = Buffer.from(storedHashHex, 'hex')
+  const provided = createHash('sha256').update(providedToken).digest()
+  return stored.length === provided.length && timingSafeEqual(stored, provided)
 }

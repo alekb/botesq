@@ -1,5 +1,15 @@
-// Tool arguments that must never reach logs: credentials and bulk content.
-const REDACTED_KEYS = new Set(['api_key', 'session_token', 'content_base64', 'pre_auth_token'])
+// Tool arguments that must never reach logs: credentials, bulk content, and
+// privileged client material (questions, matter details, document notes).
+const REDACTED_KEYS = new Set([
+  'api_key',
+  'session_token',
+  'content_base64',
+  'pre_auth_token',
+  'question',
+  'context',
+  'description',
+  'notes',
+])
 
 /**
  * Redact sensitive fields from tool arguments before logging

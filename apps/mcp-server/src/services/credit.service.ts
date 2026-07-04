@@ -95,12 +95,13 @@ export async function refundCredits(
 }
 
 /**
- * Deduct credits from an operator's balance.
+ * Deduct credits inside an existing transaction.
  * Atomic check-and-decrement: the conditional UPDATE only succeeds if the
  * balance is sufficient, so concurrent deductions can never drive the
  * balance negative or lose an update.
  */
-export async function deductCredits(
+export async function deductCreditsInTx(
+  tx: TxClient,
   operatorId: string,
   amount: number,
   description: string,
@@ -109,44 +110,57 @@ export async function deductCredits(
 ): Promise<{ newBalance: number }> {
   assertValidAmount(amount)
 
-  return await prisma.$transaction(async (tx) => {
-    const updated = await tx.operator.updateMany({
-      where: { id: operatorId, creditBalance: { gte: amount } },
-      data: { creditBalance: { decrement: amount } },
-    })
-
-    if (updated.count === 0) {
-      const exists = await tx.operator.findUnique({
-        where: { id: operatorId },
-        select: { id: true },
-      })
-      if (!exists) {
-        throw new PaymentError('OPERATOR_NOT_FOUND', 'Operator not found')
-      }
-      throw new PaymentError('INSUFFICIENT_CREDITS', 'Not enough credits')
-    }
-
-    // The row lock from the update is held until commit, so this read is stable.
-    const operator = await tx.operator.findUniqueOrThrow({
-      where: { id: operatorId },
-      select: { creditBalance: true },
-    })
-
-    await tx.creditTransaction.create({
-      data: {
-        operatorId,
-        type: 'DEDUCTION',
-        amount: -amount,
-        balanceBefore: operator.creditBalance + amount,
-        balanceAfter: operator.creditBalance,
-        description,
-        referenceType,
-        referenceId,
-      },
-    })
-
-    return { newBalance: operator.creditBalance }
+  const updated = await tx.operator.updateMany({
+    where: { id: operatorId, creditBalance: { gte: amount } },
+    data: { creditBalance: { decrement: amount } },
   })
+
+  if (updated.count === 0) {
+    const exists = await tx.operator.findUnique({
+      where: { id: operatorId },
+      select: { id: true },
+    })
+    if (!exists) {
+      throw new PaymentError('OPERATOR_NOT_FOUND', 'Operator not found')
+    }
+    throw new PaymentError('INSUFFICIENT_CREDITS', 'Not enough credits')
+  }
+
+  // The row lock from the update is held until commit, so this read is stable.
+  const operator = await tx.operator.findUniqueOrThrow({
+    where: { id: operatorId },
+    select: { creditBalance: true },
+  })
+
+  await tx.creditTransaction.create({
+    data: {
+      operatorId,
+      type: 'DEDUCTION',
+      amount: -amount,
+      balanceBefore: operator.creditBalance + amount,
+      balanceAfter: operator.creditBalance,
+      description,
+      referenceType,
+      referenceId,
+    },
+  })
+
+  return { newBalance: operator.creditBalance }
+}
+
+/**
+ * Deduct credits from an operator's balance (standalone transaction)
+ */
+export async function deductCredits(
+  operatorId: string,
+  amount: number,
+  description: string,
+  referenceType?: string,
+  referenceId?: string
+): Promise<{ newBalance: number }> {
+  return await prisma.$transaction((tx) =>
+    deductCreditsInTx(tx, operatorId, amount, description, referenceType, referenceId)
+  )
 }
 
 /**

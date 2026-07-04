@@ -10,7 +10,7 @@ import {
 } from '../services/legal-ai.service.js'
 import { isLLMAvailable } from '../services/llm.service.js'
 import { queueForHumanReview, COMPLEXITY_TO_ENUM } from '../services/queue.service.js'
-import { deductCredits } from '../services/credit.service.js'
+import { deductCredits, deductCreditsInTx } from '../services/credit.service.js'
 import { ApiError, PaymentError } from '../types.js'
 import pino from 'pino'
 
@@ -54,9 +54,7 @@ const DISCLAIMERS = [
   'For specific legal advice, please consult with a licensed attorney.',
 ]
 
-export async function handleAskLegalQuestion(
-  input: AskLegalQuestionInput
-): Promise<{
+export async function handleAskLegalQuestion(input: AskLegalQuestionInput): Promise<{
   success: boolean
   data?: AskLegalQuestionOutput
   error?: { code: string; message: string }
@@ -90,50 +88,49 @@ export async function handleAskLegalQuestion(
         context: input.context,
       })
     } catch (error) {
-      logger.warn({ error }, 'LLM failed, falling back to human queue')
+      logger.warn({ err: error }, 'LLM failed, falling back to human queue')
     }
   }
 
   let response: AskLegalQuestionOutput
 
   if (legalResponse && !legalResponse.requiresAttorneyReview) {
-    // Instant answer: persist it first so every answer we give is on record,
-    // then charge; the answer is only released after payment succeeds.
+    // Instant answer: record and charge in ONE transaction so every answer we
+    // give has a matching ledger entry — an insufficient balance rolls back
+    // the record, a crash can't strand a charged-but-unrecorded answer.
     const creditsUsed = PRICING[legalResponse.complexity]
+    const answer = legalResponse
 
-    const record = await prisma.consultation.create({
-      data: {
-        externalId: `ANS-${nanoid(8).toUpperCase()}`,
-        operatorId: operator.id,
-        question: input.question,
-        context: input.context,
-        jurisdiction: input.jurisdiction,
-        complexity: COMPLEXITY_TO_ENUM[legalResponse.complexity],
-        status: 'COMPLETED',
-        aiDraft: legalResponse.answer,
-        aiConfidence: legalResponse.confidenceScore,
-        finalResponse: legalResponse.answer,
-        responseMetadata: { citations: legalResponse.citations } as Prisma.InputJsonValue,
-        creditsCharged: creditsUsed,
-        completedAt: new Date(),
-      },
-    })
+    const { record, newBalance } = await prisma.$transaction(async (tx) => {
+      const created = await tx.consultation.create({
+        data: {
+          externalId: `ANS-${nanoid(8).toUpperCase()}`,
+          operatorId: operator.id,
+          question: input.question,
+          context: input.context,
+          jurisdiction: input.jurisdiction,
+          complexity: COMPLEXITY_TO_ENUM[answer.complexity],
+          status: 'COMPLETED',
+          aiDraft: answer.answer,
+          aiConfidence: answer.confidenceScore,
+          finalResponse: answer.answer,
+          responseMetadata: { citations: answer.citations } as Prisma.InputJsonValue,
+          creditsCharged: creditsUsed,
+          completedAt: new Date(),
+        },
+      })
 
-    let newBalance: number
-    try {
-      const result = await deductCredits(
+      const deduction = await deductCreditsInTx(
+        tx,
         operator.id,
         creditsUsed,
         'Legal Q&A - instant',
         'legal_qa',
-        record.id
+        created.id
       )
-      newBalance = result.newBalance
-    } catch (error) {
-      // Not charged — withdraw the recorded answer.
-      await prisma.consultation.delete({ where: { id: record.id } }).catch(() => undefined)
-      throw error
-    }
+
+      return { record: created, newBalance: deduction.newBalance }
+    })
 
     response = {
       answer_id: record.externalId,
@@ -161,6 +158,7 @@ export async function handleAskLegalQuestion(
       aiDraft: legalResponse?.answer,
       aiConfidence: legalResponse?.confidenceScore,
       complexity,
+      creditsCharged: creditsUsed,
     })
 
     let newBalance: number
@@ -176,15 +174,15 @@ export async function handleAskLegalQuestion(
     } catch (error) {
       // Not charged — withdraw the queued request so no attorney works unpaid.
       await prisma.consultation
-        .update({ where: { id: queued.id }, data: { status: 'FAILED' } })
-        .catch(() => undefined)
+        .update({ where: { id: queued.id }, data: { status: 'FAILED', creditsCharged: 0 } })
+        .catch((cleanupError) => {
+          logger.error(
+            { err: cleanupError, consultationId: queued.externalId },
+            'Failed to withdraw unpaid consultation'
+          )
+        })
       throw error
     }
-
-    await prisma.consultation.update({
-      where: { id: queued.id },
-      data: { creditsCharged: creditsUsed },
-    })
 
     response = {
       answer_id: queued.externalId,

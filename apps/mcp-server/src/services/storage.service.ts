@@ -230,6 +230,30 @@ export const ALLOWED_MIME_TYPES = [
  */
 export const MAX_FILE_SIZE = 10 * 1024 * 1024
 
+// Magic-byte signatures for the allowed binary types; text/plain has none.
+const MAGIC_BYTES: Record<string, number[][]> = {
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]], // %PDF
+  'image/png': [[0x89, 0x50, 0x4e, 0x47]],
+  'image/jpeg': [[0xff, 0xd8, 0xff]],
+  // DOCX is a ZIP container; legacy DOC uses the OLE compound-file header
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [[0x50, 0x4b]],
+  'application/msword': [[0xd0, 0xcf, 0x11, 0xe0]],
+}
+
+/**
+ * Check that file content starts with a signature matching its claimed type.
+ * Types without a known signature (text/plain) always pass.
+ */
+export function contentMatchesMimeType(content: Buffer, mimeType: string): boolean {
+  const signatures = MAGIC_BYTES[mimeType]
+  if (!signatures) {
+    return true
+  }
+  return signatures.some(
+    (bytes) => content.length >= bytes.length && bytes.every((b, i) => content[i] === b)
+  )
+}
+
 /**
  * Validate file for upload
  */
@@ -237,8 +261,9 @@ export function validateFile(params: {
   filename: string
   mimeType: string
   size: number
+  content?: Buffer
 }): { valid: boolean; reason?: string } {
-  const { filename, mimeType, size } = params
+  const { filename, mimeType, size, content } = params
 
   if (!filename || filename.trim().length === 0) {
     return { valid: false, reason: 'Filename is required' }
@@ -255,6 +280,13 @@ export function validateFile(params: {
     return {
       valid: false,
       reason: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+    }
+  }
+
+  if (content && !contentMatchesMimeType(content, mimeType)) {
+    return {
+      valid: false,
+      reason: 'File content does not match its file extension',
     }
   }
 

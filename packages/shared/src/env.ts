@@ -34,11 +34,6 @@ const envSchema = z.object({
     z.string().min(32, 'SESSION_SECRET must be at least 32 characters').optional()
   ),
 
-  API_KEY_SALT: z.preprocess(
-    emptyToUndefined,
-    z.string().min(32, 'API_KEY_SALT must be at least 32 characters').optional()
-  ),
-
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(24),
 
   // Rate limiting

@@ -59,8 +59,8 @@ export async function submitDocument(params: {
   const contentBuffer = typeof content === 'string' ? Buffer.from(content, 'base64') : content
   const fileSize = contentBuffer.length
 
-  // Validate file
-  const validation = validateFile({ filename, mimeType, size: fileSize })
+  // Validate file (size, allowed type, magic bytes vs claimed type)
+  const validation = validateFile({ filename, mimeType, size: fileSize, content: contentBuffer })
   if (!validation.valid) {
     throw new ApiError('INVALID_FILE', validation.reason ?? 'Invalid file', 400)
   }
@@ -249,8 +249,7 @@ export async function updateDocumentAnalysis(
       analysis: analysis.results as object,
       confidenceScore: analysis.confidenceScore,
       attorneyReviewRecommended: analysis.attorneyReviewRecommended,
-      analyzedAt:
-        analysis.status === DocumentAnalysisStatus.COMPLETED ? new Date() : undefined,
+      analyzedAt: analysis.status === DocumentAnalysisStatus.COMPLETED ? new Date() : undefined,
     },
   })
 
@@ -268,10 +267,7 @@ export async function updateDocumentAnalysis(
 /**
  * Delete a document (soft delete)
  */
-export async function deleteDocument(
-  documentId: string,
-  operatorId: string
-): Promise<boolean> {
+export async function deleteDocument(documentId: string, operatorId: string): Promise<boolean> {
   const document = await prisma.document.findFirst({
     where: {
       OR: [{ id: documentId }, { externalId: documentId }],

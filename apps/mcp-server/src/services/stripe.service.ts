@@ -177,8 +177,9 @@ export async function handleWebhookEvent(
 
 /**
  * Handle successful checkout completion
+ * (exported for tests)
  */
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+export async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const payment = await prisma.payment.findUnique({
     where: { stripeCheckoutSessionId: session.id },
   })
@@ -189,11 +190,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   }
 
   // Reconcile the charged amount against our own record before crediting.
+  // Throwing (rather than silently returning) makes the webhook delivery fail
+  // so Stripe retries and the discrepancy stays visible for manual review.
   if (session.amount_total !== null && session.amount_total !== payment.amountCents) {
-    console.error(
+    throw new PaymentError(
+      'AMOUNT_MISMATCH',
       `Checkout amount mismatch for session ${session.id}: charged ${session.amount_total}, expected ${payment.amountCents}`
     )
-    return
   }
 
   // Claim and credit atomically: the conditional update guarantees exactly one
