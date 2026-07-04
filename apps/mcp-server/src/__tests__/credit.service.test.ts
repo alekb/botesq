@@ -33,9 +33,11 @@ describe('credit.service', () => {
       expect(usdToCredits(0)).toBe(0)
     })
 
-    it('floors fractional credits', () => {
-      // $1.005 = 100.5 credits -> floors to 100
-      expect(usdToCredits(1.005)).toBe(100)
+    it('rounds to the nearest credit (avoids float short-changing)', () => {
+      // 29.99 * 100 is 2998.9999999999995 in float; must round to 2999, not 2998
+      expect(usdToCredits(29.99)).toBe(2999)
+      // 0.125 * 100 = 12.5 exactly; rounds up to 13
+      expect(usdToCredits(0.125)).toBe(13)
     })
 
     it('handles decimal USD amounts', () => {

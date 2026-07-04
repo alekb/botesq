@@ -176,10 +176,13 @@ export async function hasCredits(operatorId: string, amount: number): Promise<bo
 }
 
 /**
- * Convert USD to credits
+ * Convert USD to credits.
+ * Rounds to the nearest credit to avoid float artifacts (e.g. 29.99 * 100)
+ * short-changing the buyer by a credit; callers should already pass
+ * whole-cent amounts.
  */
 export function usdToCredits(amountUsd: number): number {
-  return Math.floor(amountUsd * CREDITS_PER_DOLLAR)
+  return Math.round(amountUsd * CREDITS_PER_DOLLAR)
 }
 
 /**

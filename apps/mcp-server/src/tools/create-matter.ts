@@ -3,28 +3,22 @@ import { MatterType, MatterUrgency } from '@botesq/database'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { createMatter } from '../services/matter.service.js'
-import { deductCredits } from '../services/credit.service.js'
+import { deductCreditsInTx } from '../services/credit.service.js'
 import { PaymentError } from '../types.js'
 import { prisma } from '@botesq/database'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 // Cost to create a matter
 const CREATE_MATTER_COST = 10000
 
+// Derived from the Prisma enum so the tool can never advertise a type the
+// database will reject at write time.
+const MATTER_TYPE_VALUES = Object.values(MatterType) as [MatterType, ...MatterType[]]
+
 export const createMatterSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),
-  matter_type: z.enum([
-    'CONTRACT_REVIEW',
-    'ENTITY_FORMATION',
-    'COMPLIANCE',
-    'IP_TRADEMARK',
-    'IP_COPYRIGHT',
-    'IP_PATENT',
-    'EMPLOYMENT',
-    'LITIGATION_CONSULTATION',
-  ]),
+  matter_type: z.nativeEnum(MatterType),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(2000).optional(),
   urgency: z.enum(['low', 'standard', 'high', 'urgent']).optional(),
@@ -78,37 +72,33 @@ export async function handleCreateMatter(input: CreateMatterInput): Promise<{
     throw new PaymentError('INSUFFICIENT_CREDITS', 'Not enough credits to create a matter')
   }
 
-  // Create the matter
-  const { matter, retainerRequired } = await createMatter({
-    operatorId: operator.id,
-    agentId: session.agentId ?? undefined,
-    type: input.matter_type as MatterType,
-    title: input.title,
-    description: input.description,
-    urgency: mapUrgency(input.urgency),
-  })
+  // Create the matter and charge for it in ONE transaction, so a crash or
+  // insufficient balance can never leave an unpaid matter or a charge with no
+  // matter.
+  const { matter, retainerRequired, newBalance } = await prisma.$transaction(async (tx) => {
+    const created = await createMatter(
+      {
+        operatorId: operator.id,
+        agentId: session.agentId ?? undefined,
+        type: input.matter_type,
+        title: input.title,
+        description: input.description,
+        urgency: mapUrgency(input.urgency),
+      },
+      tx
+    )
 
-  // Deduct credits (atomic); on failure withdraw the matter so there's no
-  // unpaid service.
-  let newBalance: number
-  try {
-    const result = await deductCredits(
+    const { newBalance } = await deductCreditsInTx(
+      tx,
       operator.id,
       CREATE_MATTER_COST,
-      `Create matter: ${matter.externalId}`,
+      `Create matter: ${created.matter.externalId}`,
       'matter',
-      matter.id
+      created.matter.id
     )
-    newBalance = result.newBalance
-  } catch (error) {
-    await prisma.matter.delete({ where: { id: matter.id } }).catch((cleanupError) => {
-      logger.error(
-        { err: cleanupError, matterId: matter.externalId },
-        'Failed to withdraw unpaid matter'
-      )
-    })
-    throw error
-  }
+
+    return { matter: created.matter, retainerRequired: created.retainerRequired, newBalance }
+  })
 
   logger.info(
     {
@@ -154,16 +144,7 @@ export const createMatterTool = {
       },
       matter_type: {
         type: 'string',
-        enum: [
-          'CONTRACT_REVIEW',
-          'ENTITY_FORMATION',
-          'COMPLIANCE',
-          'IP_TRADEMARK',
-          'IP_COPYRIGHT',
-          'IP_PATENT',
-          'EMPLOYMENT',
-          'LITIGATION_CONSULTATION',
-        ],
+        enum: MATTER_TYPE_VALUES,
         description: 'Type of legal matter',
       },
       title: {

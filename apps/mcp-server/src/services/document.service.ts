@@ -1,4 +1,4 @@
-import { prisma, DocumentStatus, DocumentAnalysisStatus } from '@botesq/database'
+import { prisma, DocumentStatus, DocumentAnalysisStatus, type Prisma } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import {
   uploadFile,
@@ -8,9 +8,8 @@ import {
   isStorageConfigured,
 } from './storage.service.js'
 import { ApiError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 /**
  * Generate a document external ID
@@ -42,9 +41,12 @@ export interface DocumentWithDetails {
 }
 
 /**
- * Submit a new document
+ * Validate, resolve the matter, and upload a document to storage, returning
+ * the row data for a later `document.create`. The S3 upload deliberately runs
+ * OUTSIDE any DB transaction so the caller can commit the row and its credit
+ * charge together; an orphaned S3 object on rollback is acceptable.
  */
-export async function submitDocument(params: {
+export async function prepareDocumentUpload(params: {
   operatorId: string
   matterId?: string
   filename: string
@@ -52,7 +54,7 @@ export async function submitDocument(params: {
   content: Buffer | string
   documentType?: string
   notes?: string
-}): Promise<DocumentWithDetails> {
+}): Promise<{ data: Prisma.DocumentUncheckedCreateInput; externalId: string; fileSize: number }> {
   const { operatorId, matterId, filename, mimeType, content, documentType, notes } = params
 
   // Convert string content to Buffer if needed
@@ -65,17 +67,21 @@ export async function submitDocument(params: {
     throw new ApiError('INVALID_FILE', validation.reason ?? 'Invalid file', 400)
   }
 
-  // Validate matter exists if provided
+  // Validate matter exists if provided, and resolve to its internal id — the
+  // caller may pass an external ID (MATTER-XXXXXX) which is not the FK value.
+  let internalMatterId: string | null = null
   if (matterId) {
     const matter = await prisma.matter.findFirst({
       where: {
         OR: [{ id: matterId }, { externalId: matterId }],
         operatorId,
       },
+      select: { id: true },
     })
     if (!matter) {
       throw new ApiError('MATTER_NOT_FOUND', 'Matter not found', 404)
     }
+    internalMatterId = matter.id
   }
 
   const externalId = generateDocumentId()
@@ -112,12 +118,13 @@ export async function submitDocument(params: {
     pageCount = Math.max(1, Math.ceil(fileSize / 3000))
   }
 
-  // Create document record
-  const document = await prisma.document.create({
+  return {
+    externalId,
+    fileSize,
     data: {
       externalId,
       operatorId,
-      matterId: matterId ?? null,
+      matterId: internalMatterId,
       filename,
       mimeType,
       fileSize,
@@ -129,20 +136,7 @@ export async function submitDocument(params: {
       analysisStatus: DocumentAnalysisStatus.PENDING,
       status: DocumentStatus.ACTIVE,
     },
-  })
-
-  logger.info(
-    {
-      documentId: document.externalId,
-      operatorId,
-      matterId,
-      filename,
-      fileSize,
-    },
-    'Document submitted'
-  )
-
-  return document
+  }
 }
 
 /**

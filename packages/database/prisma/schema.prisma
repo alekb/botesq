@@ -115,7 +115,7 @@ model Session {
   apiKeyId    String    @map("api_key_id")
   agentId     String?   @map("agent_id")
 
-  token       String    @unique
+  tokenHash   String    @unique @map("token_hash") // sha256 hex of the bearer token
 
   ipAddress   String?   @map("ip_address")
   userAgent   String?   @map("user_agent")
@@ -132,7 +132,7 @@ model Session {
   apiKey      ApiKey    @relation(fields: [apiKeyId], references: [id])
   agent       Agent?    @relation(fields: [agentId], references: [id])
 
-  @@index([token])
+  @@index([tokenHash])
   @@index([expiresAt])
   @@map("sessions")
 }

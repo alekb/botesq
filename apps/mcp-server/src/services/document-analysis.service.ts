@@ -1,11 +1,59 @@
+import { z } from 'zod'
 import { chatCompletion, type ChatMessage } from './llm.service.js'
 import { isLLMAvailable } from './llm.service.js'
 import { updateDocumentAnalysis, getDocument } from './document.service.js'
-import { refundCredits } from './credit.service.js'
+import { addCreditsInTx } from './credit.service.js'
 import { DocumentAnalysisStatus, prisma } from '@botesq/database'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
+
+// The LLM output is untrusted: missing array fields would otherwise crash
+// get_document_analysis's .map() calls after the operator was already charged.
+// This coerces the response into a safe shape, defaulting anything absent.
+const importanceEnum = z.enum(['high', 'medium', 'low']).catch('medium')
+const severityEnum = z.enum(['high', 'medium', 'low']).catch('medium')
+
+const analysisSchema = z.object({
+  documentType: z.string().catch('Unknown'),
+  summary: z.string().catch(''),
+  parties: z.array(z.object({ name: z.string().catch(''), role: z.string().catch('') })).catch([]),
+  keyTerms: z
+    .array(
+      z.object({
+        term: z.string().catch(''),
+        description: z.string().catch(''),
+        importance: importanceEnum,
+      })
+    )
+    .catch([]),
+  keyDates: z
+    .array(z.object({ date: z.string().catch(''), description: z.string().catch('') }))
+    .catch([]),
+  financialTerms: z
+    .array(
+      z.object({
+        item: z.string().catch(''),
+        amount: z.string().catch(''),
+        frequency: z.string().optional(),
+      })
+    )
+    .catch([]),
+  risks: z
+    .array(
+      z.object({
+        risk: z.string().catch(''),
+        severity: severityEnum,
+        recommendation: z.string().catch(''),
+      })
+    )
+    .catch([]),
+  missingElements: z.array(z.string()).catch([]),
+  recommendations: z.array(z.string()).catch([]),
+  confidence: z.enum(['HIGH', 'MEDIUM', 'LOW', 'REQUIRES_REVIEW']).catch('LOW'),
+  confidenceScore: z.number().catch(50),
+  attorneyReviewRecommended: z.boolean().catch(true),
+  attorneyReviewReason: z.string().optional(),
+})
 
 const DOCUMENT_ANALYSIS_PROMPT = `You are BotEsq's document analysis AI. Analyze the provided document and extract key legal information.
 
@@ -106,7 +154,8 @@ Provide your analysis in the JSON format specified.`
       maxTokens: 4096,
     })
 
-    // Parse the JSON response
+    // Parse the JSON response, then coerce it into a safe shape so downstream
+    // .map() calls can never crash on a malformed/partial LLM response.
     let analysis: DocumentAnalysisResult
 
     try {
@@ -115,9 +164,13 @@ Provide your analysis in the JSON format specified.`
       if (!jsonMatch) {
         throw new Error('No JSON found in response')
       }
-      analysis = JSON.parse(jsonMatch[0])
+      analysis = analysisSchema.parse(JSON.parse(jsonMatch[0]))
     } catch {
-      logger.error({ documentId, response: response.content }, 'Failed to parse analysis response')
+      // Never log the response body — it derives from privileged client content.
+      logger.error(
+        { documentId, responseLength: response.content.length },
+        'Failed to parse analysis response'
+      )
 
       // Create a fallback analysis
       analysis = {
@@ -173,38 +226,49 @@ Provide your analysis in the JSON format specified.`
 }
 
 /**
- * Mark a document's analysis FAILED and refund the submission charge —
- * the operator must not pay for undelivered analysis.
+ * Mark a document's analysis FAILED and refund the submission charge in ONE
+ * transaction. The conditional status update is the idempotency claim: only
+ * the transition into FAILED triggers a refund, so a retry (or a concurrent
+ * second failure) that finds the document already FAILED refunds nothing.
  */
 async function markFailedAndRefund(documentId: string, operatorId: string): Promise<void> {
   try {
-    await updateDocumentAnalysis(documentId, {
-      status: DocumentAnalysisStatus.FAILED,
-    })
+    await prisma.$transaction(async (tx) => {
+      const doc = await tx.document.findFirst({
+        where: { OR: [{ id: documentId }, { externalId: documentId }] },
+        select: { id: true },
+      })
+      if (!doc) {
+        return
+      }
 
-    const deduction = await prisma.creditTransaction.findFirst({
-      where: { operatorId, referenceType: 'document', referenceId: documentId, type: 'DEDUCTION' },
-    })
-    if (!deduction) {
-      return
-    }
+      // Atomic claim: transition to FAILED only from a non-terminal state.
+      const claimed = await tx.document.updateMany({
+        where: { id: doc.id, analysisStatus: { not: DocumentAnalysisStatus.FAILED } },
+        data: { analysisStatus: DocumentAnalysisStatus.FAILED },
+      })
+      if (claimed.count === 0) {
+        return // already FAILED — refund (if any) already issued
+      }
 
-    // Idempotency guard: never refund the same document twice.
-    const alreadyRefunded = await prisma.creditTransaction.findFirst({
-      where: { operatorId, referenceType: 'document', referenceId: documentId, type: 'REFUND' },
-    })
-    if (alreadyRefunded) {
-      return
-    }
+      const deduction = await tx.creditTransaction.findFirst({
+        where: { operatorId, referenceType: 'document', referenceId: doc.id, type: 'DEDUCTION' },
+      })
+      if (!deduction) {
+        return
+      }
 
-    await refundCredits(
-      operatorId,
-      Math.abs(deduction.amount),
-      'Document analysis failed',
-      'document',
-      documentId
-    )
-    logger.info({ documentId, credits: Math.abs(deduction.amount) }, 'Refunded failed analysis')
+      await addCreditsInTx(
+        tx,
+        operatorId,
+        Math.abs(deduction.amount),
+        'REFUND',
+        'Document analysis failed',
+        'document',
+        doc.id
+      )
+      logger.info({ documentId, credits: Math.abs(deduction.amount) }, 'Refunded failed analysis')
+    })
   } catch (error) {
     logger.error({ documentId, err: error }, 'Failed to mark/refund failed analysis')
   }

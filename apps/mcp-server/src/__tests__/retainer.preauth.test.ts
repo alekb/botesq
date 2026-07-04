@@ -11,6 +11,9 @@ const mocks = vi.hoisted(() => {
     },
     operator: { findUnique: vi.fn() },
     matter: { update: vi.fn() },
+    // acceptRetainer claims + activates inside one transaction; pass the mock
+    // through as the transaction client.
+    $transaction: (fn: (tx: unknown) => unknown) => fn(prisma),
   }
   return { prisma }
 })

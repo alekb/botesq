@@ -11,6 +11,31 @@ interface RateLimitEntry {
 const minuteWindows = new Map<string, RateLimitEntry>()
 const hourWindows = new Map<string, RateLimitEntry>()
 
+// Bounds memory against unauthenticated distinct-key floods (e.g. start_session
+// probing with random API keys). When a window map exceeds this, evict expired
+// entries; if still over, drop the soonest-to-reset entry to make room.
+const MAX_WINDOW_ENTRIES = 100_000
+
+function boundedSet(map: Map<string, RateLimitEntry>, key: string, entry: RateLimitEntry): void {
+  if (map.size >= MAX_WINDOW_ENTRIES && !map.has(key)) {
+    const now = Date.now()
+    let evictKey: string | undefined
+    let evictResetAt = Infinity
+    for (const [k, v] of map) {
+      if (now >= v.resetAt) {
+        map.delete(k) // expired — free directly
+      } else if (v.resetAt < evictResetAt) {
+        evictResetAt = v.resetAt
+        evictKey = k
+      }
+    }
+    if (map.size >= MAX_WINDOW_ENTRIES && evictKey !== undefined) {
+      map.delete(evictKey)
+    }
+  }
+  map.set(key, entry)
+}
+
 /**
  * Check rate limits for a session
  * Throws RateLimitError if limits exceeded
@@ -34,7 +59,7 @@ export function checkRateLimit(sessionToken: string): void {
       minuteWindows.set(minuteKey, { count: 1, resetAt: now + 60000 })
     }
   } else {
-    minuteWindows.set(minuteKey, { count: 1, resetAt: now + 60000 })
+    boundedSet(minuteWindows, minuteKey, { count: 1, resetAt: now + 60000 })
   }
 
   // Check hour window
@@ -53,7 +78,7 @@ export function checkRateLimit(sessionToken: string): void {
       hourWindows.set(hourKey, { count: 1, resetAt: now + 3600000 })
     }
   } else {
-    hourWindows.set(hourKey, { count: 1, resetAt: now + 3600000 })
+    boundedSet(hourWindows, hourKey, { count: 1, resetAt: now + 3600000 })
   }
 }
 

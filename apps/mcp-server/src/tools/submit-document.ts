@@ -1,15 +1,14 @@
 import { z } from 'zod'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
-import { submitDocument } from '../services/document.service.js'
+import { prepareDocumentUpload } from '../services/document.service.js'
 import { queueDocumentAnalysis } from '../services/document-analysis.service.js'
-import { deductCredits } from '../services/credit.service.js'
+import { deductCreditsInTx } from '../services/credit.service.js'
 import { MAX_FILE_SIZE } from '../services/storage.service.js'
 import { PaymentError } from '../types.js'
 import { prisma } from '@botesq/database'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 // Pricing: base + per page
 const PRICING = {
@@ -108,8 +107,10 @@ export async function handleSubmitDocument(input: SubmitDocumentInput): Promise<
     throw new PaymentError('INSUFFICIENT_CREDITS', 'Not enough credits for document submission')
   }
 
-  // Submit the document
-  const document = await submitDocument({
+  // Upload to storage first (outside any transaction — an orphaned blob on
+  // rollback is acceptable), then commit the document row and its charge in ONE
+  // transaction so a crash can't leave a charged-but-missing or unpaid document.
+  const { data } = await prepareDocumentUpload({
     operatorId: operator.id,
     matterId: input.matter_id,
     filename: input.filename,
@@ -119,32 +120,18 @@ export async function handleSubmitDocument(input: SubmitDocumentInput): Promise<
     notes: input.notes,
   })
 
-  // Deduct credits (atomic); if the balance is no longer sufficient,
-  // withdraw the stored document so there's no charge and no service.
-  let newBalance: number
-  try {
-    const result = await deductCredits(
+  const { document, newBalance } = await prisma.$transaction(async (tx) => {
+    const document = await tx.document.create({ data })
+    const { newBalance } = await deductCreditsInTx(
+      tx,
       operator.id,
       creditsUsed,
       `Document submission: ${document.externalId}`,
       'document',
       document.id
     )
-    newBalance = result.newBalance
-  } catch (error) {
-    await prisma.document
-      .update({
-        where: { id: document.id },
-        data: { status: 'DELETED', deletedAt: new Date() },
-      })
-      .catch((cleanupError) => {
-        logger.error(
-          { err: cleanupError, documentId: document.externalId },
-          'Failed to withdraw unpaid document'
-        )
-      })
-    throw error
-  }
+    return { document, newBalance }
+  })
 
   // Queue for analysis (fire-and-forget)
   queueDocumentAnalysis({
@@ -173,7 +160,8 @@ export async function handleSubmitDocument(input: SubmitDocumentInput): Promise<
     success: true,
     data: {
       document_id: document.externalId,
-      matter_id: document.matterId ?? undefined,
+      // Echo the caller's matter reference (document.matterId is the internal FK)
+      matter_id: input.matter_id,
       filename: document.filename,
       file_size: document.fileSize,
       analysis_status: document.analysisStatus,

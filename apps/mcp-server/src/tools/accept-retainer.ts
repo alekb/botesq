@@ -3,9 +3,8 @@ import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { acceptRetainer, getRetainer, generateSigningUrl } from '../services/retainer.service.js'
 import { ApiError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 export const acceptRetainerSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),
@@ -29,9 +28,7 @@ export interface AcceptRetainerOutput {
   next_steps: string[]
 }
 
-export async function handleAcceptRetainer(
-  input: AcceptRetainerInput
-): Promise<{
+export async function handleAcceptRetainer(input: AcceptRetainerInput): Promise<{
   success: boolean
   data?: AcceptRetainerOutput
   error?: { code: string; message: string }

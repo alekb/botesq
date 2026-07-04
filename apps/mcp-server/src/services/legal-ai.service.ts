@@ -1,7 +1,6 @@
 import { chatCompletion, type ChatMessage, type LLMResponse } from './llm.service.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 const LEGAL_SYSTEM_PROMPT = `You are BotEsq's internal legal AI assistant. You provide accurate, well-reasoned legal information to assist licensed attorneys and their clients.
 

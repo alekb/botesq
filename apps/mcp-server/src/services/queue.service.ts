@@ -1,8 +1,11 @@
-import { prisma, type ConsultationComplexity } from '@botesq/database'
+import { prisma, type ConsultationComplexity, type Prisma } from '@botesq/database'
 import { nanoid } from 'nanoid'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
+
+// Accepts either the base client or a transaction client, so the queue insert
+// can share a transaction with the credit deduction.
+type DbClient = typeof prisma | Prisma.TransactionClient
 
 /**
  * Generate a consultation external ID
@@ -30,17 +33,20 @@ export interface QueuedConsultation {
 /**
  * Queue a question for human attorney review
  */
-export async function queueForHumanReview(params: {
-  operatorId: string
-  matterId?: string
-  question: string
-  context?: string
-  jurisdiction?: string
-  aiDraft?: string
-  aiConfidence?: number
-  complexity: 'simple' | 'moderate' | 'complex'
-  creditsCharged?: number
-}): Promise<QueuedConsultation> {
+export async function queueForHumanReview(
+  params: {
+    operatorId: string
+    matterId?: string
+    question: string
+    context?: string
+    jurisdiction?: string
+    aiDraft?: string
+    aiConfidence?: number
+    complexity: 'simple' | 'moderate' | 'complex'
+    creditsCharged?: number
+  },
+  db: DbClient = prisma
+): Promise<QueuedConsultation> {
   const {
     operatorId,
     matterId,
@@ -58,7 +64,7 @@ export async function queueForHumanReview(params: {
   const slaDeadline = new Date(Date.now() + slaHours * 60 * 60 * 1000)
 
   // Estimate wait time based on queue depth
-  const queueDepth = await prisma.consultation.count({
+  const queueDepth = await db.consultation.count({
     where: {
       status: { in: ['QUEUED', 'AI_PROCESSING', 'PENDING_REVIEW'] },
     },
@@ -67,7 +73,7 @@ export async function queueForHumanReview(params: {
   // Rough estimate: 15 min per item in queue, minimum 5 minutes
   const estimatedWaitMinutes = Math.max(5, Math.min(queueDepth * 15, slaHours * 60))
 
-  const consultation = await prisma.consultation.create({
+  const consultation = await db.consultation.create({
     data: {
       externalId: generateConsultationId(),
       operatorId,

@@ -11,20 +11,22 @@
 ## Active Tasks
 
 ### Phase 7: Web Application Foundation
+
 - [ ] Review Phase 7 requirements in IMPLEMENTATION_PLAN.md
 - [ ] Set up Next.js with full design system tokens
 - [ ] Create UI component primitives
 - [ ] Build marketing page foundation
 
 ### Security Implementation (Cross-Phase)
-- [ ] Implement Argon2id password hashing
-- [ ] Implement API key generation with SHA-256
-- [ ] Add row-level security checks to all queries
-- [ ] Implement Stripe webhook signature validation
-- [ ] Add file upload validation (magic bytes, size limits)
-- [ ] Configure S3 bucket security (private, encrypted)
+
+- [ ] Implement Argon2id password hashing (no password auth exists yet — Phase 7+)
+- [x] Implement API key generation with SHA-256
+- [x] Add row-level security checks to all queries (operator scoping verified in 2026-07-04 review)
+- [x] Implement Stripe webhook signature validation (plus idempotent claim + amount reconciliation)
+- [x] Add file upload validation (magic bytes, size limits)
+- [ ] Configure S3 bucket security (private, encrypted) — infra task
 - [ ] Add virus scanning for uploads (ClamAV)
-- [ ] Implement provider webhook signature validation
+- [ ] Implement provider webhook signature validation (Phase FEAT-016)
 
 ---
 
@@ -35,6 +37,25 @@ _None_
 ---
 
 ## Completed
+
+### Security Remediation — Code Review Findings (2026-07-04)
+
+Branch `fix/code-review-2026-07-04`. Full review in `docs/CODE_REVIEW_2026-07-04.md`; all 13 findings fixed, adversarially verified by a 13-agent pass, then re-reviewed.
+
+- [x] Single atomic credit deduction (conditional decrement + row lock) replacing five race-prone implementations; DB CHECK constraint `credit_balance >= 0`
+- [x] Stripe webhook: atomic claim + credit in one transaction, amount reconciliation, credits from own payment record
+- [x] Fixed guaranteed crash: `'moderate'` mapped to `STANDARD` (ConsultationComplexity has no MODERATE)
+- [x] Retainer pre-auth: token always required for agent acceptance, sha256-hashed at rest, constant-time compare, race-safe claim, typed errors
+- [x] Document analysis wired (fire-and-forget) with refund on failure; magic-byte + pre-decode size validation
+- [x] ask_legal_question: LLM-only catch scope, instant answers persisted + charged in one transaction, creditsCharged set at creation
+- [x] Rate limiting keyed by operator (not session token); start_session throttled per presented-key hash
+- [x] Log redaction (credentials + privileged content), pino `err` key serialization, generic INTERNAL_ERROR to clients
+- [x] Session `endedAt` enforced in auth; dead `endSession` removed
+- [x] Unified env validation (`@botesq/shared` validateEnv consumed by mcp-server config; prod-required secrets)
+- [x] `besq_live_` API key prefix; `Payment.amountCents` rename; instant-answer audit trail
+- [x] 52 unit tests incl. atomic-deduction semantics, webhook idempotent claim, pre-auth gate, magic bytes
+- Deferred to user: delete/rotate `admin-totp-qr.png` (2FA secret in Dropbox-synced folder; now gitignored)
+- Known gap: no live-DB concurrency integration tests (no postgres in dev env)
 
 ### Phase 6: Consultation System (2026-02-03)
 

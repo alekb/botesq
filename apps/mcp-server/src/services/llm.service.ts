@@ -1,9 +1,8 @@
 import OpenAI from 'openai'
 import { config } from '../config.js'
 import { ApiError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: config.env === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 let openaiClient: OpenAI | null = null
 
@@ -54,12 +53,7 @@ export async function chatCompletion(
 ): Promise<LLMResponse> {
   const client = getOpenAIClient()
 
-  const {
-    model = 'gpt-4-turbo',
-    temperature = 0.3,
-    maxTokens = 2048,
-    timeoutMs = 30000,
-  } = options
+  const { model = 'gpt-4-turbo', temperature = 0.3, maxTokens = 2048, timeoutMs = 30000 } = options
 
   logger.debug({ model, messageCount: messages.length }, 'Sending chat completion request')
 
@@ -104,7 +98,12 @@ export async function chatCompletion(
       finishReason: choice.finish_reason ?? 'unknown',
     }
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
+    // An aborted request (our timeout) surfaces as APIUserAbortError in the
+    // openai SDK, not a DOM AbortError.
+    if (
+      error instanceof OpenAI.APIUserAbortError ||
+      (error instanceof Error && error.name === 'AbortError')
+    ) {
       throw new ApiError('LLM_TIMEOUT', 'LLM request timed out', 504)
     }
 

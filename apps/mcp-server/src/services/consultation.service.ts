@@ -1,9 +1,12 @@
-import { prisma, ConsultationComplexity, ConsultationStatus } from '@botesq/database'
+import { prisma, ConsultationComplexity, ConsultationStatus, type Prisma } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import { ApiError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
+
+// Accepts either the base client or a transaction client, so callers can
+// compose the create with a credit deduction in one atomic transaction.
+type DbClient = typeof prisma | Prisma.TransactionClient
 
 // Pricing for consultations
 export const CONSULTATION_PRICING = {
@@ -52,14 +55,15 @@ export interface ConsultationResult {
  * Create a new async consultation request
  */
 export async function createConsultation(
-  params: CreateConsultationParams
+  params: CreateConsultationParams,
+  db: DbClient = prisma
 ): Promise<{ consultation: ConsultationResult & { slaDeadline: Date }; creditsUsed: number }> {
   const { operatorId, matterId, question, context, jurisdiction, urgency } = params
 
   // Validate matter exists and belongs to operator if provided
   let internalMatterId: string | undefined
   if (matterId) {
-    const matter = await prisma.matter.findFirst({
+    const matter = await db.matter.findFirst({
       where: {
         OR: [{ id: matterId }, { externalId: matterId }],
         operatorId,
@@ -81,7 +85,7 @@ export async function createConsultation(
   const slaDeadline = new Date(Date.now() + slaHours * 60 * 60 * 1000)
 
   // Estimate wait time based on queue depth and urgency
-  const queueDepth = await prisma.consultation.count({
+  const queueDepth = await db.consultation.count({
     where: {
       status: { in: ['QUEUED', 'AI_PROCESSING', 'PENDING_REVIEW'] },
     },
@@ -94,7 +98,7 @@ export async function createConsultation(
   // Determine complexity (default to STANDARD for manual requests)
   const complexity: ConsultationComplexity = urgency === 'urgent' ? 'URGENT' : 'STANDARD'
 
-  const consultation = await prisma.consultation.create({
+  const consultation = await db.consultation.create({
     data: {
       externalId: generateConsultationId(),
       operatorId,

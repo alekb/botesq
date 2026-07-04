@@ -9,6 +9,8 @@ const REDACTED_KEYS = new Set([
   'context',
   'description',
   'notes',
+  'title',
+  'filename',
 ])
 
 /**

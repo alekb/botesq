@@ -2,9 +2,8 @@ import { createHash, timingSafeEqual } from 'crypto'
 import { prisma, RetainerStatus, FeeArrangement, MatterStatus } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import { ApiError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 /**
  * Generate a retainer external ID
@@ -83,99 +82,89 @@ export async function createRetainer(params: {
 }): Promise<RetainerWithMatter> {
   const { operatorId, matterId, scope, feeArrangement, estimatedFee } = params
 
-  // Get the matter to link
-  const matter = await prisma.matter.findFirst({
-    where: {
-      OR: [{ id: matterId }, { externalId: matterId }],
-      operatorId,
+  const matterInclude = {
+    matter: {
+      select: { id: true, externalId: true, type: true, title: true, status: true },
     },
-  })
-
-  if (!matter) {
-    throw new ApiError('MATTER_NOT_FOUND', 'Matter not found', 404)
-  }
-
-  // Check if matter already has a retainer
-  if (matter.retainerId) {
-    const existing = await prisma.retainer.findUnique({
-      where: { id: matter.retainerId },
-      include: {
-        matter: {
-          select: {
-            id: true,
-            externalId: true,
-            type: true,
-            title: true,
-            status: true,
-          },
-        },
-      },
-    })
-    if (existing) {
-      return existing
-    }
-  }
+  } as const
 
   // Create retainer with 30-day expiration
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 30)
 
-  const retainer = await prisma.retainer.create({
-    data: {
-      externalId: generateRetainerId(),
-      operatorId,
-      scope,
-      feeArrangement: feeArrangement ?? FeeArrangement.FLAT_FEE,
-      estimatedFee,
-      engagementTerms: ENGAGEMENT_TERMS_TEMPLATE,
-      status: RetainerStatus.PENDING,
-      expiresAt,
-    },
-    include: {
-      matter: {
-        select: {
-          id: true,
-          externalId: true,
-          type: true,
-          title: true,
-          status: true,
-        },
+  // The whole check-create-link runs in one transaction with a conditional
+  // link, so two concurrent calls for the same matter can't both attach a
+  // retainer: the loser's create is rolled back and the winner's is returned.
+  const result = await prisma.$transaction(async (tx) => {
+    const matter = await tx.matter.findFirst({
+      where: {
+        OR: [{ id: matterId }, { externalId: matterId }],
+        operatorId,
       },
-    },
-  })
+      select: { id: true, externalId: true, retainerId: true },
+    })
 
-  // Link retainer to matter
-  await prisma.matter.update({
-    where: { id: matter.id },
-    data: { retainerId: retainer.id },
-  })
+    if (!matter) {
+      throw new ApiError('MATTER_NOT_FOUND', 'Matter not found', 404)
+    }
 
-  logger.info(
-    {
-      retainerId: retainer.externalId,
-      matterId: matter.externalId,
-      operatorId,
-    },
-    'Retainer created'
-  )
+    // Already has a retainer — return it, create nothing.
+    if (matter.retainerId) {
+      const existing = await tx.retainer.findUnique({
+        where: { id: matter.retainerId },
+        include: matterInclude,
+      })
+      if (existing) {
+        return { retainer: existing, created: false }
+      }
+    }
 
-  // Fetch updated retainer with matter
-  const updated = await prisma.retainer.findUnique({
-    where: { id: retainer.id },
-    include: {
-      matter: {
-        select: {
-          id: true,
-          externalId: true,
-          type: true,
-          title: true,
-          status: true,
-        },
+    const retainer = await tx.retainer.create({
+      data: {
+        externalId: generateRetainerId(),
+        operatorId,
+        scope,
+        feeArrangement: feeArrangement ?? FeeArrangement.FLAT_FEE,
+        estimatedFee,
+        engagementTerms: ENGAGEMENT_TERMS_TEMPLATE,
+        status: RetainerStatus.PENDING,
+        expiresAt,
       },
-    },
+    })
+
+    // Link only if the matter is still unlinked; the conditional update takes
+    // the row lock so a concurrent create loses here.
+    const linked = await tx.matter.updateMany({
+      where: { id: matter.id, retainerId: null },
+      data: { retainerId: retainer.id },
+    })
+
+    if (linked.count === 0) {
+      // Someone linked first — return the winner and drop our orphan.
+      const current = await tx.matter.findUnique({
+        where: { id: matter.id },
+        select: { retainerId: true },
+      })
+      await tx.retainer.delete({ where: { id: retainer.id } })
+      const winner = await tx.retainer.findUniqueOrThrow({
+        where: { id: current!.retainerId! },
+        include: matterInclude,
+      })
+      return { retainer: winner, created: false }
+    }
+
+    const withMatter = await tx.retainer.findUniqueOrThrow({
+      where: { id: retainer.id },
+      include: matterInclude,
+    })
+    return { retainer: withMatter, created: true }
   })
 
-  return updated!
+  if (result.created) {
+    logger.info({ retainerId: result.retainer.externalId, operatorId }, 'Retainer created')
+  }
+
+  return result.retainer
 }
 
 /**
@@ -296,60 +285,67 @@ export async function acceptRetainer(params: {
     }
   }
 
-  // Claim the retainer: the conditional update guarantees exactly one
-  // concurrent acceptance wins.
-  const claimed = await prisma.retainer.updateMany({
-    where: { id: retainer.id, status: RetainerStatus.PENDING },
-    data: {
-      status: RetainerStatus.ACCEPTED,
-      acceptedAt: new Date(),
-      acceptedBy,
-      signatureMethod,
-      signatureIp,
+  const matterInclude = {
+    matter: {
+      select: { id: true, externalId: true, type: true, title: true, status: true },
     },
-  })
+  } as const
 
-  if (claimed.count === 0) {
-    const current = await prisma.retainer.findUnique({
-      where: { id: retainer.id },
-      select: { status: true },
-    })
-    throw new ApiError(
-      'RETAINER_NOT_PENDING',
-      `Retainer is already ${(current?.status ?? retainer.status).toLowerCase()}`,
-      400
-    )
-  }
-
-  const updatedRetainer = await prisma.retainer.findUniqueOrThrow({
-    where: { id: retainer.id },
-    include: {
-      matter: {
-        select: {
-          id: true,
-          externalId: true,
-          type: true,
-          title: true,
-          status: true,
-        },
+  // Claim the retainer AND activate its matter in one transaction: the
+  // conditional update guarantees exactly one concurrent acceptance wins, and
+  // a crash can't leave a retainer ACCEPTED with its matter still pending.
+  const { finalRetainer, matterActivated } = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.retainer.updateMany({
+      where: { id: retainer.id, status: RetainerStatus.PENDING },
+      data: {
+        status: RetainerStatus.ACCEPTED,
+        acceptedAt: new Date(),
+        acceptedBy,
+        signatureMethod,
+        signatureIp,
       },
-    },
-  })
-
-  // Activate the matter if it exists and is pending retainer
-  let matterActivated = false
-  if (updatedRetainer.matter && updatedRetainer.matter.status === MatterStatus.PENDING_RETAINER) {
-    await prisma.matter.update({
-      where: { id: updatedRetainer.matter.id },
-      data: { status: MatterStatus.ACTIVE },
     })
-    matterActivated = true
-  }
+
+    if (claimed.count === 0) {
+      const current = await tx.retainer.findUnique({
+        where: { id: retainer.id },
+        select: { status: true },
+      })
+      throw new ApiError(
+        'RETAINER_NOT_PENDING',
+        `Retainer is already ${(current?.status ?? retainer.status).toLowerCase()}`,
+        400
+      )
+    }
+
+    const claimedRetainer = await tx.retainer.findUniqueOrThrow({
+      where: { id: retainer.id },
+      include: matterInclude,
+    })
+
+    // Activate the matter if it exists and is pending retainer
+    let matterActivated = false
+    if (claimedRetainer.matter && claimedRetainer.matter.status === MatterStatus.PENDING_RETAINER) {
+      await tx.matter.update({
+        where: { id: claimedRetainer.matter.id },
+        data: { status: MatterStatus.ACTIVE },
+      })
+      matterActivated = true
+    }
+
+    // Re-fetch so the returned matter reflects the activation
+    const finalRetainer = await tx.retainer.findUniqueOrThrow({
+      where: { id: retainer.id },
+      include: matterInclude,
+    })
+
+    return { finalRetainer, matterActivated }
+  })
 
   logger.info(
     {
-      retainerId: updatedRetainer.externalId,
-      matterId: updatedRetainer.matter?.externalId,
+      retainerId: finalRetainer.externalId,
+      matterId: finalRetainer.matter?.externalId,
       acceptedBy,
       signatureMethod,
       matterActivated,
@@ -357,24 +353,8 @@ export async function acceptRetainer(params: {
     'Retainer accepted'
   )
 
-  // Fetch the final state
-  const finalRetainer = await prisma.retainer.findUnique({
-    where: { id: retainer.id },
-    include: {
-      matter: {
-        select: {
-          id: true,
-          externalId: true,
-          type: true,
-          title: true,
-          status: true,
-        },
-      },
-    },
-  })
-
   return {
-    retainer: finalRetainer!,
+    retainer: finalRetainer,
     matterActivated,
   }
 }

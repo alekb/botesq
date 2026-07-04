@@ -9,12 +9,8 @@ import {
 import { tools, executeTool } from './tools/index.js'
 import { prompts, buildPrompt } from './prompts/index.js'
 import { redactArgs } from './redact.js'
+import { logger } from './logger.js'
 import { ApiError, AuthError, RateLimitError } from './types.js'
-import pino from 'pino'
-
-const logger = pino({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-})
 
 export function createServer() {
   const server = new Server(

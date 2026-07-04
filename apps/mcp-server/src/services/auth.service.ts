@@ -70,7 +70,7 @@ export async function validateApiKey(apiKey: string) {
  */
 export async function authenticateSession(token: string): Promise<AuthenticatedSession> {
   const session = await prisma.session.findUnique({
-    where: { token },
+    where: { tokenHash: hashApiKey(token) },
     include: {
       apiKey: {
         include: { operator: true },
@@ -93,6 +93,10 @@ export async function authenticateSession(token: string): Promise<AuthenticatedS
 
   if (session.apiKey.status !== 'ACTIVE') {
     throw new AuthError('API_KEY_REVOKED', 'API key has been revoked')
+  }
+
+  if (session.apiKey.expiresAt && session.apiKey.expiresAt < new Date()) {
+    throw new AuthError('API_KEY_EXPIRED', 'API key has expired')
   }
 
   if (session.apiKey.operator.status !== 'ACTIVE') {

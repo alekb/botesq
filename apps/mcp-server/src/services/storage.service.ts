@@ -8,9 +8,8 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { config } from '../config.js'
 import { ApiError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 let s3Client: S3Client | null = null
 
@@ -94,7 +93,10 @@ export async function uploadFile(params: {
 /**
  * Get a presigned URL for downloading a file
  */
-export async function getDownloadUrl(key: string, expiresIn = 3600): Promise<string> {
+export async function getDownloadUrl(
+  key: string,
+  expiresIn = config.s3PresignedUrlExpiry
+): Promise<string> {
   const bucket = getBucket()
   const client = getS3Client()
 
@@ -118,7 +120,7 @@ export async function getUploadUrl(params: {
   contentType: string
   expiresIn?: number
 }): Promise<string> {
-  const { key, contentType, expiresIn = 3600 } = params
+  const { key, contentType, expiresIn = config.s3PresignedUrlExpiry } = params
   const bucket = getBucket()
   const client = getS3Client()
 

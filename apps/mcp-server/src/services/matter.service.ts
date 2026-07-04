@@ -1,8 +1,7 @@
-import { prisma, MatterType, MatterStatus, MatterUrgency } from '@botesq/database'
+import { prisma, MatterType, MatterStatus, MatterUrgency, type Prisma } from '@botesq/database'
 import { nanoid } from 'nanoid'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 /**
  * Generate a matter external ID
@@ -50,14 +49,17 @@ export interface MatterWithCounts {
 /**
  * Create a new matter
  */
-export async function createMatter(params: CreateMatterParams): Promise<{
+export async function createMatter(
+  params: CreateMatterParams,
+  db: typeof prisma | Prisma.TransactionClient = prisma
+): Promise<{
   matter: MatterWithCounts
   retainerRequired: boolean
 }> {
   const { operatorId, agentId, type, title, description, urgency } = params
 
   // Create the matter
-  const matter = await prisma.matter.create({
+  const matter = await db.matter.create({
     data: {
       externalId: generateMatterId(),
       operatorId,

@@ -7,6 +7,7 @@ export const config = {
   env: env.NODE_ENV,
   port: env.MCP_PORT,
   databaseUrl: env.DATABASE_URL,
+  logLevel: env.LOG_LEVEL,
 
   session: {
     ttlHours: env.SESSION_TTL_HOURS,
@@ -34,6 +35,8 @@ export const config = {
     successUrl: env.STRIPE_SUCCESS_URL,
     cancelUrl: env.STRIPE_CANCEL_URL,
   },
+
+  s3PresignedUrlExpiry: env.S3_PRESIGNED_URL_EXPIRY,
 } as const
 
 export type Config = typeof config

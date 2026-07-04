@@ -3,11 +3,10 @@ import { prisma } from '@botesq/database'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { createConsultation, CONSULTATION_PRICING } from '../services/consultation.service.js'
-import { deductCredits } from '../services/credit.service.js'
+import { deductCreditsInTx } from '../services/credit.service.js'
 import { PaymentError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 export const requestConsultationSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),
@@ -52,42 +51,33 @@ export async function handleRequestConsultation(input: RequestConsultationInput)
     )
   }
 
-  // Create consultation
-  const { consultation, creditsUsed } = await createConsultation({
-    operatorId: operator.id,
-    matterId: input.matter_id,
-    question: input.question,
-    context: input.context,
-    jurisdiction: input.jurisdiction,
-    urgency: input.urgency,
-  })
-
-  // Deduct credits (atomic); on failure withdraw the request so no attorney
-  // works unpaid.
-  let newBalance: number
-  try {
-    const result = await deductCredits(
-      operator.id,
-      creditsUsed,
-      `Consultation request: ${consultation.externalId}`,
-      'consultation',
-      consultation.id
+  // Create the consultation and charge for it in ONE transaction, so a crash
+  // or insufficient balance can never leave a queued request without a matching
+  // charge (an attorney working unpaid) or a charge without a request.
+  const { consultation, creditsUsed, newBalance } = await prisma.$transaction(async (tx) => {
+    const created = await createConsultation(
+      {
+        operatorId: operator.id,
+        matterId: input.matter_id,
+        question: input.question,
+        context: input.context,
+        jurisdiction: input.jurisdiction,
+        urgency: input.urgency,
+      },
+      tx
     )
-    newBalance = result.newBalance
-  } catch (error) {
-    await prisma.consultation
-      .update({
-        where: { id: consultation.id },
-        data: { status: 'FAILED', creditsCharged: 0 },
-      })
-      .catch((cleanupError) => {
-        logger.error(
-          { err: cleanupError, consultationId: consultation.externalId },
-          'Failed to withdraw unpaid consultation'
-        )
-      })
-    throw error
-  }
+
+    const { newBalance } = await deductCreditsInTx(
+      tx,
+      operator.id,
+      created.creditsUsed,
+      `Consultation request: ${created.consultation.externalId}`,
+      'consultation',
+      created.consultation.id
+    )
+
+    return { consultation: created.consultation, creditsUsed: created.creditsUsed, newBalance }
+  })
 
   logger.info(
     {

@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 import { prisma } from '@botesq/database'
 import { config } from '../config.js'
-import { validateApiKey } from './auth.service.js'
+import { validateApiKey, hashApiKey } from './auth.service.js'
 import { getRateLimitStatus } from './rate-limit.service.js'
 import type { StartSessionInput, StartSessionOutput, GetSessionInfoOutput } from '../types.js'
 
@@ -40,13 +40,14 @@ export async function startSession(input: StartSessionInput): Promise<StartSessi
     })
   }
 
-  // Create session
-  const token = generateSessionToken()
+  // Create session. The raw token is returned to the client once; only its
+  // hash is stored, mirroring API-key handling.
+  const rawToken = generateSessionToken()
   const expiresAt = new Date(Date.now() + config.session.ttlHours * 60 * 60 * 1000)
 
   const session = await prisma.session.create({
     data: {
-      token,
+      tokenHash: hashApiKey(rawToken),
       apiKeyId: apiKey.id,
       agentId: agent?.id,
       expiresAt,
@@ -54,7 +55,7 @@ export async function startSession(input: StartSessionInput): Promise<StartSessi
   })
 
   return {
-    session_token: session.token,
+    session_token: rawToken,
     expires_at: session.expiresAt.toISOString(),
     operator: {
       id: operator.id,

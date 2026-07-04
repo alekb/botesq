@@ -10,11 +10,10 @@ import {
 } from '../services/legal-ai.service.js'
 import { isLLMAvailable } from '../services/llm.service.js'
 import { queueForHumanReview, COMPLEXITY_TO_ENUM } from '../services/queue.service.js'
-import { deductCredits, deductCreditsInTx } from '../services/credit.service.js'
+import { deductCreditsInTx } from '../services/credit.service.js'
 import { ApiError, PaymentError } from '../types.js'
-import pino from 'pino'
 
-const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
+import { logger } from '../logger.js'
 
 // Pricing based on complexity
 const PRICING = {
@@ -150,39 +149,35 @@ export async function handleAskLegalQuestion(input: AskLegalQuestionInput): Prom
     const complexity = legalResponse?.complexity ?? 'moderate'
     const creditsUsed = PRICING[complexity]
 
-    const queued = await queueForHumanReview({
-      operatorId: operator.id,
-      question: input.question,
-      context: input.context,
-      jurisdiction: input.jurisdiction,
-      aiDraft: legalResponse?.answer,
-      aiConfidence: legalResponse?.confidenceScore,
-      complexity,
-      creditsCharged: creditsUsed,
-    })
+    // Queue the request and charge for it in ONE transaction so a crash or
+    // insufficient balance can't leave an attorney a request with no matching
+    // charge, or a charge with no queued request.
+    const { queued, newBalance } = await prisma.$transaction(async (tx) => {
+      const q = await queueForHumanReview(
+        {
+          operatorId: operator.id,
+          question: input.question,
+          context: input.context,
+          jurisdiction: input.jurisdiction,
+          aiDraft: legalResponse?.answer,
+          aiConfidence: legalResponse?.confidenceScore,
+          complexity,
+          creditsCharged: creditsUsed,
+        },
+        tx
+      )
 
-    let newBalance: number
-    try {
-      const result = await deductCredits(
+      const { newBalance } = await deductCreditsInTx(
+        tx,
         operator.id,
         creditsUsed,
         'Legal Q&A - consultation',
         'consultation',
-        queued.id
+        q.id
       )
-      newBalance = result.newBalance
-    } catch (error) {
-      // Not charged — withdraw the queued request so no attorney works unpaid.
-      await prisma.consultation
-        .update({ where: { id: queued.id }, data: { status: 'FAILED', creditsCharged: 0 } })
-        .catch((cleanupError) => {
-          logger.error(
-            { err: cleanupError, consultationId: queued.externalId },
-            'Failed to withdraw unpaid consultation'
-          )
-        })
-      throw error
-    }
+
+      return { queued: q, newBalance }
+    })
 
     response = {
       answer_id: queued.externalId,

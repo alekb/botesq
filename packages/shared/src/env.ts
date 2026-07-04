@@ -28,10 +28,17 @@ const envSchema = z.object({
       'DATABASE_URL must be a valid PostgreSQL connection string'
     ),
 
-  // Authentication
+  // Authentication (SESSION_SECRET and TOTP_ENCRYPTION_KEY are consumed by the
+  // web app / 2FA flow shipping in a later phase; validated here so config
+  // drift surfaces at startup rather than at first use).
   SESSION_SECRET: z.preprocess(
     emptyToUndefined,
     z.string().min(32, 'SESSION_SECRET must be at least 32 characters').optional()
+  ),
+
+  TOTP_ENCRYPTION_KEY: z.preprocess(
+    emptyToUndefined,
+    z.string().min(32, 'TOTP_ENCRYPTION_KEY must be at least 32 characters').optional()
   ),
 
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(24),
@@ -144,6 +151,10 @@ export function validateEnv(): Env {
 
     if (result.data.STRIPE_SECRET_KEY?.startsWith('sk_test_')) {
       throw new Error('Using Stripe TEST key in production!')
+    }
+
+    if (result.data.OPENAI_API_KEY === 'mock') {
+      throw new Error('Using mock OPENAI_API_KEY in production!')
     }
   }
 

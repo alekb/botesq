@@ -56,11 +56,22 @@ export async function getOrCreateStripeCustomer(operatorId: string): Promise<str
     },
   })
 
-  // Save customer ID
-  await prisma.operator.update({
-    where: { id: operatorId },
+  // Claim the id only if still unset — two concurrent first purchases both
+  // create a Stripe customer, but only one is persisted; the loser deletes its
+  // duplicate and reuses the winner's.
+  const claimed = await prisma.operator.updateMany({
+    where: { id: operatorId, stripeCustomerId: null },
     data: { stripeCustomerId: customer.id },
   })
+
+  if (claimed.count === 0) {
+    const winner = await prisma.operator.findUniqueOrThrow({
+      where: { id: operatorId },
+      select: { stripeCustomerId: true },
+    })
+    await stripe.customers.del(customer.id).catch(() => undefined)
+    return winner.stripeCustomerId!
+  }
 
   return customer.id
 }
