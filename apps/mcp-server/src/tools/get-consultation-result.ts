@@ -25,13 +25,17 @@ export interface GetConsultationResultOutput {
 
 export async function handleGetConsultationResult(
   input: GetConsultationResultInput
-): Promise<{ success: boolean; data?: GetConsultationResultOutput; error?: { code: string; message: string } }> {
+): Promise<{
+  success: boolean
+  data?: GetConsultationResultOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   // Get consultation
   const consultation = await getConsultation(input.consultation_id, operator.id)

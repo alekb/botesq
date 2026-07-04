@@ -21,7 +21,7 @@ export async function handleCheckCredits(
   const session = await authenticateSession(input.session_token)
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   const operator = session.apiKey.operator
 

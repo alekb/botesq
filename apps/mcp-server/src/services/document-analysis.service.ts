@@ -174,26 +174,24 @@ Provide your analysis in the JSON format specified.`
 }
 
 /**
- * Queue document for analysis (async)
+ * Queue document for analysis (async, fire-and-forget)
  */
-export async function queueDocumentAnalysis(params: {
+export function queueDocumentAnalysis(params: {
   documentId: string
   operatorId: string
-}): Promise<void> {
-  const { documentId, operatorId } = params
+  content: string
+  filename: string
+  documentType?: string
+}): void {
+  // TODO: replace with a real job queue. Binary formats (PDF/DOCX) need text
+  // extraction before the LLM sees them — until then the analyzer receives
+  // bytes decoded as UTF-8 and its low-confidence fallback flags the result
+  // for attorney review.
+  logger.info({ documentId: params.documentId }, 'Document queued for analysis')
 
-  const document = await getDocument(documentId, operatorId)
-  if (!document) {
-    logger.warn({ documentId }, 'Document not found for analysis')
-    return
-  }
-
-  // In a production system, this would queue to a job processor
-  // For now, we'll mark it as pending
-  logger.info({ documentId }, 'Document queued for analysis')
-
-  // Note: Actual analysis would be triggered by a background worker
-  // that reads document content from S3 and calls analyzeDocument()
+  void analyzeDocument(params).catch((error) => {
+    logger.error({ documentId: params.documentId, error }, 'Async document analysis failed')
+  })
 }
 
 /**

@@ -1,70 +1,38 @@
-import { z } from 'zod'
+import { validateEnv } from '@botesq/shared'
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().default('3001'),
-  DATABASE_URL: z.string(),
-
-  // Session
-  SESSION_TTL_HOURS: z.string().default('24'),
-
-  // Rate limiting
-  RATE_LIMIT_REQUESTS_PER_MINUTE: z.string().default('10'),
-  RATE_LIMIT_REQUESTS_PER_HOUR: z.string().default('100'),
-
-  // OpenAI (optional for now)
-  OPENAI_API_KEY: z.string().optional(),
-
-  // AWS S3 (optional for now)
-  AWS_REGION: z.string().default('us-east-1'),
-  AWS_ACCESS_KEY_ID: z.string().optional(),
-  AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  AWS_S3_BUCKET: z.string().optional(),
-
-  // Stripe (optional for now)
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  STRIPE_SUCCESS_URL: z.string().default('https://botesq.io/portal/billing?success=true'),
-  STRIPE_CANCEL_URL: z.string().default('https://botesq.io/portal/billing?canceled=true'),
-})
-
-const parsed = envSchema.safeParse(process.env)
-
-if (!parsed.success) {
-  console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors)
-  process.exit(1)
-}
+// Fails fast at import time with a clear report of what's missing/invalid.
+const env = validateEnv()
 
 export const config = {
-  env: parsed.data.NODE_ENV,
-  port: parseInt(parsed.data.PORT, 10),
-  databaseUrl: parsed.data.DATABASE_URL,
+  env: env.NODE_ENV,
+  port: env.MCP_PORT,
+  databaseUrl: env.DATABASE_URL,
 
   session: {
-    ttlHours: parseInt(parsed.data.SESSION_TTL_HOURS, 10),
+    ttlHours: env.SESSION_TTL_HOURS,
   },
 
   rateLimit: {
-    requestsPerMinute: parseInt(parsed.data.RATE_LIMIT_REQUESTS_PER_MINUTE, 10),
-    requestsPerHour: parseInt(parsed.data.RATE_LIMIT_REQUESTS_PER_HOUR, 10),
+    requestsPerMinute: env.RATE_LIMIT_REQUESTS_PER_MINUTE,
+    requestsPerHour: env.RATE_LIMIT_REQUESTS_PER_HOUR,
   },
 
   openai: {
-    apiKey: parsed.data.OPENAI_API_KEY,
+    apiKey: env.OPENAI_API_KEY,
   },
 
   aws: {
-    region: parsed.data.AWS_REGION,
-    accessKeyId: parsed.data.AWS_ACCESS_KEY_ID,
-    secretAccessKey: parsed.data.AWS_SECRET_ACCESS_KEY,
-    s3Bucket: parsed.data.AWS_S3_BUCKET,
+    region: env.AWS_REGION,
+    accessKeyId: env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+    s3Bucket: env.S3_BUCKET,
   },
 
   stripe: {
-    secretKey: parsed.data.STRIPE_SECRET_KEY,
-    webhookSecret: parsed.data.STRIPE_WEBHOOK_SECRET,
-    successUrl: parsed.data.STRIPE_SUCCESS_URL,
-    cancelUrl: parsed.data.STRIPE_CANCEL_URL,
+    secretKey: env.STRIPE_SECRET_KEY,
+    webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+    successUrl: env.STRIPE_SUCCESS_URL,
+    cancelUrl: env.STRIPE_CANCEL_URL,
   },
 } as const
 

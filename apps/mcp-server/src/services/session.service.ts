@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto'
 import { prisma } from '@botesq/database'
 import { config } from '../config.js'
 import { validateApiKey } from './auth.service.js'
+import { getRateLimitStatus } from './rate-limit.service.js'
 import type { StartSessionInput, StartSessionOutput, GetSessionInfoOutput } from '../types.js'
 
 /**
@@ -74,8 +75,7 @@ export async function startSession(input: StartSessionInput): Promise<StartSessi
  * Get session information
  */
 export async function getSessionInfo(
-  sessionToken: string,
-  session: { id: string; expiresAt: Date; requestCount: number },
+  session: { id: string; expiresAt: Date },
   operator: { id: string; companyName: string; creditBalance: number }
 ): Promise<GetSessionInfoOutput> {
   // Count active matters for this operator
@@ -86,10 +86,10 @@ export async function getSessionInfo(
     },
   })
 
-  // Get request counts (simplified - in production use Redis)
-  // For now, just use the session's total request count
-  const requestsThisMinute = Math.min(session.requestCount, config.rateLimit.requestsPerMinute)
-  const requestsThisHour = Math.min(session.requestCount, config.rateLimit.requestsPerHour)
+  // Real limiter state (windows are keyed by operator)
+  const rateLimitStatus = getRateLimitStatus(operator.id)
+  const requestsThisMinute = config.rateLimit.requestsPerMinute - rateLimitStatus.minute.remaining
+  const requestsThisHour = config.rateLimit.requestsPerHour - rateLimitStatus.hour.remaining
 
   return {
     session_id: session.id,
@@ -105,14 +105,4 @@ export async function getSessionInfo(
     requests_this_hour: requestsThisHour,
     expires_at: session.expiresAt.toISOString(),
   }
-}
-
-/**
- * End a session
- */
-export async function endSession(sessionId: string): Promise<void> {
-  await prisma.session.update({
-    where: { id: sessionId },
-    data: { endedAt: new Date() },
-  })
 }

@@ -66,7 +66,11 @@ export async function createConsultation(
     })
 
     if (!matter) {
-      throw new ApiError('MATTER_NOT_FOUND', 'Matter not found or does not belong to this operator', 404)
+      throw new ApiError(
+        'MATTER_NOT_FOUND',
+        'Matter not found or does not belong to this operator',
+        404
+      )
     }
     internalMatterId = matter.id
   }
@@ -185,11 +189,16 @@ export async function getConsultation(
     estimatedWaitMinutes,
     disclaimers:
       consultation.status === 'COMPLETED'
-        ? [
-            'This response has been reviewed by a licensed attorney.',
-            'This constitutes legal information, not legal advice for your specific situation.',
-            'Attorney-client privilege may apply to communications within your matter.',
-          ]
+        ? consultation.attorneyId
+          ? [
+              'This response has been reviewed by a licensed attorney.',
+              'This constitutes legal information, not legal advice for your specific situation.',
+              'Attorney-client privilege may apply to communications within your matter.',
+            ]
+          : [
+              'This response is AI-assisted and has not been reviewed by an attorney.',
+              'This constitutes legal information, not legal advice for your specific situation.',
+            ]
         : undefined,
   }
 }

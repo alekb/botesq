@@ -62,13 +62,17 @@ function mapUrgency(urgency?: string): MatterUrgency | undefined {
 
 export async function handleCreateMatter(
   input: CreateMatterInput
-): Promise<{ success: boolean; data?: CreateMatterOutput; error?: { code: string; message: string } }> {
+): Promise<{
+  success: boolean
+  data?: CreateMatterOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   // Check credits
   if (operator.creditBalance < CREATE_MATTER_COST) {

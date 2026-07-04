@@ -16,12 +16,14 @@ export const addCreditsSchema = z.object({
 
 export type AddCreditsInput = z.infer<typeof addCreditsSchema>
 
-export async function handleAddCredits(input: AddCreditsInput): Promise<ToolOutput<AddCreditsOutput>> {
+export async function handleAddCredits(
+  input: AddCreditsInput
+): Promise<ToolOutput<AddCreditsOutput>> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   // Verify Stripe is configured
   if (!isStripeConfigured()) {

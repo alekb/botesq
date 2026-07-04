@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { startSession } from '../services/session.service.js'
+import { checkRateLimit } from '../services/rate-limit.service.js'
 import type { ToolOutput, StartSessionOutput } from '../types.js'
 
 export const startSessionSchema = z.object({
@@ -12,6 +13,11 @@ export type StartSessionInput = z.infer<typeof startSessionSchema>
 export async function handleStartSession(
   input: StartSessionInput
 ): Promise<ToolOutput<StartSessionOutput>> {
+  // Throttle before touching the database: this unauthenticated tool is the
+  // API-key brute-force surface, and unlimited session minting would let an
+  // agent reset its per-operator rate-limit windows.
+  checkRateLimit('start_session')
+
   const result = await startSession(input)
 
   return {
@@ -22,7 +28,8 @@ export async function handleStartSession(
 
 export const startSessionTool = {
   name: 'start_session',
-  description: 'Start a new session with an API key. Returns a session token for subsequent requests.',
+  description:
+    'Start a new session with an API key. Returns a session token for subsequent requests.',
   inputSchema: {
     type: 'object',
     properties: {

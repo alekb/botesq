@@ -31,13 +31,17 @@ export interface AcceptRetainerOutput {
 
 export async function handleAcceptRetainer(
   input: AcceptRetainerInput
-): Promise<{ success: boolean; data?: AcceptRetainerOutput; error?: { code: string; message: string } }> {
+): Promise<{
+  success: boolean
+  data?: AcceptRetainerOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   // Get the retainer first to validate it exists
   const existingRetainer = await getRetainer(input.retainer_id, operator.id)
@@ -45,12 +49,10 @@ export async function handleAcceptRetainer(
     throw new ApiError('RETAINER_NOT_FOUND', 'Retainer not found', 404)
   }
 
-  // Check if pre-auth is available and required
-  const hasPreAuth = !!operator.preAuthToken
-  const providedPreAuth = input.pre_auth_token
-
-  // If no pre-auth token provided and operator doesn't have pre-auth, require manual signing
-  if (!providedPreAuth && !hasPreAuth) {
+  // Pre-authorized acceptance requires the agent to present the operator's
+  // token — having one configured is not by itself authorization. Without a
+  // token, the retainer must be signed manually.
+  if (!input.pre_auth_token) {
     return {
       success: true,
       data: {
@@ -74,80 +76,53 @@ export async function handleAcceptRetainer(
     }
   }
 
-  // Determine signature method and acceptedBy
-  let signatureMethod: string
-  let acceptedBy: string
+  const acceptedBy = `agent:${session.agentId ?? 'unknown'}`
 
-  if (providedPreAuth) {
-    signatureMethod = 'agent_preauth'
-    acceptedBy = `agent:${session.agentId ?? 'unknown'}`
-  } else if (hasPreAuth) {
-    // Operator has pre-auth configured but agent didn't provide token
-    // This means the agent is authorized to accept on behalf of operator
-    signatureMethod = 'agent_preauth'
-    acceptedBy = `agent:${session.agentId ?? 'unknown'}`
-  } else {
-    signatureMethod = 'manual'
-    acceptedBy = 'operator'
-  }
+  // Service errors (RETAINER_EXPIRED, INVALID_PREAUTH, RETAINER_NOT_PENDING)
+  // are typed ApiErrors and propagate as-is.
+  const { retainer, matterActivated } = await acceptRetainer({
+    retainerId: input.retainer_id,
+    operatorId: operator.id,
+    acceptedBy,
+    signatureMethod: 'agent_preauth',
+    preAuthToken: input.pre_auth_token,
+  })
 
-  try {
-    const { retainer, matterActivated } = await acceptRetainer({
-      retainerId: input.retainer_id,
-      operatorId: operator.id,
+  logger.info(
+    {
+      retainerId: retainer.externalId,
+      matterId: retainer.matter?.externalId,
       acceptedBy,
-      signatureMethod,
-      preAuthToken: providedPreAuth,
-    })
+      matterActivated,
+    },
+    'Retainer accepted via API'
+  )
 
-    logger.info(
-      {
-        retainerId: retainer.externalId,
-        matterId: retainer.matter?.externalId,
-        acceptedBy,
-        matterActivated,
-      },
-      'Retainer accepted via API'
-    )
-
-    return {
-      success: true,
-      data: {
-        retainer_id: retainer.externalId,
-        status: 'accepted',
-        accepted_at: retainer.acceptedAt?.toISOString(),
-        accepted_by: acceptedBy,
-        matter: retainer.matter
-          ? {
-              id: retainer.matter.externalId,
-              status: retainer.matter.status,
-            }
-          : { id: '', status: 'UNKNOWN' },
-        message: matterActivated
-          ? 'Retainer accepted. Matter is now active and ready for legal services.'
-          : 'Retainer accepted.',
-        next_steps: matterActivated
-          ? [
-              'Your matter is now active',
-              'You can submit documents using submit_document',
-              'You can ask legal questions using ask_legal_question',
-              'You can request consultations using request_consultation',
-            ]
-          : ['Retainer accepted. Matter will be activated shortly.'],
-      },
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to accept retainer'
-
-    if (message.includes('expired')) {
-      throw new ApiError('RETAINER_EXPIRED', 'Retainer has expired. Please request new terms.', 400)
-    }
-
-    if (message.includes('Invalid pre-authorization')) {
-      throw new ApiError('INVALID_PREAUTH', 'Invalid pre-authorization token', 403)
-    }
-
-    throw new ApiError('RETAINER_ERROR', message, 400)
+  return {
+    success: true,
+    data: {
+      retainer_id: retainer.externalId,
+      status: 'accepted',
+      accepted_at: retainer.acceptedAt?.toISOString(),
+      accepted_by: acceptedBy,
+      matter: retainer.matter
+        ? {
+            id: retainer.matter.externalId,
+            status: retainer.matter.status,
+          }
+        : { id: '', status: 'UNKNOWN' },
+      message: matterActivated
+        ? 'Retainer accepted. Matter is now active and ready for legal services.'
+        : 'Retainer accepted.',
+      next_steps: matterActivated
+        ? [
+            'Your matter is now active',
+            'You can submit documents using submit_document',
+            'You can ask legal questions using ask_legal_question',
+            'You can request consultations using request_consultation',
+          ]
+        : ['Retainer accepted. Matter will be activated shortly.'],
+    },
   }
 }
 
@@ -169,7 +144,7 @@ export const acceptRetainerTool = {
       pre_auth_token: {
         type: 'string',
         description:
-          'Pre-authorization token if the operator has authorized agent acceptance. If not provided and operator has pre-auth configured, acceptance will proceed automatically.',
+          'Pre-authorization token issued by the operator. Required for automatic acceptance; without it a manual signing URL is returned.',
       },
     },
     required: ['session_token', 'retainer_id'],

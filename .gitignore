@@ -44,3 +44,6 @@ packages/database/prisma/*.db-journal
 *.tmp
 *.temp
 .cache/
+
+# Secrets that must never be committed
+admin-totp-qr.png

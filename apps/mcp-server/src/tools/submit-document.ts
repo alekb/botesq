@@ -3,6 +3,8 @@ import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { submitDocument } from '../services/document.service.js'
 import { queueDocumentAnalysis } from '../services/document-analysis.service.js'
+import { deductCredits } from '../services/credit.service.js'
+import { MAX_FILE_SIZE } from '../services/storage.service.js'
 import { PaymentError } from '../types.js'
 import { prisma } from '@botesq/database'
 import pino from 'pino'
@@ -16,11 +18,17 @@ const PRICING = {
   max: 10000,
 }
 
+// Bound the payload before decoding: base64 inflates content by 4/3.
+const MAX_BASE64_LENGTH = Math.ceil((MAX_FILE_SIZE * 4) / 3) + 4
+
 export const submitDocumentSchema = z.object({
   session_token: z.string().min(1, 'Session token is required'),
   matter_id: z.string().optional(),
   filename: z.string().min(1, 'Filename is required'),
-  content_base64: z.string().min(1, 'Content is required'),
+  content_base64: z
+    .string()
+    .min(1, 'Content is required')
+    .max(MAX_BASE64_LENGTH, `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`),
   document_type: z.string().optional(),
   notes: z.string().max(2000).optional(),
 })
@@ -78,13 +86,17 @@ function detectMimeType(filename: string): string {
 
 export async function handleSubmitDocument(
   input: SubmitDocumentInput
-): Promise<{ success: boolean; data?: SubmitDocumentOutput; error?: { code: string; message: string } }> {
+): Promise<{
+  success: boolean
+  data?: SubmitDocumentOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
 
-  // Check rate limits
-  checkRateLimit(input.session_token)
+  // Check rate limits (keyed by operator so new sessions can't reset them)
+  checkRateLimit(operator.id)
 
   // Decode base64 content
   const content = Buffer.from(input.content_base64, 'base64')
@@ -93,7 +105,7 @@ export async function handleSubmitDocument(
   // Calculate cost
   const creditsUsed = calculateCost(content.length, mimeType)
 
-  // Check credits
+  // Cheap fast-fail; deductCredits below is the authoritative, atomic check.
   if (operator.creditBalance < creditsUsed) {
     throw new PaymentError('INSUFFICIENT_CREDITS', 'Not enough credits for document submission')
   }
@@ -109,31 +121,35 @@ export async function handleSubmitDocument(
     notes: input.notes,
   })
 
-  // Deduct credits
-  await prisma.$transaction(async (tx) => {
-    await tx.operator.update({
-      where: { id: operator.id },
-      data: { creditBalance: { decrement: creditsUsed } },
-    })
+  // Deduct credits (atomic); if the balance is no longer sufficient,
+  // withdraw the stored document so there's no charge and no service.
+  let newBalance: number
+  try {
+    const result = await deductCredits(
+      operator.id,
+      creditsUsed,
+      `Document submission: ${document.externalId}`,
+      'document',
+      document.id
+    )
+    newBalance = result.newBalance
+  } catch (error) {
+    await prisma.document
+      .update({
+        where: { id: document.id },
+        data: { status: 'DELETED', deletedAt: new Date() },
+      })
+      .catch(() => undefined)
+    throw error
+  }
 
-    await tx.creditTransaction.create({
-      data: {
-        operatorId: operator.id,
-        type: 'DEDUCTION',
-        amount: -creditsUsed,
-        balanceBefore: operator.creditBalance,
-        balanceAfter: operator.creditBalance - creditsUsed,
-        description: `Document submission: ${document.externalId}`,
-        referenceType: 'document',
-        referenceId: document.id,
-      },
-    })
-  })
-
-  // Queue for analysis
-  await queueDocumentAnalysis({
+  // Queue for analysis (fire-and-forget)
+  queueDocumentAnalysis({
     documentId: document.id,
     operatorId: operator.id,
+    content: content.toString('utf-8'),
+    filename: document.filename,
+    documentType: input.document_type,
   })
 
   logger.info(
@@ -160,7 +176,7 @@ export async function handleSubmitDocument(
       analysis_status: document.analysisStatus,
       estimated_analysis_time_minutes: estimatedMinutes,
       credits_used: creditsUsed,
-      credits_remaining: operator.creditBalance - creditsUsed,
+      credits_remaining: newBalance,
     },
   }
 }

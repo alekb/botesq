@@ -1,5 +1,7 @@
+import { createHash, timingSafeEqual } from 'crypto'
 import { prisma, RetainerStatus, FeeArrangement, MatterStatus } from '@botesq/database'
 import { nanoid } from 'nanoid'
+import { ApiError } from '../types.js'
 import pino from 'pino'
 
 const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'debug' })
@@ -265,37 +267,39 @@ export async function acceptRetainer(params: {
   })
 
   if (!retainer) {
-    throw new Error('Retainer not found')
-  }
-
-  if (retainer.status !== RetainerStatus.PENDING) {
-    throw new Error(`Retainer is already ${retainer.status.toLowerCase()}`)
+    throw new ApiError('RETAINER_NOT_FOUND', 'Retainer not found', 404)
   }
 
   if (new Date() > retainer.expiresAt) {
-    // Mark as expired
-    await prisma.retainer.update({
-      where: { id: retainer.id },
+    // Mark as expired (only if still pending)
+    await prisma.retainer.updateMany({
+      where: { id: retainer.id, status: RetainerStatus.PENDING },
       data: { status: RetainerStatus.EXPIRED },
     })
-    throw new Error('Retainer has expired')
+    throw new ApiError('RETAINER_EXPIRED', 'Retainer has expired. Please request new terms.', 400)
   }
 
-  // If using pre-auth token, validate it
-  if (preAuthToken) {
+  // Any non-manual acceptance must demonstrate possession of the operator's
+  // pre-authorization token; having one configured is not itself authorization.
+  if (signatureMethod !== 'manual') {
     const operator = await prisma.operator.findUnique({
       where: { id: operatorId },
-      select: { preAuthToken: true, preAuthScope: true },
+      select: { preAuthToken: true },
     })
 
-    if (!operator?.preAuthToken || operator.preAuthToken !== preAuthToken) {
-      throw new Error('Invalid pre-authorization token')
+    if (
+      !operator?.preAuthToken ||
+      !preAuthToken ||
+      !tokensMatch(operator.preAuthToken, preAuthToken)
+    ) {
+      throw new ApiError('INVALID_PREAUTH', 'Invalid pre-authorization token', 403)
     }
   }
 
-  // Accept the retainer
-  const updatedRetainer = await prisma.retainer.update({
-    where: { id: retainer.id },
+  // Claim the retainer: the conditional update guarantees exactly one
+  // concurrent acceptance wins.
+  const claimed = await prisma.retainer.updateMany({
+    where: { id: retainer.id, status: RetainerStatus.PENDING },
     data: {
       status: RetainerStatus.ACCEPTED,
       acceptedAt: new Date(),
@@ -303,6 +307,22 @@ export async function acceptRetainer(params: {
       signatureMethod,
       signatureIp,
     },
+  })
+
+  if (claimed.count === 0) {
+    const current = await prisma.retainer.findUnique({
+      where: { id: retainer.id },
+      select: { status: true },
+    })
+    throw new ApiError(
+      'RETAINER_NOT_PENDING',
+      `Retainer is already ${(current?.status ?? retainer.status).toLowerCase()}`,
+      400
+    )
+  }
+
+  const updatedRetainer = await prisma.retainer.findUniqueOrThrow({
+    where: { id: retainer.id },
     include: {
       matter: {
         select: {
@@ -365,4 +385,13 @@ export async function acceptRetainer(params: {
 export function generateSigningUrl(retainerId: string): string {
   // In production, this would be a real signing URL
   return `https://botesq.io/sign/${retainerId}`
+}
+
+/**
+ * Constant-time token comparison (hash both sides to equalize length)
+ */
+function tokensMatch(expected: string, provided: string): boolean {
+  const a = createHash('sha256').update(expected).digest()
+  const b = createHash('sha256').update(provided).digest()
+  return timingSafeEqual(a, b)
 }

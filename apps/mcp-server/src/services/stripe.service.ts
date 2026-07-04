@@ -2,7 +2,13 @@ import Stripe from 'stripe'
 import { prisma } from '@botesq/database'
 import { config } from '../config.js'
 import { PaymentError } from '../types.js'
-import { addCredits, usdToCredits, CREDITS_PER_DOLLAR, MIN_PURCHASE_USD, MAX_PURCHASE_USD } from './credit.service.js'
+import {
+  addCreditsInTx,
+  usdToCredits,
+  CREDITS_PER_DOLLAR,
+  MIN_PURCHASE_USD,
+  MAX_PURCHASE_USD,
+} from './credit.service.js'
 
 // Initialize Stripe client (lazy, throws if used without config)
 let stripeClient: Stripe | null = null
@@ -99,7 +105,7 @@ export async function createCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: `${config.stripe.successUrl}&session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${config.stripe.successUrl}${config.stripe.successUrl.includes('?') ? '&' : '?'}session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: config.stripe.cancelUrl,
     metadata: {
       operator_id: operatorId,
@@ -114,7 +120,7 @@ export async function createCheckoutSession(
     data: {
       operatorId,
       stripeCheckoutSessionId: session.id,
-      amountUsd: amountCents, // Store in cents
+      amountCents,
       credits,
       status: 'PENDING',
     },
@@ -173,15 +179,6 @@ export async function handleWebhookEvent(
  * Handle successful checkout completion
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const operatorId = session.metadata?.operator_id
-  const credits = parseInt(session.metadata?.credits ?? '0', 10)
-
-  if (!operatorId || !credits) {
-    console.error('Missing metadata in checkout session:', session.id)
-    return
-  }
-
-  // Check if already processed
   const payment = await prisma.payment.findUnique({
     where: { stripeCheckoutSessionId: session.id },
   })
@@ -191,22 +188,42 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return
   }
 
-  if (payment.status === 'COMPLETED') {
-    // Already processed, skip
+  // Reconcile the charged amount against our own record before crediting.
+  if (session.amount_total !== null && session.amount_total !== payment.amountCents) {
+    console.error(
+      `Checkout amount mismatch for session ${session.id}: charged ${session.amount_total}, expected ${payment.amountCents}`
+    )
     return
   }
 
-  // Add credits to operator
-  await addCredits(operatorId, credits, `Credit purchase: $${payment.amountUsd / 100}`, 'payment', payment.id)
+  // Claim and credit atomically: the conditional update guarantees exactly one
+  // concurrent webhook delivery wins, and the credit lands in the same
+  // transaction so a crash can't strand a claimed-but-uncredited payment.
+  await prisma.$transaction(async (tx) => {
+    const claimed = await tx.payment.updateMany({
+      where: { id: payment.id, status: 'PENDING' },
+      data: {
+        status: 'COMPLETED',
+        stripePaymentIntentId:
+          typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
+        completedAt: new Date(),
+      },
+    })
 
-  // Update payment record
-  await prisma.payment.update({
-    where: { id: payment.id },
-    data: {
-      status: 'COMPLETED',
-      stripePaymentIntentId: session.payment_intent as string | undefined,
-      completedAt: new Date(),
-    },
+    if (claimed.count === 0) {
+      // Already processed (or failed/expired) — nothing to credit.
+      return
+    }
+
+    await addCreditsInTx(
+      tx,
+      payment.operatorId,
+      payment.credits,
+      'PURCHASE',
+      `Credit purchase: $${payment.amountCents / 100}`,
+      'payment',
+      payment.id
+    )
   })
 }
 

@@ -29,13 +29,17 @@ export interface GetRetainerTermsOutput {
 
 export async function handleGetRetainerTerms(
   input: GetRetainerTermsInput
-): Promise<{ success: boolean; data?: GetRetainerTermsOutput; error?: { code: string; message: string } }> {
+): Promise<{
+  success: boolean
+  data?: GetRetainerTermsOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   // Get the matter first
   const matter = await getMatter(input.matter_id, operator.id)

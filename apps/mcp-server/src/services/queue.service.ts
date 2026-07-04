@@ -1,4 +1,4 @@
-import { prisma } from '@botesq/database'
+import { prisma, type ConsultationComplexity } from '@botesq/database'
 import { nanoid } from 'nanoid'
 import pino from 'pino'
 
@@ -10,6 +10,14 @@ const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'info' : 'd
 function generateConsultationId(): string {
   return `CONS-${nanoid(8).toUpperCase()}`
 }
+
+// The internal complexity scale doesn't match the ConsultationComplexity enum
+// ('moderate' has no direct counterpart), so map explicitly.
+export const COMPLEXITY_TO_ENUM = {
+  simple: 'SIMPLE',
+  moderate: 'STANDARD',
+  complex: 'COMPLEX',
+} as const satisfies Record<'simple' | 'moderate' | 'complex', ConsultationComplexity>
 
 export interface QueuedConsultation {
   id: string
@@ -65,7 +73,7 @@ export async function queueForHumanReview(params: {
       question,
       context,
       jurisdiction,
-      complexity: complexity.toUpperCase() as 'SIMPLE' | 'STANDARD' | 'COMPLEX',
+      complexity: COMPLEXITY_TO_ENUM[complexity],
       status: aiDraft ? 'PENDING_REVIEW' : 'QUEUED',
       aiDraft,
       aiConfidence,

@@ -8,6 +8,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { tools, executeTool } from './tools/index.js'
 import { prompts, buildPrompt } from './prompts/index.js'
+import { redactArgs } from './redact.js'
 import { ApiError, AuthError, RateLimitError } from './types.js'
 import pino from 'pino'
 
@@ -78,7 +79,7 @@ export function createServer() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params
 
-    logger.debug({ tool: name, args }, 'Executing tool')
+    logger.debug({ tool: name, args: redactArgs(args) }, 'Executing tool')
 
     try {
       const result = await executeTool(name, args)
@@ -150,8 +151,8 @@ export function createServer() {
         }
       }
 
-      // Unknown error
-      const message = error instanceof Error ? error.message : 'Unknown error'
+      // Unknown error: the real error is logged above; never echo internals
+      // (e.g. Prisma messages embed schema details) back to the client.
       return {
         content: [
           {
@@ -160,7 +161,7 @@ export function createServer() {
               success: false,
               error: {
                 code: 'INTERNAL_ERROR',
-                message,
+                message: 'An internal error occurred',
               },
             }),
           },

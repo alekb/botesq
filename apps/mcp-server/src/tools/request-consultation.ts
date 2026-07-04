@@ -3,6 +3,7 @@ import { prisma } from '@botesq/database'
 import { authenticateSession } from '../services/auth.service.js'
 import { checkRateLimit } from '../services/rate-limit.service.js'
 import { createConsultation, CONSULTATION_PRICING } from '../services/consultation.service.js'
+import { deductCredits } from '../services/credit.service.js'
 import { PaymentError } from '../types.js'
 import pino from 'pino'
 
@@ -30,20 +31,27 @@ export interface RequestConsultationOutput {
 
 export async function handleRequestConsultation(
   input: RequestConsultationInput
-): Promise<{ success: boolean; data?: RequestConsultationOutput; error?: { code: string; message: string } }> {
+): Promise<{
+  success: boolean
+  data?: RequestConsultationOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
 
-  // Check rate limits
-  checkRateLimit(input.session_token)
+  // Check rate limits (keyed by operator so new sessions can't reset them)
+  checkRateLimit(operator.id)
 
   // Calculate credits needed
   const creditsNeeded = CONSULTATION_PRICING[input.urgency]
 
-  // Check credits
+  // Cheap fast-fail; deductCredits below is the authoritative, atomic check.
   if (operator.creditBalance < creditsNeeded) {
-    throw new PaymentError('INSUFFICIENT_CREDITS', `Not enough credits. Need ${creditsNeeded}, have ${operator.creditBalance}`)
+    throw new PaymentError(
+      'INSUFFICIENT_CREDITS',
+      `Not enough credits. Need ${creditsNeeded}, have ${operator.creditBalance}`
+    )
   }
 
   // Create consultation
@@ -56,31 +64,29 @@ export async function handleRequestConsultation(
     urgency: input.urgency,
   })
 
-  // Deduct credits
-  await prisma.$transaction(async (tx) => {
-    await tx.operator.update({
-      where: { id: operator.id },
-      data: { creditBalance: { decrement: creditsUsed } },
-    })
+  // Deduct credits (atomic); on failure withdraw the request so no attorney
+  // works unpaid.
+  let newBalance: number
+  try {
+    const result = await deductCredits(
+      operator.id,
+      creditsUsed,
+      `Consultation request: ${consultation.externalId}`,
+      'consultation',
+      consultation.id
+    )
+    newBalance = result.newBalance
+  } catch (error) {
+    await prisma.consultation
+      .update({ where: { id: consultation.id }, data: { status: 'FAILED' } })
+      .catch(() => undefined)
+    throw error
+  }
 
-    await tx.creditTransaction.create({
-      data: {
-        operatorId: operator.id,
-        type: 'DEDUCTION',
-        amount: -creditsUsed,
-        balanceBefore: operator.creditBalance,
-        balanceAfter: operator.creditBalance - creditsUsed,
-        description: `Consultation request: ${consultation.externalId}`,
-        referenceType: 'consultation',
-        referenceId: consultation.id,
-      },
-    })
-
-    // Update consultation with credits charged
-    await tx.consultation.update({
-      where: { id: consultation.id },
-      data: { creditsCharged: creditsUsed },
-    })
+  // Record what was charged
+  await prisma.consultation.update({
+    where: { id: consultation.id },
+    data: { creditsCharged: creditsUsed },
   })
 
   logger.info(
@@ -101,7 +107,7 @@ export async function handleRequestConsultation(
       estimated_wait_minutes: consultation.estimatedWaitMinutes ?? 30,
       sla_deadline: consultation.slaDeadline.toISOString(),
       credits_used: creditsUsed,
-      credits_remaining: operator.creditBalance - creditsUsed,
+      credits_remaining: newBalance,
     },
   }
 }

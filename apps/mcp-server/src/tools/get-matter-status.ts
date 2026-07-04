@@ -31,13 +31,17 @@ export interface GetMatterStatusOutput {
 
 export async function handleGetMatterStatus(
   input: GetMatterStatusInput
-): Promise<{ success: boolean; data?: GetMatterStatusOutput; error?: { code: string; message: string } }> {
+): Promise<{
+  success: boolean
+  data?: GetMatterStatusOutput
+  error?: { code: string; message: string }
+}> {
   // Authenticate session
   const session = await authenticateSession(input.session_token)
   const operator = session.apiKey.operator
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   // Get the matter
   const matter = await getMatter(input.matter_id, operator.id)

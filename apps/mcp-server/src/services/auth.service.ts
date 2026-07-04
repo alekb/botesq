@@ -9,19 +9,20 @@ export function hashApiKey(apiKey: string): string {
   return createHash('sha256').update(apiKey).digest('hex')
 }
 
+const KEY_PREFIX = 'besq_live_'
+
 /**
  * Generate a new API key
- * Format: ml_live_XXXXXXXX (prefix) + 32 random chars
+ * Format: besq_live_ + 32 random chars
  */
-export function generateApiKey(): { key: string; prefix: string; hash: string } {
-  const prefix = 'ml_live_'
+export function generateApiKey(): { key: string; displayPrefix: string; hash: string } {
   const randomPart = randomBytes(24).toString('base64url')
-  const key = `${prefix}${randomPart}`
+  const key = `${KEY_PREFIX}${randomPart}`
   const hash = hashApiKey(key)
 
   return {
     key,
-    prefix: key.slice(0, 16), // First 16 chars for identification
+    displayPrefix: key.slice(0, 16), // First 16 chars for identification
     hash,
   }
 }
@@ -80,6 +81,10 @@ export async function authenticateSession(token: string): Promise<AuthenticatedS
 
   if (!session) {
     throw new AuthError('INVALID_SESSION', 'Session not found')
+  }
+
+  if (session.endedAt) {
+    throw new AuthError('SESSION_ENDED', 'Session has been ended')
   }
 
   if (session.expiresAt < new Date()) {

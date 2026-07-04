@@ -17,14 +17,10 @@ export async function handleGetSessionInfo(
   const session = await authenticateSession(input.session_token)
 
   // Check rate limits
-  checkRateLimit(input.session_token)
+  checkRateLimit(session.apiKey.operator.id)
 
   // Get session info
-  const result = await getSessionInfo(
-    input.session_token,
-    session,
-    session.apiKey.operator
-  )
+  const result = await getSessionInfo(session, session.apiKey.operator)
 
   return {
     success: true,
@@ -34,7 +30,8 @@ export async function handleGetSessionInfo(
 
 export const getSessionInfoTool = {
   name: 'get_session_info',
-  description: 'Get information about the current session including credits, active matters, and rate limit status.',
+  description:
+    'Get information about the current session including credits, active matters, and rate limit status.',
   inputSchema: {
     type: 'object',
     properties: {
