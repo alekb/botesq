@@ -6,6 +6,18 @@
 
 ---
 
+## ✅ Remediation Status (branch `fix/code-review-2026-07-04`)
+
+All findings below were fixed and verified. The work ran in three loops:
+
+1. **Fix + verify (commits `cb10545`, `6f74c7f`):** all 13 findings in this document fixed, then adversarially verified by a 13-agent pass. That pass refuted the P0-2 fix (a fifth credit-deduction site in `create-matter.ts` had been missed) and flagged residuals — all closed in `6f74c7f`.
+2. **Full re-review:** a 5-dimension re-review with per-finding adversarial verification surfaced 25 confirmed findings (≈19 distinct), including two guaranteed crashes (`create_matter` advertised enum values not in the DB; `submit_document` stored the external matter ID as a FK), cross-transaction crash windows in all four charging paths, and MCP loggers writing to **stdout** (corrupting the protocol channel). All fixed.
+3. **Final verification:** the re-review fixes were re-verified and the new code regression-scanned.
+
+Build (`tsc`), lint, and 55 unit tests pass. Two migrations were added (`20260704000000_credit_integrity`, `..._pre_auth_token_hash`, `..._session_token_hash`). Deferred to the user: deleting/rotating `admin-totp-qr.png` (now gitignored). See `PROGRESS.md` for the itemized list.
+
+---
+
 ## 📊 Summary Verdict
 
 **[CHANGES REQUESTED]**
